@@ -11,10 +11,21 @@ config_version=5
 [application]
 
 config/name="IdleFramework"
+run/main_scene="uid://0dl8lp5s0qje"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="BCASoft/IdleFramework"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=720
+window/energy_saving/keep_screen_on=false
+
+[physics]
+
+common/physics_ticks_per_second=1
 
 [rendering]
 
