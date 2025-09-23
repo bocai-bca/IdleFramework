@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://0dl8lp5s0qje"]
+
+[ext_resource type="Script" uid="uid://dpo3xsna0s671" path="res://contents/idle_framework/mother_node.gd" id="1_f2l4m"]
+
+[node name="IdleFramework_MotherNode" type="Node"]
+script = ExtResource("1_f2l4m")

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cwxhit3i7heco"]
 
-[node name="MainScene_Control" type="PanelContainer"]
+[node name="UIScene_Control" type="PanelContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

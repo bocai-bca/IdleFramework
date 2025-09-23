@@ -14,7 +14,7 @@ config/name="IdleFramework"
 run/main_scene="uid://0dl8lp5s0qje"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="BCASoft/IdleFramework"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [display]
