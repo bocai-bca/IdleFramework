@@ -3,6 +3,8 @@ extends Resource
 class_name IdleFramework_RecipeItem
 
 ## ID，该物品的唯一标识ID
+## 需要与物品注册表中的ID对应
 @export var id: StringName
 
-## 数字提供器
+## 数字提供器，指代该配方物品的所需数量或产出数量
+@export var number_provider: IdleFramework_NumberProvider
