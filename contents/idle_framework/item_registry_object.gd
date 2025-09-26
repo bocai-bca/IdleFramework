@@ -2,11 +2,11 @@
 extends Resource
 class_name IdleFramework_ItemRegistryObject
 
-## ID，该物品的唯一标识ID\n
+## ID，该物品的唯一标识ID。
 ## 此项留空将使该物品在注册时失效
 @export var id: StringName
 
-## 名称翻译标识符，即翻译表中该物品名称的键\n
+## 名称翻译标识符，即翻译表中该物品名称的键。
 ## 此项留空将使该物品没有名称
 @export var name_key: StringName
 

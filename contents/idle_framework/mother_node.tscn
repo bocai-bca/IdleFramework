@@ -1,6 +1,20 @@
-[gd_scene load_steps=2 format=3 uid="uid://0dl8lp5s0qje"]
+[gd_scene load_steps=8 format=3 uid="uid://0dl8lp5s0qje"]
 
 [ext_resource type="Script" uid="uid://dpo3xsna0s671" path="res://contents/idle_framework/mother_node.gd" id="1_f2l4m"]
+[ext_resource type="Script" uid="uid://802dvccus0oc" path="res://contents/idle_framework/item_registry_object.gd" id="2_ydcih"]
+[ext_resource type="Script" uid="uid://cime3srvg55me" path="res://contents/idle_framework/recipe.gd" id="3_fn8r5"]
+[ext_resource type="Script" uid="uid://b2osdwlovcy1w" path="res://contents/idle_framework/id_np_pair.gd" id="4_d6ubk"]
+[ext_resource type="Script" uid="uid://0rtnogqrj5oa" path="res://contents/idle_framework/game_resource.gd" id="5_yssoo"]
+
+[sub_resource type="Resource" id="Resource_0ntt8"]
+script = ExtResource("3_fn8r5")
+metadata/_custom_type_script = "uid://cime3srvg55me"
+
+[sub_resource type="Resource" id="Resource_ea2fc"]
+script = ExtResource("5_yssoo")
+recipes = Array[ExtResource("3_fn8r5")]([SubResource("Resource_0ntt8")])
+metadata/_custom_type_script = "uid://0rtnogqrj5oa"
 
 [node name="IdleFramework_MotherNode" type="Node"]
 script = ExtResource("1_f2l4m")
+game_resource = SubResource("Resource_ea2fc")
