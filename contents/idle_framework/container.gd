@@ -4,3 +4,7 @@ class_name IdleFramework_Container
 
 ## 物品最大数量覆写
 @export var item_max_count_override: Array[IdleFramework_IdNpPair]
+
+func item_max_count_override_(array: Array[IdleFramework_IdNpPair]) -> IdleFramework_Container:
+	item_max_count_override = array
+	return self

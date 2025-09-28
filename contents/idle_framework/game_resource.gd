@@ -2,6 +2,9 @@
 extends Resource
 class_name IdleFramework_GameResource
 
+## 空间注册表，在该列表中添加项即可注册空间
+@export var space_registry: Array[IdleFramework_Space]
+
 ## 物品注册表，在该列表中添加项即可注册物品
 @export var item_registry: Array[IdleFramework_ItemRegistryObject]
 
