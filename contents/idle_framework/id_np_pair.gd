@@ -1,4 +1,4 @@
-## 放置引擎-ID数字提供器对
+## 放置引擎-ID数字提供器对，已弃用
 extends Resource
 class_name IdleFramework_IdNpPair
 

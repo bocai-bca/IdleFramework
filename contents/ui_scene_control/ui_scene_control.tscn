@@ -1,4 +1,7 @@
-[gd_scene format=3 uid="uid://cwxhit3i7heco"]
+[gd_scene load_steps=3 format=3 uid="uid://cwxhit3i7heco"]
+
+[ext_resource type="Theme" uid="uid://56adcq1rucsm" path="res://contents/ui_scene_control/dark_theme.tres" id="1_lqj2a"]
+[ext_resource type="Script" uid="uid://d2p2e5goa3bjt" path="res://contents/ui_scene_control/ui_scene_control.gd" id="2_paokq"]
 
 [node name="UIScene_Control" type="PanelContainer"]
 anchors_preset = 15
@@ -6,3 +9,55 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_lqj2a")
+script = ExtResource("2_paokq")
+
+[node name="VBC_TitleMainSeparat" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="HBC_TitleBar" type="HBoxContainer" parent="VBC_TitleMainSeparat"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.1
+alignment = 1
+
+[node name="HBC_Left" type="HBoxContainer" parent="VBC_TitleMainSeparat/HBC_TitleBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBC_Right" type="HBoxContainer" parent="VBC_TitleMainSeparat/HBC_TitleBar"]
+layout_mode = 2
+alignment = 2
+
+[node name="PC_Main" type="PanelContainer" parent="VBC_TitleMainSeparat"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.5
+
+[node name="HSC" type="HSplitContainer" parent="VBC_TitleMainSeparat/PC_Main"]
+layout_mode = 2
+dragging_enabled = false
+
+[node name="SC_SideBar" type="ScrollContainer" parent="VBC_TitleMainSeparat/PC_Main/HSC"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.5
+
+[node name="VBC" type="VBoxContainer" parent="VBC_TitleMainSeparat/PC_Main/HSC/SC_SideBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="SC_Main" type="ScrollContainer" parent="VBC_TitleMainSeparat/PC_Main/HSC"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.5
+
+[node name="VBC" type="VBoxContainer" parent="VBC_TitleMainSeparat/PC_Main/HSC/SC_Main"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TB_FloatLayer" type="TextureButton" parent="."]
+layout_mode = 2
+button_mask = 3

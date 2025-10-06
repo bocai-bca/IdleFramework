@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="IdleFramework_GameResource" load_steps=7 format=3 uid="uid://ggrrqbkc05ky"]
+
+[ext_resource type="Script" uid="uid://802dvccus0oc" path="res://contents/idle_framework/item_registry_object.gd" id="1_diavi"]
+[ext_resource type="Script" uid="uid://urwnuvyn5pgr" path="res://contents/idle_framework/container.gd" id="1_j4v2a"]
+[ext_resource type="Script" uid="uid://c7j244ghhmwjh" path="res://contents/idle_framework/factory.gd" id="2_fgjit"]
+[ext_resource type="Script" uid="uid://cime3srvg55me" path="res://contents/idle_framework/recipe.gd" id="2_j4v2a"]
+[ext_resource type="Script" uid="uid://0rtnogqrj5oa" path="res://contents/idle_framework/game_resource.gd" id="3_fgjit"]
+[ext_resource type="Script" uid="uid://bltnut4axgw43" path="res://contents/idle_framework/space.gd" id="4_0ds46"]
+
+[resource]
+script = ExtResource("3_fgjit")
+metadata/_custom_type_script = "uid://0rtnogqrj5oa"

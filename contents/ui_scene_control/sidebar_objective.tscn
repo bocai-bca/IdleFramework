@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3 uid="uid://ynvpy7cj1hjs"]
+
+[ext_resource type="Script" uid="uid://dsdop2vimxjbt" path="res://contents/ui_scene_control/sidebar_objective.gd" id="1_2jwrj"]
+
+[node name="SideBarObjective" type="PanelContainer"]
+offset_right = 140.0
+offset_bottom = 31.0
+size_flags_horizontal = 3
+script = ExtResource("1_2jwrj")
+
+[node name="HBC" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="HBC"]
+layout_mode = 2
+expand_mode = 1
+
+[node name="Text" type="Label" parent="HBC"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SideBarObjective"
+vertical_alignment = 1
+clip_text = true
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 2
+flat = true
