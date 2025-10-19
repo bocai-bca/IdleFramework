@@ -11,6 +11,7 @@ var mother_node: IdleFramework_MotherNode
 @onready var n_sidebar_vbc: VBoxContainer = $VBC_TitleMainSeparat/PC_Main/HSC/SC_SideBar/VBC as VBoxContainer
 
 func _enter_tree() -> void:
+	print("UIScene_Control: Enter tree.")
 	var parent: Node = get_parent()
 	if (parent is IdleFramework_MotherNode):
 		mother_node = parent
@@ -19,6 +20,8 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	## 00创建侧边栏节点
+	print("UIScene_Control: Start to create sidebar nodes.")
+	print("UIScene_Control: Foreaching SpaceInstances.")
 	for space_instance in mother_node.get_spaces():
 		if (space_instance.used_for == IdleFramework_Space.UsedFor.SIDE_BAR):
 			var new_sidebar_obj: UIScene_Control_SideBarObjective = UIScene_Control_SideBarObjective.CPS.instantiate() as UIScene_Control_SideBarObjective

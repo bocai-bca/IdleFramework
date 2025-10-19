@@ -24,6 +24,10 @@ window/size/viewport_width=960
 window/size/viewport_height=720
 window/energy_saving/keep_screen_on=false
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://test/tr.zh.translation", "res://test/tr.en.translation")
+
 [physics]
 
 common/physics_ticks_per_second=1

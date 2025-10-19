@@ -16,6 +16,7 @@ func _ready() -> void:
 
 ## 启动游戏资源
 func start() -> void:
+	print("IdleFramework_MotherNode: On start.")
 	if (ui_scene == null):
 		push_warning("IdleFramework_MotherNode: UI Scene hasn't been set. This IdleFramework instance will run without UI Scene.")
 	if (game_resource == null):
@@ -27,8 +28,11 @@ func start() -> void:
 		push_error("IdleFramework_MotherNode: Space Registry hasn't been set. This IdleFramework instance will be deleted.")
 		queue_free()
 		return
+	print("IdleFramework_MotherNode: Foreaching Space Registry.")
 	for space_id in game_resource.space_registry.keys():
-		spaces[space_id] = game_resource.space_registry[space_id].make_instance()
+		var new_instance: IdleFramework_SpaceInstance = game_resource.space_registry[space_id].make_instance()
+		print("IdleFramework_MotherNode: Adding new space instance, space_id=", space_id)
+		spaces[space_id] = new_instance
 	## /00
 	## 01放置UI场景
 	add_child(ui_scene.instantiate())
@@ -36,6 +40,7 @@ func start() -> void:
 
 ## 重新载入游戏资源
 func reload() -> void:
+	print("IdleFramework_MotherNode: On reload.")
 	for child in get_children():
 		child.queue_free()
 	spaces.clear()

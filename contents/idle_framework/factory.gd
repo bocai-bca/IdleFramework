@@ -9,6 +9,13 @@ enum ProductionType{
 	AUTO, ## 自动，将自动开始生产并随时间增加进度
 }
 
+## 需求类型
+enum RequireType{
+	START_NEED_INGREDIENTS, ## 开始生产需要满足原材料，如果中途不满足将导致进度清空
+	PROCESS_NEED_INGREDIENTS, ## 增加进度需要满足原材料，如果中途不满足将无法增加进度
+	COLLECT_NEED_INGREDIENTS, ## 收获需要满足原材料，只有满足原材料时才能够进行收获，无论是否满足原材料进度都可正常增加
+}
+
 ## 收获类型
 enum CollectionType{
 	MANUALLY, ## 手动收获，需点击已完成生产的工厂来收取产品
@@ -38,6 +45,9 @@ enum CollectionType{
 
 ## 生产类型
 @export var production_type: ProductionType = ProductionType.AUTO
+
+## 需求类型
+@export var require_type: RequireType = RequireType.START_NEED_INGREDIENTS
 
 ## 收获类型
 @export var collection_type: CollectionType = CollectionType.AUTO

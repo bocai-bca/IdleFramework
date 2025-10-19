@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="IdleFramework_GameResource" load_steps=7 format=3 uid="uid://ggrrqbkc05ky"]
+[gd_resource type="Resource" script_class="IdleFramework_GameResource" load_steps=8 format=3 uid="uid://ggrrqbkc05ky"]
 
 [ext_resource type="Script" uid="uid://802dvccus0oc" path="res://contents/idle_framework/item_registry_object.gd" id="1_diavi"]
 [ext_resource type="Script" uid="uid://urwnuvyn5pgr" path="res://contents/idle_framework/container.gd" id="1_j4v2a"]
@@ -7,6 +7,16 @@
 [ext_resource type="Script" uid="uid://0rtnogqrj5oa" path="res://contents/idle_framework/game_resource.gd" id="3_fgjit"]
 [ext_resource type="Script" uid="uid://bltnut4axgw43" path="res://contents/idle_framework/space.gd" id="4_0ds46"]
 
+[sub_resource type="Resource" id="Resource_fgjit"]
+script = ExtResource("4_0ds46")
+name_key = &"space.home.name"
+lore_key = &"space.home.lore"
+used_for = 1
+metadata/_custom_type_script = "uid://bltnut4axgw43"
+
 [resource]
 script = ExtResource("3_fgjit")
+space_registry = Dictionary[StringName, ExtResource("4_0ds46")]({
+&"home": SubResource("Resource_fgjit")
+})
 metadata/_custom_type_script = "uid://0rtnogqrj5oa"
