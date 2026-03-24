@@ -8,13 +8,17 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="IdleFramework"
 run/main_scene="uid://0dl8lp5s0qje"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="BCASoft/IdleFramework"
-config/features=PackedStringArray("4.5", "GL Compatibility")
+config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
 run/low_processor_mode=true
 config/icon="res://icon.svg"
 
@@ -23,6 +27,14 @@ config/icon="res://icon.svg"
 window/size/viewport_width=960
 window/size/viewport_height=720
 window/energy_saving/keep_screen_on=false
+
+[dotnet]
+
+project/assembly_name="IdleFramework"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/IdleFramework/plugin.cfg")
 
 [internationalization]
 
