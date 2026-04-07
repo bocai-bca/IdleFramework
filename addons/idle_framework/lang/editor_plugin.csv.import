@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dvtq68dqnkbmh"
+
+[deps]
+
+files=["res://addons/idle_framework/lang/editor_plugin.en.translation", "res://addons/idle_framework/lang/editor_plugin.zh.translation"]
+
+source_file="res://addons/idle_framework/lang/editor_plugin.csv"
+dest_files=["res://addons/idle_framework/lang/editor_plugin.en.translation", "res://addons/idle_framework/lang/editor_plugin.zh.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

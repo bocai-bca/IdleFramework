@@ -34,11 +34,7 @@ project/assembly_name="IdleFramework"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/IdleFramework/plugin.cfg")
-
-[internationalization]
-
-locale/translations=PackedStringArray("res://test/tr.zh.translation", "res://test/tr.en.translation")
+enabled=PackedStringArray("res://addons/idle_framework/editor_plugin/plugin.cfg", "res://addons/idle_framework/plugin.cfg")
 
 [physics]
 

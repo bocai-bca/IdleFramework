@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://617e8c1ys73k"]
+
+[ext_resource type="Script" uid="uid://q8tc7jgegrdv" path="res://addons/idle_framework/editor_plugin/workspace/Workspace.cs" id="1_dago3"]
+
+[node name="IdleFrameworkWorkspace" type="PanelContainer" unique_id=701216926]
+auto_translate_mode = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_dago3")
+
+[node name="HBC" type="HBoxContainer" parent="." unique_id=648889]
+layout_mode = 2
+alignment = 1
+
+[node name="GameResourceIndex" type="TabContainer" parent="HBC" unique_id=1230685951]
+layout_mode = 2
+size_flags_horizontal = 3
+tab_alignment = 1
+current_tab = 0
+
+[node name="ItemRegistry" type="ScrollContainer" parent="HBC/GameResourceIndex" unique_id=1666570158]
+layout_mode = 2
+follow_focus = true
+metadata/_tab_index = 0
+
+[node name="VBC" type="VBoxContainer" parent="HBC/GameResourceIndex/ItemRegistry" unique_id=1651831302]
+layout_mode = 2
+
+[node name="DetailPanel" type="ScrollContainer" parent="HBC" unique_id=804015692]
+layout_mode = 2
+size_flags_horizontal = 3
+follow_focus = true
+
+[node name="VBC" type="VBoxContainer" parent="HBC/DetailPanel" unique_id=1340998999]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

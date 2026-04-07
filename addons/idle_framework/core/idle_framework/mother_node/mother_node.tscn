@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://0dl8lp5s0qje"]
+
+[ext_resource type="Script" uid="uid://bfao43dheaad7" path="res://addons/idle_framework/core/idle_framework/mother_node/MotherNode.cs" id="1_1t2y2"]
+[ext_resource type="Resource" uid="uid://cyfu4nee0ecoq" path="res://test/game_resource.tres" id="2_kto0w"]
+
+[node name="IdleFramework_MotherNode" type="Node" unique_id=1431236554]
+script = ExtResource("1_1t2y2")
+GameResource = ExtResource("2_kto0w")
