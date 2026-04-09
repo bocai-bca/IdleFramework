@@ -10,6 +10,16 @@ namespace IdleFramework;
 public partial class GameResource : Resource
 {
 	/// <summary>
+	/// 本放置引擎游戏的ID，用于在存档数据中记录其对应的游戏，请保证其唯一
+	/// </summary>
+	[Export] public StringName GameID { get; set; }
+	
+	/// <summary>
+	/// 本放置引擎游戏的名称翻译键
+	/// </summary>
+	[Export] public StringName NameKey { get; set; }
+	
+	/// <summary>
 	/// 空间注册表，在该列表中添加项即可注册空间，字典键为其id
 	/// </summary>
 	[Export] public Dictionary<StringName, SpaceRegistryObject> SpaceRegistry { get; set; } = new();

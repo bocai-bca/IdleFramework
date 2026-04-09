@@ -9,11 +9,6 @@ namespace IdleFramework;
 public partial class FactoryRegistryObject : Resource
 {
 	/// <summary>
-	/// 可使用的配方
-	/// </summary>
-	[Export] public RecipesProvider RecipesAbleToUse { get; set; }
-	
-	/// <summary>
 	/// 配方下单器
 	/// </summary>
 	[Export] public RecipeOrder RecipeOrder { get; set; }
