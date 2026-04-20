@@ -1,0 +1,99 @@
+[gd_scene format=3 uid="uid://bvj170wbvish6"]
+
+[ext_resource type="Theme" uid="uid://c2r8vuysvnv0s" path="res://addons/idle_framework/ui_scenes/control/main_theme.tres" id="1_hqrys"]
+[ext_resource type="Script" uid="uid://cxj2ifu8hvv3n" path="res://addons/idle_framework/ui_scenes/control/Control.cs" id="1_wvjk3"]
+[ext_resource type="PackedScene" uid="uid://d87ls62mgltb" path="res://addons/idle_framework/ui_scenes/control/pinned_item/pinned_item.tscn" id="2_oll73"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_wvjk3"]
+size = Vector2(128, 128)
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_hqrys"]
+size = Vector2(128, 128)
+
+[node name="UIScene_Control" type="PanelContainer" unique_id=1885108198]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme = ExtResource("1_hqrys")
+script = ExtResource("1_wvjk3")
+
+[node name="VBC" type="VBoxContainer" parent="." unique_id=1951051811]
+layout_mode = 2
+
+[node name="TopBar" type="PanelContainer" parent="VBC" unique_id=702719677]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+
+[node name="VBC" type="HBoxContainer" parent="VBC/TopBar" unique_id=567565285]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="VBC/TopBar/VBC" unique_id=818754469]
+layout_mode = 2
+texture = SubResource("PlaceholderTexture2D_wvjk3")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="Name" type="Label" parent="VBC/TopBar/VBC" unique_id=1416349804]
+layout_mode = 2
+text = "GameTitle"
+vertical_alignment = 1
+
+[node name="PinnedItemsBar" type="HBoxContainer" parent="VBC/TopBar/VBC" unique_id=2050508808]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="PinnedItem" parent="VBC/TopBar/VBC/PinnedItemsBar" unique_id=1754760488 instance=ExtResource("2_oll73")]
+layout_mode = 2
+
+[node name="MainSpace" type="HSplitContainer" parent="VBC" unique_id=1903583451]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SideBar" type="PanelContainer" parent="VBC/MainSpace" unique_id=652264264]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.33
+
+[node name="SC" type="ScrollContainer" parent="VBC/MainSpace/SideBar" unique_id=554611413]
+layout_mode = 2
+follow_focus = true
+scroll_hint_mode = 1
+
+[node name="SpaceButtons" type="VBoxContainer" parent="VBC/MainSpace/SideBar/SC" unique_id=1602759255]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Button" type="Button" parent="VBC/MainSpace/SideBar/SC/SpaceButtons" unique_id=283124168]
+layout_mode = 2
+text = "ExampleSpace"
+icon = SubResource("PlaceholderTexture2D_hqrys")
+clip_text = true
+expand_icon = true
+
+[node name="DetailArea" type="PanelContainer" parent="VBC/MainSpace" unique_id=1786300776]
+clip_contents = true
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.67
+
+[node name="Label" type="Label" parent="VBC/MainSpace/DetailArea" unique_id=1262182483]
+layout_mode = 2
+text = "DetailArea"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomBar" type="PanelContainer" parent="VBC" unique_id=1851625811]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+
+[node name="HBC" type="HBoxContainer" parent="VBC/BottomBar" unique_id=2041024412]
+layout_mode = 2

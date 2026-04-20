@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bdmnymuoj3afs"
+
+[deps]
+
+files=["res://addons/idle_framework/lang/runtime_builtin.en.translation", "res://addons/idle_framework/lang/runtime_builtin.zh.translation"]
+
+source_file="res://addons/idle_framework/lang/runtime_builtin.csv"
+dest_files=["res://addons/idle_framework/lang/runtime_builtin.en.translation", "res://addons/idle_framework/lang/runtime_builtin.zh.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

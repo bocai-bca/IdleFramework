@@ -14,13 +14,16 @@ public partial class RecipeOrderManualSelect : RecipeOrder
 	/// <summary>
 	/// 本下单器的配方ID列表，会呈现在GUI上供玩家手动选择，因此不要重复出现相同ID
 	/// </summary>
-	[Export] public Array<StringName> RecipeIDs { get; set; } = [];
+	[Export]
+	[ExportGroup("Data")]
+	public Array<StringName> RecipeIDs { get; set; } = [];
 	
 	/// <summary>
 	/// 本下单器可以暂存的配方队列容量，单位为配方个数，如果给定数字小于1则无法添加配方(但可以在队列为空时推送配方)
 	/// 本下单器可能在很多时候从本数值提供器获取值，因此建议不要使用太复杂的数值提供器，也尤其避免制作可能造成无限递归的数值提供器链路
 	/// </summary>
-	[Export] public NumberProvider QueueSize;
+	[Export]
+	public NumberProvider QueueSize;
 
 	/// <summary>
 	/// 检查本下单器的队列是否已满，在访问本属性时会调用QueueSize的数值提供器的GetNumber()方法

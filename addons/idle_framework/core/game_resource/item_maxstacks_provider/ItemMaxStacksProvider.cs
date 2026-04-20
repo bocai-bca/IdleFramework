@@ -29,6 +29,7 @@ public partial class ItemMaxStacksProvider : Resource
 	/// 提供器模式
 	/// </summary>
 	[Export]
+	[ExportGroup("Data")]
 	public ProviderMode Mode { get; set; } = ProviderMode.Overriding;
 
 	/// <summary>

@@ -50,7 +50,7 @@ public partial class EditorPlugin : Godot.EditorPlugin
 
 	public override void _EnterTree()
 	{
-		Localization.LoadTranslations();
+		Localization.LoadEditorTranslations();
 		_editorWorkspaceNode = EditorWorkspacePackedScene.Instantiate<Control>();
 		if (_editorWorkspaceNode == null)
 		{

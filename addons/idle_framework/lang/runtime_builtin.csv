@@ -1,0 +1,7 @@
+,?context,en,zh
+idle_framework,,"IdleFramework","放置引擎"
+alert.title.idle_framework_fatal,,"IdleFramework Fatal Error","放置引擎 致命错误"
+alert.context.idle_framework_launch_failed,,"IdleFramework launch failed.","放置引擎启动失败。"
+alert.context.game_resource_not_specified,,"GameResource not specified.","未指定游戏资源。"
+alert.context.packed_ui_scene_not_specified,,"PackedUIScene not specified.","未指定UI场景封包。"
+alert.context.ui_scene_instantiation_error,,"UIScene instantiation error.","UI场景实例化出错。"

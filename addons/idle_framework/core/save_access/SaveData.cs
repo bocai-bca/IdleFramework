@@ -11,10 +11,21 @@ public partial class SaveData : Resource
 	/// <summary>
 	/// 记录本存档对应的游戏ID
 	/// </summary>
-	public StringName GameID { get; set; }
-	
+	public StringName GameID { get; set; } = "";
+
 	/// <summary>
 	/// 记录本存档上一次更新的时间
 	/// </summary>
-	public double LastUpdateUnixTime { get; set; }
+	public double LastUpdateUnixTime { get; set; } = 0d;
+
+	/// <summary>
+	/// 从JSON文本解析为SaveData实例
+	/// </summary>
+	/// <param name="json">待解析的存档数据Json</param>
+	/// <returns>解析完毕的SaveData实例</returns>
+	public static SaveData ParseFromJSON(string json)
+	{
+		SaveData result = new SaveData();
+		return result;
+	}
 }

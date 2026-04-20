@@ -4,7 +4,7 @@ using Godot;
 namespace IdleFramework.EditorPlugin;
 
 /// <summary>
-/// IdleFramework插件主类
+/// IdleFramework插件根类，负责与引擎对接承担插件开关任务
 /// </summary>
 [Tool]
 public partial class IdleFramework : Godot.EditorPlugin

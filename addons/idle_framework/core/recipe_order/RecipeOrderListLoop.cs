@@ -13,7 +13,9 @@ public partial class RecipeOrderListLoop : RecipeOrder
 	/// <summary>
 	/// 本下单器的配方ID列表，允许重复出现相同ID
 	/// </summary>
-	[Export] public Array<StringName> RecipeIDs { get; set; } = [];
+	[Export]
+	[ExportGroup("Data")]
+	public Array<StringName> RecipeIDs { get; set; } = [];
 
 	/// <summary>
 	/// 本下单器的索引记录

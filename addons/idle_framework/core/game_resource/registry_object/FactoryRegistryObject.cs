@@ -11,5 +11,7 @@ public partial class FactoryRegistryObject : Resource
 	/// <summary>
 	/// 配方下单器
 	/// </summary>
-	[Export] public RecipeOrder RecipeOrder { get; set; }
+	[Export]
+	[ExportGroup("Data")]
+	public RecipeOrder RecipeOrder { get; set; }
 }

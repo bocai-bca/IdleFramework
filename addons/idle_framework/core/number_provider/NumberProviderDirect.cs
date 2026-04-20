@@ -13,6 +13,7 @@ public partial class NumberProviderDirect : NumberProvider
 	/// 该立即数提供器会返回的值
 	/// </summary>
 	[Export]
+	[ExportGroup("Data")]
 	public int Number { get; set; }
 
 	/// <summary>

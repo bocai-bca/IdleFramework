@@ -13,6 +13,7 @@ public partial class RecipeOrderConstant : RecipeOrder
 	/// 本下单器会返回的配方ID
 	/// </summary>
 	[Export]
+	[ExportGroup("Data")]
 	public StringName RecipeID { get; set; } = "";
 	
 	/// <summary>

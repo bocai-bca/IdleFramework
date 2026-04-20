@@ -13,7 +13,9 @@ public partial class RecipeOrderListRandom : RecipeOrder
 	/// <summary>
 	/// 本下单器的配方ID列表，允许重复出现相同ID，重复ID会表现为提高该ID被抽中的概率
 	/// </summary>
-	[Export] public Array<StringName> RecipeIDs { get; set; } = [];
+	[Export]
+	[ExportGroup("Data")]
+	public Array<StringName> RecipeIDs { get; set; } = [];
 
 	/// <summary>
 	/// 拉取配方，返回RecipeIDs中随机抽取的一项

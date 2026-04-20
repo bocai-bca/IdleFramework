@@ -1,15 +1,14 @@
-﻿#if TOOLS
-using System.Collections.Generic;
-using System.Linq;
-using Godot;
+﻿using Godot;
+using Godot.Collections;
 
-namespace IdleFramework.EditorPlugin;
+namespace IdleFramework;
 
 /// <summary>
-/// 编辑器插件的本地化管理器
+/// 本地化管理器，负责编辑器和运行时的本地化服务。在使用编辑器运行项目时，编辑器和项目实例会分别实例化各自的Localization实例，因此不会冲突或浪费内存
 /// </summary>
 [Tool]
-public class Localization
+[GlobalClass]
+public partial class Localization : RefCounted
 {
 	/// <summary>
 	/// 编辑器插件翻译域，通常可以通过访问它的IsEnabled()来获取当前是否已加载翻译
@@ -17,13 +16,28 @@ public class Localization
 	public static TranslationDomain Domain = new();
 	
 	/// <summary>
-	/// 加载翻译至翻译域
+	/// 加载编辑器翻译至翻译域
 	/// </summary>
-	public static void LoadTranslations()
+	public static void LoadEditorTranslations()
 	{
 		Domain.Enabled = true;
 		Domain.AddTranslation(GD.Load<Translation>("res://addons/idle_framework/lang/editor_plugin.en.translation"));
 		Domain.AddTranslation(GD.Load<Translation>("res://addons/idle_framework/lang/editor_plugin.zh.translation"));
+	}
+
+	/// <summary>
+	/// 加载运行时翻译至翻译域
+	/// 本方法不仅仅用于加载运行时翻译，它可以加载任何通过手动指定翻译文件的方式提供的翻译
+	/// </summary>
+	/// <param name="translations">需要加载进翻译域的翻译</param>
+	public static void LoadRuntimeTranslations(Array<Translation> translations)
+	{
+		if (translations is not { Count: > 0 }) return;
+		Domain.Enabled = true;
+		foreach (Translation translation in translations)
+		{
+			Domain.AddTranslation(translation);
+		}
 	}
 
 	/// <summary>
@@ -47,5 +61,3 @@ public class Localization
 		return Domain.Translate(key, context);
 	}
 }
-
-#endif

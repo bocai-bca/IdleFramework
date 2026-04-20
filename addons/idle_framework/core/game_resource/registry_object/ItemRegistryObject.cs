@@ -12,6 +12,7 @@ public partial class ItemRegistryObject: Resource
 	/// 物品名称翻译键
 	/// </summary>
 	[Export]
+	[ExportGroup("Assets")]
 	public StringName NameKey { get; set; } = "";
 
 	/// <summary>
@@ -30,6 +31,7 @@ public partial class ItemRegistryObject: Resource
 	/// 默认在单个容器中的最大堆叠数量
 	/// </summary>
 	[Export]
+	[ExportGroup("Data")]
 	public int DefaultMaxStackCount { get; set; } = 9999;
 	
 }

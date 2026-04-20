@@ -13,6 +13,7 @@ public partial class NumberProviderRange : NumberProvider
 	/// 最小值(含)
 	/// </summary>
 	[Export]
+	[ExportGroup("Data")]
 	public int MinNumber { get; set; }
 	
 	/// <summary>
