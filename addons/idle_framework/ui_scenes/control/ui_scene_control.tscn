@@ -64,7 +64,6 @@ size_flags_stretch_ratio = 0.33
 [node name="SC" type="ScrollContainer" parent="VBC/MainSpace/SideBar" unique_id=554611413]
 layout_mode = 2
 follow_focus = true
-scroll_hint_mode = 1
 
 [node name="SpaceButtons" type="VBoxContainer" parent="VBC/MainSpace/SideBar/SC" unique_id=1602759255]
 layout_mode = 2

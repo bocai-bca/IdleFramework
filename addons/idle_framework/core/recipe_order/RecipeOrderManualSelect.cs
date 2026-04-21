@@ -16,7 +16,7 @@ public partial class RecipeOrderManualSelect : RecipeOrder
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public Array<StringName> RecipeIDs { get; set; } = [];
+	public Array<string> RecipeIDs { get; set; } = [];
 	
 	/// <summary>
 	/// 本下单器可以暂存的配方队列容量，单位为配方个数，如果给定数字小于1则无法添加配方(但可以在队列为空时推送配方)
@@ -33,15 +33,15 @@ public partial class RecipeOrderManualSelect : RecipeOrder
 	/// <summary>
 	/// 本下单器的队列，类型使用System.Collections.Generic.Queue
 	/// </summary>
-	public Queue<StringName> RecipeQueue = new();
+	public Queue<string> RecipeQueue = new();
 	
 	/// <summary>
 	/// 拉取配方，返回队列中的下一个配方或者返回空字符串
 	/// </summary>
 	/// <returns>本下单器实例提供的配方</returns>
-	public override StringName PullRecipe()
+	public override string PullRecipe()
 	{
-		if (RecipeQueue.TryDequeue(out StringName recipe))
+		if (RecipeQueue.TryDequeue(out string recipe))
 		{
 			return recipe;
 		}
@@ -53,7 +53,7 @@ public partial class RecipeOrderManualSelect : RecipeOrder
 	/// </summary>
 	/// <param name="recipe">要添加的配方</param>
 	/// <returns>成功与否(在队列装满时丢弃并返回false)</returns>
-	public bool EnqueueRecipe(StringName recipe)
+	public bool EnqueueRecipe(string recipe)
 	{
 		if (IsFull) return false;
 		if (RecipeQueue.Count == 0)
@@ -71,7 +71,7 @@ public partial class RecipeOrderManualSelect : RecipeOrder
 	/// </summary>
 	public override void PushRecipe()
 	{
-		if (RecipeQueue.TryDequeue(out StringName recipe))
+		if (RecipeQueue.TryDequeue(out string recipe))
 		{
 			EmitSignal(RecipeOrder.SignalName.RecipePush, recipe);
 		}

@@ -10,59 +10,58 @@ namespace IdleFramework;
 public partial class GameResource : Resource
 {
 	/// <summary>
-	/// 本放置引擎游戏的ID，用于在存档数据中记录其对应的游戏，请保证其唯一
+	/// 本放置引擎游戏的GUID(全局唯一标识符)，主要用于在存档数据中记录其对应的游戏。
+	/// 本ID会在文件系统中用作存储本游戏的存档数据的目录名称，所以请务必确保其不含文件命名非法字符，如<c>?</c>、<c>/</c>、<c>\</c>、<c>&lt;</c>、<c>&gt;</c>等字符。
+	/// 格式方面建议点记法蛇形命名(<c>namespace.snake_case</c>)，推荐使用反向域名表示法，例如<c>net.bcasoft.idle_framework</c>。
 	/// </summary>
-	[Export]
-	[ExportGroup("Metadata")]
-	public StringName GameID { get; set; } = "";
+	[Export, ExportGroup("Metadata")]
+	public string GameID { get; set; } = "";
 
 	/// <summary>
 	/// 本放置引擎游戏的名称翻译键
 	/// </summary>
 	[Export]
-	public StringName NameKey { get; set; } = "";
+	public string NameKey { get; set; } = "";
 	
 	/// <summary>
 	/// 空间注册表，在该列表中添加项即可注册空间，字典键为其id
 	/// </summary>
-	[Export]
-	[ExportGroup("Registries")]
-	public Dictionary<StringName, SpaceRegistryObject> SpaceRegistry { get; set; } = new();
+	[Export, ExportGroup("Registries")]
+	public Dictionary<string, SpaceRegistryObject> SpaceRegistry { get; set; } = new();
 	
 	/// <summary>
 	/// 物品注册表，在该列表中添加项即可注册物品，字典键为其id
 	/// </summary>
 	[Export]
-	public Dictionary<StringName, ItemRegistryObject> ItemRegistry { get; set; } = new();
+	public Dictionary<string, ItemRegistryObject> ItemRegistry { get; set; } = new();
 	
 	/// <summary>
 	/// 配方注册表，在该列表中添加项即可注册配方，字典键为其id
 	/// </summary>
 	[Export]
-	public Dictionary<StringName, RecipeRegistryObject> RecipeRegistry { get; set; } = new();
+	public Dictionary<string, RecipeRegistryObject> RecipeRegistry { get; set; } = new();
 	
 	/// <summary>
 	/// 容器注册表，在该列表中添加项即可注册容器，字典键为其id
 	/// </summary>
 	[Export]
-	public Dictionary<StringName, ContainerRegistryObject> ContainerRegistry { get; set; } = new();
+	public Dictionary<string, ContainerRegistryObject> ContainerRegistry { get; set; } = new();
 	
 	/// <summary>
 	/// 工厂注册表，在该列表中添加项即可注册工厂，字典键为其id
 	/// </summary>
 	[Export]
-	public Dictionary<StringName, FactoryRegistryObject> FactoryRegistry { get; set; } = new();
+	public Dictionary<string, FactoryRegistryObject> FactoryRegistry { get; set; } = new();
 	
 	/// <summary>
 	/// 翻译数据
 	/// </summary>
-	[Export]
-	[ExportGroup("Data")]
+	[Export, ExportGroup("Data")]
 	public Array<Translation> Translations { get; set; }
 	
 	/// <summary>
 	/// 附加数据
 	/// </summary>
 	[Export]
-	public Dictionary<StringName, Variant> AdditionData { get; set; } = new();
+	public Dictionary<string, Variant> AdditionData { get; set; } = new();
 }

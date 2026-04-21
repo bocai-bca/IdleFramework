@@ -14,13 +14,13 @@ public partial class RecipeOrderConstant : RecipeOrder
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public StringName RecipeID { get; set; } = "";
+	public string RecipeID { get; set; } = "";
 	
 	/// <summary>
 	/// 拉取配方，固定返回RecipeID属性的值
 	/// </summary>
 	/// <returns>本下单器实例提供的配方</returns>
-	public override StringName PullRecipe()
+	public override string PullRecipe()
 	{
 		return RecipeID;
 	}

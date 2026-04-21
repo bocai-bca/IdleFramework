@@ -15,7 +15,7 @@ public partial class RecipeOrderListLoop : RecipeOrder
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public Array<StringName> RecipeIDs { get; set; } = [];
+	public Array<string> RecipeIDs { get; set; } = [];
 
 	/// <summary>
 	/// 本下单器的索引记录
@@ -26,9 +26,9 @@ public partial class RecipeOrderListLoop : RecipeOrder
 	/// 拉取配方，按顺序依次返回RecipeIDs
 	/// </summary>
 	/// <returns>本下单器实例提供的配方</returns>
-	public override StringName PullRecipe()
+	public override string PullRecipe()
 	{
-		StringName result = RecipeIDs[indexCounter];
+		string result = RecipeIDs[indexCounter];
 		indexCounter = (indexCounter + 1) % RecipeIDs.Count;
 		return result;
 	}

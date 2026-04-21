@@ -9,21 +9,6 @@ namespace IdleFramework;
 [GlobalClass]
 public partial class MotherNode : Node
 {
-
-	/// <summary>
-	/// 单例模式的实例
-	/// 会在新的本类场景实例化后被覆盖
-	/// </summary>
-	public static MotherNode Instance
-	{
-		get;
-		set
-		{
-			if (field != value) field?.QueueFree();
-			field = value;
-		}
-	}
-
 	/// <summary>
 	/// UI场景打包，指定一个<c>PackedScene</c>作为用于呈现画面和处理玩家输入的场景，该场景需要自行访问核心来获取数据。
 	/// 若不知道如何实现一个功能完备的自定义UI场景，建议使用原厂UI场景
@@ -37,6 +22,37 @@ public partial class MotherNode : Node
 	[Export]
 	public GameResource GameResource { get; set; }
 
+	/// <summary>
+	/// 单例模式的实例
+	/// 会在新的本类场景实例化后被覆盖
+	/// </summary>
+	public static MotherNode Instance
+	{
+		get;
+		set
+		{
+			if (field == null)
+			{
+				Logger.LogInfo("IdleFramework: Launching.");
+				field = value;
+				return;
+			}
+			if (field == value) return;
+			field.QueueFree();
+			field = value;
+		}
+	}
+
+	/// <summary>
+	/// UI场景的实例
+	/// </summary>
+	public UIScene UISceneInstance { get; set; }
+	
+	/// <summary>
+	/// 当前游戏的<c>SaveAccess</c>实例
+	/// </summary>
+	public SaveAccess SaveAccessInstance { get; set; }
+	
 	public override void _Notification(int what)
 	{
 		switch ((long)what)
@@ -47,22 +63,33 @@ public partial class MotherNode : Node
 		}
 	}
 
+	/// <summary>
+	/// _Ready覆写
+	/// </summary>
 	public override void _Ready()
 	{
 		LoadRuntimeBuiltinTranslations();
+		Logger.LogInfo(Localization.Tr("log.info.mother_node.ready_start"));
 		if (!InitCheck(out string alertMessage))
 		{
 			OS.Alert(Localization.Tr("alert.context.idle_framework_launch_failed") + "\n" + alertMessage, Localization.Tr("alert.title.idle_framework_fatal"));
 			GetTree().Quit();
 			return;
 		}
+		Localization.LoadRuntimeTranslations(GameResource.Translations);
 		if (!PlaceUIScene())
 		{
 			GetTree().Quit();
 			return;
 		}
+		Logger.LogInfo(Localization.Tr("log.info.mother_node.launch_completed"));
+		//SaveAccessInstance = new();
 	}
 	
+	/// <summary>
+	/// _Process覆写
+	/// </summary>
+	/// <param name="delta">delta</param>
 	public override void _Process(double delta)
 	{
 	}
@@ -78,6 +105,7 @@ public partial class MotherNode : Node
 			translations.Add(GD.Load<Translation>(path));
 		}
 		Localization.LoadRuntimeTranslations(translations);
+		Logger.LogInfo(Localization.Tr("log.info.mother_node.runtime_builtin_translations_loaded"));
 	}
 	
 	/// <summary>
@@ -87,12 +115,21 @@ public partial class MotherNode : Node
 	/// <returns>检测通过与否</returns>
 	public bool InitCheck(out string alertMessage)
 	{
+		Logger.LogInfo(Localization.Tr("log.info.mother_node.init_check_start"));
 		bool result = true;
 		alertMessage = "";
 		if (GameResource == null)
 		{
 			alertMessage += Localization.Tr("alert.context.game_resource_not_specified");
 			result = false;
+		}
+		else
+		{
+			if (!GameResource.GameID.IsValidFileName())
+			{
+				alertMessage += Localization.Tr("alert.context.game_resource_gameid_invalid_for_file_system");
+				result = false;
+			}
 		}
 		if (PackedUIScene == null)
 		{
@@ -109,20 +146,20 @@ public partial class MotherNode : Node
 	/// <remarks>若属性<c>PackedUIScene</c>为<c>null</c>则在执行此方法时会出现空引用异常，若<c>PackedUIScene</c>未能实例化为<c>UIScene</c>场景则会直接调用<c>OS.Alert()</c></remarks>
 	public bool PlaceUIScene()
 	{
-		uiScene?.QueueFree();
-		uiScene = PackedUIScene.InstantiateOrNull<UIScene>();
-		if (uiScene == null)
+		if (UISceneInstance != null)
+		{
+			UISceneInstance.QueueFree();
+			Logger.LogWarning(Localization.Tr("log.warning.mother_node.placing_ui_scene_but_exist_elder"));
+		}
+		UISceneInstance = PackedUIScene.InstantiateOrNull<UIScene>();
+		if (UISceneInstance == null)
 		{
 			OS.Alert(Localization.Tr("alert.context.idle_framework_launch_failed") + "\n" + Localization.Tr("alert.context.packed_ui_scene_not_specified"), Localization.Tr("alert.title.idle_framework_fatal"));
 			return false;
 		}
-		uiScene.MotherNode = this;
-		AddChild(uiScene);
+		UISceneInstance.MotherNode = this;
+		AddChild(UISceneInstance);
+		Logger.LogInfo(Localization.Tr("log.info.mother_node.added_ui_scene"));
 		return true;
 	}
-
-	/// <summary>
-	/// UI场景的实例
-	/// </summary>
-	public UIScene uiScene;
 }

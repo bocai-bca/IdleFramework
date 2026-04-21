@@ -15,13 +15,13 @@ public partial class RecipeOrderListRandom : RecipeOrder
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public Array<StringName> RecipeIDs { get; set; } = [];
+	public Array<string> RecipeIDs { get; set; } = [];
 
 	/// <summary>
 	/// 拉取配方，返回RecipeIDs中随机抽取的一项
 	/// </summary>
 	/// <returns>本下单器实例提供的配方</returns>
-	public override StringName PullRecipe()
+	public override string PullRecipe()
 	{
 		return RecipeIDs[GD.RandRange(0, RecipeIDs.Count - 1)];
 	}

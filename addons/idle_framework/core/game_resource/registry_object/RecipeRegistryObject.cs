@@ -15,7 +15,7 @@ public partial class RecipeRegistryObject : Resource
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public Dictionary<StringName, NumberProvider> Ingredients = new();
+	public Dictionary<string, NumberProvider> Ingredients = new();
 	
 	/// <summary>
 	/// 配方制作所需时间，单位为秒。
@@ -31,5 +31,5 @@ public partial class RecipeRegistryObject : Resource
 	/// 键为物品ID，值为需要的物品数量
 	/// </summary>
 	[Export]
-	public Dictionary<StringName, NumberProvider> Results = new();
+	public Dictionary<string, NumberProvider> Results = new();
 }

@@ -41,6 +41,20 @@ public partial class Localization : RefCounted
 	}
 
 	/// <summary>
+	/// 从翻译域移除运行时翻译
+	/// </summary>
+	/// <param name="translations">需要移除的翻译实例</param>
+	public static void UnloadRuntimeTranslations(Array<Translation> translations)
+	{
+		if (translations is not { Count: > 0 }) return;
+		foreach (Translation translation in translations)
+		{
+			Domain.RemoveTranslation(translation);
+		}
+		Domain.Enabled = Domain.GetTranslations().Count > 0;
+	}
+	
+	/// <summary>
 	/// 从翻译域卸载翻译
 	/// </summary>
 	public static void UnloadTranslations()

@@ -3,7 +3,7 @@ using Godot;
 namespace IdleFramework.UIScenes.Control;
 
 /// <summary>
-/// [IdleFramework内置UI场景-控件主题]的
+/// [IdleFramework内置UI场景-控件主题]的置顶物品
 /// </summary>
 [GlobalClass]
 public partial class PinnedItem : PanelContainer

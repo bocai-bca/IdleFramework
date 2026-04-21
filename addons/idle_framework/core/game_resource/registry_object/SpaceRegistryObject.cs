@@ -14,13 +14,13 @@ public partial class SpaceRegistryObject : Resource
 	/// </summary>
 	[Export]
 	[ExportGroup("Assets")]
-	public StringName NameKey { get; set; } = "";
+	public string NameKey { get; set; } = "";
 
 	/// <summary>
 	/// 空间描述翻译键
 	/// </summary>
 	[Export]
-	public StringName LoreKey { get; set; } = "";
+	public string LoreKey { get; set; } = "";
 
 	/// <summary>
 	/// 图标纹理图
@@ -39,6 +39,6 @@ public partial class SpaceRegistryObject : Resource
 	/// 预装物品，字典键为物品id，值为对应物品的数量
 	/// </summary>
 	[Export]
-	public Dictionary<StringName, int> PrefillItems { get; set; } = new();
+	public Dictionary<string, int> PrefillItems { get; set; } = new();
 	
 }

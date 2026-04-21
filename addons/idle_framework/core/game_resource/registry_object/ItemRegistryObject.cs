@@ -13,13 +13,13 @@ public partial class ItemRegistryObject: Resource
 	/// </summary>
 	[Export]
 	[ExportGroup("Assets")]
-	public StringName NameKey { get; set; } = "";
+	public string NameKey { get; set; } = "";
 
 	/// <summary>
 	/// 物品描述翻译键
 	/// </summary>
 	[Export]
-	public StringName LoreKey { get; set; } = "";
+	public string LoreKey { get; set; } = "";
 
 	/// <summary>
 	/// 图标纹理图
