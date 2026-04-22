@@ -1,4 +1,5 @@
 using Godot;
+using IdleFramework.Global;
 
 namespace IdleFramework.UIScenes.Control;
 
@@ -6,8 +7,17 @@ namespace IdleFramework.UIScenes.Control;
 /// [IdleFramework内置UI场景-控件主题]根节点
 /// </summary>
 [GlobalClass]
-public partial class Control : UIScene
+public partial class Control : UIScene , IClassPackedScene
 {
+	public PackedScene CPS
+	{
+		get
+		{
+			field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/ui_scene_control.tscn");
+			return field;
+		}
+	}
+
 	public TextureRect NTopBar_Icon;
 	public Label NTopBar_GameTitle;
 	public HBoxContainer NTopBar_PinnedItemsBar;

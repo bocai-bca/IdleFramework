@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://ck1ynicsooy1f"]
+
+[ext_resource type="Script" uid="uid://l7jt57u61hhn" path="res://addons/idle_framework/ui_scenes/control/space_button/SpaceButton.cs" id="1_c27vk"]
+
+[node name="SpaceButton" type="Button" unique_id=1064072670]
+custom_minimum_size = Vector2(0, 32)
+offset_right = 8.0
+offset_bottom = 32.0
+clip_text = true
+expand_icon = true
+script = ExtResource("1_c27vk")
