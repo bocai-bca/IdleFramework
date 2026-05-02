@@ -12,14 +12,33 @@ public interface IClassPackedScene
 	/// </summary>
 	/// <example><code>public partial class ExampleScene : Node , IClassPackedScene
 	/// {
-	///	  public PackedScene CPS
-	///	  {
-	///	    get
-	///	    {
-	///	      field ??= GD.Load&lt;PackedScene&gt;("res://example_scene.tscn");
-	///	      return field;
-	///	    }
-	///   }
+	///	  public PackedScene CPS => field ??= GD.Load&lt;PackedScene&gt;("res://example_scene.tscn");
 	/// }</code></example>
-	public PackedScene CPS { get; }
+	public static abstract PackedScene CPS { get; }
+}
+
+/// <summary>
+/// ClassPackedScene扩展
+/// </summary>
+public static class ClassPackedSceneExtension
+{
+	/// <typeparam name="T">继承自IClassPackedScene的类型</typeparam>
+	extension<T>(T) where T : class, IClassPackedScene
+	{
+		/// <summary>
+		/// 创建并获取一个该类型的场景实例
+		/// </summary>
+		/// <returns>该类型的场景或null</returns>
+		/// <example><code>public partial class ExampleNode : Node
+		/// {
+		///   public override void _Ready()
+		///   {
+		///     AddChild(ExampleScene.Create());
+		///   }
+		/// }</code></example>
+		public static T Create()
+		{
+			return T.CPS.Instantiate<T>();
+		}
+	}
 }

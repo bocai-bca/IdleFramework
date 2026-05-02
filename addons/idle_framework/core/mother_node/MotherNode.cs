@@ -1,7 +1,6 @@
 using Godot;
-using Godot.Collections;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 主节点，本脚本需附着在一个<c>Node</c>节点上，该节点作为项目的主场景根节点。也充当运行时数据管理器的功能，托管当前游戏实例上的重要数据，如游戏资源等。
@@ -10,6 +9,29 @@ namespace IdleFramework;
 public partial class MotherNode : Node
 {
 	/// <summary>
+	/// 状态枚举
+	/// </summary>
+	public enum State
+	{
+		/// <summary>
+		/// 存档读取之前
+		/// </summary>
+		BeforeLoadSave,
+        /// <summary>
+        /// 等待存档读取
+        /// </summary>
+		WaitingForSaveLoading,
+        /// <summary>
+        /// 主运行-等待更新
+        /// </summary>
+		MainRunning_WaitingUpdate,
+        /// <summary>
+        /// 当发生无法处理的错误时IdleFramework处于什么都不做的冻结状态，等待用户手动处理
+        /// </summary>
+        FreezeForUnhandlableError,
+	}
+	
+	/// <summary>
 	/// UI场景打包，指定一个<c>PackedScene</c>作为用于呈现画面和处理玩家输入的场景，该场景需要自行访问核心来获取数据。
 	/// 若不知道如何实现一个功能完备的自定义UI场景，建议使用原厂UI场景
 	/// </summary>
@@ -17,7 +39,8 @@ public partial class MotherNode : Node
 	public PackedScene PackedUIScene { get; set; }
 
 	/// <summary>
-	/// 游戏资源，指定一个<c>IdleFramework.GameResource</c>，作为定义游戏内容的数据源
+	/// 游戏资源，指定一个<c>IdleFramework.GameResource</c>，作为定义游戏内容的数据源。
+	/// 出于线程安全考虑，不要在运行时修改游戏资源以及其中嵌套的任何内容，游戏资源在设计上应当是只读的。
 	/// </summary>
 	[Export]
 	public GameResource GameResource { get; set; }
@@ -47,12 +70,22 @@ public partial class MotherNode : Node
 	/// UI场景的实例
 	/// </summary>
 	public UIScene UISceneInstance { get; set; }
-	
+
 	/// <summary>
-	/// 当前游戏的<c>SaveAccess</c>实例
+	/// 当前状态
 	/// </summary>
-	public SaveAccess SaveAccessInstance { get; set; }
-	
+	public State CurrentState
+	{
+		get;
+		set
+		{
+			switch (value)
+			{
+			}
+			field = value;
+		}
+	} = State.BeforeLoadSave;
+
 	public override void _Notification(int what)
 	{
 		switch ((long)what)
@@ -83,15 +116,27 @@ public partial class MotherNode : Node
 			return;
 		}
 		Logger.LogInfo(Localization.Tr("log.info.mother_node.launch_completed"));
-		//SaveAccessInstance = new();
+		UISceneInstance.OnGameResourceReady();
 	}
-	
+
 	/// <summary>
 	/// _Process覆写
 	/// </summary>
 	/// <param name="delta">delta</param>
 	public override void _Process(double delta)
 	{
+		switch (CurrentState)
+		{
+			case State.BeforeLoadSave:
+				StateProcess_BeforeLoadSave();
+				break;
+			case State.WaitingForSaveLoading:
+				StateProcess_WaitingForSaveLoading();
+				break;
+			case State.MainRunning_WaitingUpdate:
+				StateProcess_MainRunning_WaitingUpdate(delta);
+				break;
+		}
 	}
 
 	/// <summary>
@@ -99,7 +144,7 @@ public partial class MotherNode : Node
 	/// </summary>
 	public static void LoadRuntimeBuiltinTranslations()
 	{
-		Array<Translation> translations = [];
+		Godot.Collections.Array<Translation> translations = [];
 		foreach (string path in Pathes.RuntimeBuiltinTranslations.Values)
 		{
 			translations.Add(GD.Load<Translation>(path));
@@ -157,7 +202,7 @@ public partial class MotherNode : Node
 			OS.Alert(Localization.Tr("alert.context.idle_framework_launch_failed") + "\n" + Localization.Tr("alert.context.packed_ui_scene_not_specified"), Localization.Tr("alert.title.idle_framework_fatal"));
 			return false;
 		}
-		UISceneInstance.MotherNode = this;
+		UISceneInstance.MotherNodeReference = this;
 		AddChild(UISceneInstance);
 		Logger.LogInfo(Localization.Tr("log.info.mother_node.added_ui_scene"));
 		return true;

@@ -1,6 +1,7 @@
 ﻿using System;
 using Godot;
 using Godot.Collections;
+using IdleFramework.Core;
 
 namespace IdleFramework;
 
@@ -36,7 +37,7 @@ public partial class ItemMaxStacksProvider : Resource
 	/// 提供器的数据列表
 	/// </summary>
 	[Export]
-	public Dictionary<string, int> List = new();
+	public Dictionary<string, NumberProvider> List = new();
 
 	/// <summary>
 	/// 从本提供器中根据给定物品的ID获取其堆叠数量。如果给定的物品注册表中没有注册该物品，则无论本提供器的模式如何，都将返回0
@@ -48,9 +49,9 @@ public partial class ItemMaxStacksProvider : Resource
 	public int GetCountForItem(Dictionary<string, ItemRegistryObject> itemRegistry, string itemId)
 	{
 		if (!itemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject)) return 0;
-		if (List.TryGetValue(itemId, out int overrideStackCount))
+		if (List.TryGetValue(itemId, out NumberProvider overrideStackNumberProvider))
 		{
-			return overrideStackCount;
+			return overrideStackNumberProvider.GetNumber();
 		}
 		return Mode switch
 		{

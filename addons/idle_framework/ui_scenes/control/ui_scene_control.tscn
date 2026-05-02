@@ -7,9 +7,6 @@
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_wvjk3"]
 size = Vector2(128, 128)
 
-[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_hqrys"]
-size = Vector2(128, 128)
-
 [node name="UIScene_Control" type="PanelContainer" unique_id=1885108198]
 anchors_preset = 15
 anchor_right = 1.0
@@ -70,25 +67,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Button" type="Button" parent="VBC/MainSpace/SideBar/SC/SpaceButtons" unique_id=283124168]
-layout_mode = 2
-text = "ExampleSpace"
-icon = SubResource("PlaceholderTexture2D_hqrys")
-clip_text = true
-expand_icon = true
-
 [node name="DetailArea" type="PanelContainer" parent="VBC/MainSpace" unique_id=1786300776]
 clip_contents = true
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.67
-
-[node name="Label" type="Label" parent="VBC/MainSpace/DetailArea" unique_id=1262182483]
-layout_mode = 2
-text = "DetailArea"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="BottomBar" type="PanelContainer" parent="VBC" unique_id=1851625811]
 custom_minimum_size = Vector2(0, 32)

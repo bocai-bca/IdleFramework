@@ -1,5 +1,6 @@
 #if TOOLS
 using Godot;
+using IdleFramework.Core;
 
 namespace IdleFramework.EditorPlugin;
 

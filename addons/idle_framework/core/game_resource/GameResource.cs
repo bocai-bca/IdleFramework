@@ -1,7 +1,7 @@
 using Godot;
 using Godot.Collections;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 游戏资源
@@ -22,6 +22,12 @@ public partial class GameResource : Resource
 	/// </summary>
 	[Export]
 	public string NameKey { get; set; } = "";
+	
+	/// <summary>
+	/// 本放置引擎游戏的版本号
+	/// </summary>
+	[Export]
+	public int GameVersion { get; set; } = 0;
 	
 	/// <summary>
 	/// 空间注册表，在该列表中添加项即可注册空间，字典键为其id
@@ -60,7 +66,7 @@ public partial class GameResource : Resource
 	public Array<Translation> Translations { get; set; }
 	
 	/// <summary>
-	/// 附加数据
+	/// 附加数据，供自定义UI场景或游戏资源中的自定义脚本访问。
 	/// </summary>
 	[Export]
 	public Dictionary<string, Variant> AdditionData { get; set; } = new();
