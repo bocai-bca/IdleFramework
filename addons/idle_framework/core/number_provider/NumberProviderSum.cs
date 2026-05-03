@@ -35,7 +35,7 @@ public partial class NumberProviderSum : NumberProvider
 		}
 		catch (Exception e)
 		{
-			Logger.LogError("" + e);
+			Logger.LogError("log.error.number_provider_sum.catched_exception_on_calling_number_providers_in_sum_list" + e);
 			recursionLock = false;
 			throw;
 		}

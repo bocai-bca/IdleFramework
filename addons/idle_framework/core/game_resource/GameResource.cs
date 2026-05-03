@@ -4,7 +4,8 @@ using Godot.Collections;
 namespace IdleFramework.Core;
 
 /// <summary>
-/// 游戏资源
+/// 游戏资源。
+/// 出于线程安全考虑，不要在运行时修改游戏资源以及其中嵌套的任何内容，游戏资源在设计上应当是只读的。
 /// </summary>
 [GlobalClass]
 public partial class GameResource : Resource

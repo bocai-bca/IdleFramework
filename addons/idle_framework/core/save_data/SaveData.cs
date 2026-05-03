@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -29,6 +30,11 @@ public class SaveData
 	/// 空间数据字典，键为空间ID，值为对应的空间数据
 	/// </summary>
 	public Dictionary<string, SpaceData> SpaceDatas { get; set; } = [];
+	
+	/// <summary>
+	/// 富数据物品实例表
+	/// </summary>
+	public Dictionary<Guid, RichDataItemData> RichDataItems { get; set; } = [];
 
 	/// <summary>
 	/// 将本实例转换为Json对象。

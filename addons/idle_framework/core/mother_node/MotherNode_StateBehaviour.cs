@@ -37,7 +37,7 @@ public partial class MotherNode
 				CurrentState = State.MainRunning_WaitingUpdate;
 				break;
 			case SaveAccess.WorkResult.SaveNotFound:
-				_ = SaveAccess.CreateSaveForGameAsync(GameResource.GameID, GameResource.GameVersion);
+				_ = SaveAccess.CreateSaveForGameAsync(GameResource, GameResource.GameVersion);
 				CurrentState = State.WaitingForSaveLoading; //实际上是个原地跳转，先预留一个赋值，万一以后要在CurrentState赋值器上插什么事件可以用得到
 				break;
 			case SaveAccess.WorkResult.OtherError:

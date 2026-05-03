@@ -181,20 +181,24 @@ public static class SaveAccess
 	/// 为给定游戏ID创建存档并载入内存，新建的存档可通过<c>LoadedDatas</c>访问，但此方法不会直接向硬盘写入新存档，关于向硬盘写入存档文件详见<c>StoreSaveForGame()</c>。
 	/// 出于线程安全考虑，建议在所有情况下使用<c>CreateSaveForGameAsync()</c>。
 	/// </summary>
-	/// <param name="gameID">要创建存档的游戏ID。</param>
+	/// <param name="gameResource">要创建存档的游戏资源。</param>
 	/// <param name="gameVersion">游戏版本。</param>
 	/// <returns>任务结果，只会返回<c>SaveAccess.WorkResult.Success</c>。</returns>
-	public static WorkResult CreateSaveForGame(string gameID, int gameVersion) //工作线程方法，不要经过Safety方法而是使用lock直接访问线程保护成员
+	public static WorkResult CreateSaveForGame(GameResource gameResource, int gameVersion) //工作线程方法，不要经过Safety方法而是使用lock直接访问线程保护成员
 	{
 		SaveData newSave = new()
 		{
-			GameID = gameID,
+			GameID = gameResource.GameID,
 			GameVersion = gameVersion,
 			LastUpdateUtcTick = TimeHelper.GetUtcNowTick(),
 		};
+		foreach ((string key, SpaceRegistryObject spaceRegistryObject) in gameResource.SpaceRegistry)
+		{
+			newSave.SpaceDatas[key] = SpaceData.InitFromSpaceRegistryObject(spaceRegistryObject);
+		}
 		lock (loadedDatasLock)
 		{
-			LoadedDatas[gameID] = newSave;
+			LoadedDatas[gameResource.GameID] = newSave;
 		}
 		return WorkResult.Success;
 	}
@@ -204,13 +208,13 @@ public static class SaveAccess
 	/// 本类型的工作线程只能同时做一件事，如果<c>SaveAccess.WorkingTask</c>已在工作中，则调用此方法时会阻塞调用方线程直到工作线程完成上一轮工作。
 	/// 返回值可以不await直接丢弃，后续可访问<c>SaveAccess.IsMultiThreadWorking</c>属性获悉异步工作是否完成。
 	/// </summary>
-	/// <param name="gameID">要创建存档的游戏ID。</param>
+	/// <param name="gameResource">要创建存档的游戏资源。</param>
 	/// <param name="gameVersion">游戏版本。</param>
 	/// <returns>新启动的<c>Task&lt;WorkResult&gt;</c>实例，亦可以从<c>SaveAccess.WorkingTask</c>属性获得</returns>
-	public static async Task<WorkResult> CreateSaveForGameAsync(string gameID, int gameVersion) //含等待方法，请勿在工作线程中使用它
+	public static async Task<WorkResult> CreateSaveForGameAsync(GameResource gameResource, int gameVersion) //含等待方法，请勿在工作线程中使用它
 	{
 		if (IsMultiThreadWorking) WorkingTask.Wait();
-		WorkingTask = Task.Run(() => CreateSaveForGame(gameID, gameVersion));
+		WorkingTask = Task.Run(() => CreateSaveForGame(gameResource, gameVersion));
 		return await WorkingTask;
 	}
 
