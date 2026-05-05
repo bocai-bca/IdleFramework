@@ -46,9 +46,9 @@ public partial class ItemMaxStacksProvider : Resource
 	/// <param name="itemId">需要获取最大堆叠数量的物品ID</param>
 	/// <exception cref="ArgumentOutOfRangeException">本提供器的Mode是无效值时抛出</exception>
 	/// <returns>该物品的最大堆叠数量</returns>
-	public int GetCountForItem(Dictionary<string, ItemRegistryObject> itemRegistry, string itemId)
+	public long GetCountForItem(Dictionary<string, ItemRegistryObject> itemRegistry, string itemId)
 	{
-		if (!itemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject)) return 0;
+		if (!itemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject)) return 0L;
 		if (List.TryGetValue(itemId, out NumberProvider overrideStackNumberProvider))
 		{
 			return overrideStackNumberProvider.GetNumber();
@@ -56,7 +56,7 @@ public partial class ItemMaxStacksProvider : Resource
 		return Mode switch
 		{
 			ProviderMode.Overriding => itemRegistryObject.DefaultMaxStackCount,
-			ProviderMode.Filting => 0,
+			ProviderMode.Filting => 0L,
 			_ => throw new ArgumentOutOfRangeException(),
 		};
 	}
@@ -68,9 +68,9 @@ public partial class ItemMaxStacksProvider : Resource
 	/// </summary>
 	/// <param name="itemId">需要获取最大堆叠数量的物品ID</param>
 	/// <returns>该物品的最大堆叠数量</returns>
-	public int GetCountForItem(string itemId)
+	public long GetCountForItem(string itemId)
 	{
 		Dictionary<string, ItemRegistryObject> itemRegistry = MotherNode.Instance?.GameResource?.ItemRegistry;
-		return itemRegistry == null ? 0 : GetCountForItem(itemRegistry, itemId);
+		return itemRegistry == null ? 0L : GetCountForItem(itemRegistry, itemId);
 	}
 }

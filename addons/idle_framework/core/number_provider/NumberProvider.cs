@@ -12,5 +12,5 @@ public abstract partial class NumberProvider : Resource
 	/// 获取值的抽象方法，需要在子类中实现
 	/// </summary>
 	/// <returns>该数值提供器本次获取提供的值</returns>
-	public abstract int GetNumber();
+	public abstract long GetNumber();
 }

@@ -28,10 +28,10 @@ public partial class ItemRegistryObject: Resource
 	public Texture2D IconTexture { get; set; }
 
 	/// <summary>
-	/// 默认在单个容器中的最大堆叠数量
+	/// 默认在单个容器中的最大堆叠数量，默认为十亿。
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public int DefaultMaxStackCount { get; set; } = 9999;
+	public long DefaultMaxStackCount { get; set; } = 1_000_000_000L;
 	
 }

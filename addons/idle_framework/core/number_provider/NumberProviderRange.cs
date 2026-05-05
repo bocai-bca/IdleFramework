@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System;
+using Godot;
 
 namespace IdleFramework;
 
@@ -14,20 +15,20 @@ public partial class NumberProviderRange : NumberProvider
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public int MinNumber { get; set; }
+	public long MinNumber { get; set; }
 	
 	/// <summary>
 	/// 最大值(含)
 	/// </summary>
 	[Export]
-	public int MaxNumber { get; set; }
+	public long MaxNumber { get; set; }
 
 	/// <summary>
 	/// GetValue()的实现
 	/// </summary>
 	/// <returns>返回Value属性的值</returns>
-	public override int GetNumber()
+	public override long GetNumber()
 	{
-		return GD.RandRange(MinNumber, MaxNumber);
+		return Random.Shared.NextInt64(MinNumber, MaxNumber);
 	}
 }

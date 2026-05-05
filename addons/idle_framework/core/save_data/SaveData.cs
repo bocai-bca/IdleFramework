@@ -37,6 +37,11 @@ public class SaveData
 	public Dictionary<Guid, RichDataItemData> RichDataItems { get; set; } = [];
 
 	/// <summary>
+	/// 自动富数据物品索引缓存表
+	/// </summary>
+	public List<Guid> AutoRDIs { get; set; } = [];
+	
+	/// <summary>
 	/// 将本实例转换为Json对象。
 	/// </summary>
 	/// <returns>转换后的Json对象。</returns>
@@ -83,6 +88,7 @@ public class SaveData
 			GameVersion = originalData.GameVersion,
 			LastUpdateUtcTick = originalData.LastUpdateUtcTick,
 			SpaceDatas = originalData.SpaceDatas,
+			RichDataItems = originalData.RichDataItems,
 		};
 		if (deep)
 		{
@@ -93,6 +99,13 @@ public class SaveData
 				if (newSpaceData is null) continue;
 				newInstance.SpaceDatas[key] = newSpaceData;
 			}
+			newInstance.RichDataItems = [];
+			foreach ((Guid guid, RichDataItemData originalRichDataItem) in originalData.RichDataItems)
+			{
+				RichDataItemData newRichDataItemData = originalRichDataItem.Duplicate();
+				if (newRichDataItemData is null) continue;
+				newInstance.RichDataItems[guid] = newRichDataItemData;
+			}
 		}
 		return newInstance;
 	}
@@ -100,16 +113,14 @@ public class SaveData
 	/// <summary>
 	/// 将Json对象解析为<c>SaveData</c>实例。
 	/// </summary>
-	/// <param name="json">待解析的Json对象。</param>
+	/// <param name="jObject">待解析的Json对象。</param>
 	/// <returns>解析完毕的<c>SaveData</c>实例。</returns>
-	public static SaveData FromJson(JObject json)
+	public static SaveData FromJson(JObject jObject)
 	{
-		if (json == null) return null;
-		SaveData result = new()
-		{
-			GameID = json.Value<string>("GameID"),
-			LastUpdateUtcTick = json.Value<long>("LastUpdateUtcTick"),
-		};
+		if (jObject == null) return null;
+		SaveData result = new();
+		if (jObject.Value<string>("GameID") is { } valueGameID) result.GameID = valueGameID;
+		if (jObject.Value<long>("LastUpdateUtcTick") is { } valueLastUpdateUtcTick) result.LastUpdateUtcTick = valueLastUpdateUtcTick;
 		return result;
 	}
 	
@@ -121,5 +132,37 @@ public class SaveData
 	public static SaveData ParseFromJsonText(string jsonText)
 	{
 		return JToken.Parse(jsonText) is JObject jObject ? FromJson(jObject) : null;
+	}
+
+	/// <summary>
+	/// 从给定游戏资源中获取给定ID的空间注册表项实例化一个空间数据实例，该空间实例以及内部嵌套的富数据对象会自动添加到本<c>SaveData</c>实例中。
+	/// </summary>
+	/// <param name="spaceId">空间ID。</param>
+	/// <param name="gameResource">游戏资源，用来获取各注册表项。</param>
+	/// <returns>新初始化的空间数据实例。</returns>
+	public void InstantiateSpaceRegistryObject(string spaceId, GameResource gameResource)
+	{
+		SpaceRegistryObject spaceRegistryObject = gameResource.SpaceRegistry[spaceId];
+		SpaceData newSpace = new()
+		{
+			SpaceContainerGuid = Guid.NewGuid(),
+		};
+		RichDataItemData spaceContainerData = new();
+		spaceContainerData.PlaceContainer();
+		foreach ((string itemId, int itemCount) in spaceRegistryObject.PrefillItems)
+		{
+			if (gameResource.ItemRegistry.ContainsKey(itemId)) spaceContainerData.SetData(itemId, itemCount);
+			else
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.save_data.item_id_givened_in_space_registry_object_is_not_found_in_item_registry"), itemId, spaceId));
+				continue;
+			}
+			if (gameResource.ContainerRegistry.TryGetValue(itemId, out ContainerRegistryObject containerRegistryObject))
+			{
+				
+			}
+		}
+		RichDataItems[newSpace.SpaceContainerGuid] = spaceContainerData;
+		SpaceDatas[spaceId] = newSpace;
 	}
 }

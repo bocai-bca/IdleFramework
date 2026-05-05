@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using Newtonsoft.Json.Linq;
 
 namespace IdleFramework.Core;
 
@@ -8,22 +9,34 @@ namespace IdleFramework.Core;
 public class SpaceData : ISaveDataComponent<SpaceData>
 {
 	/// <summary>
-	/// 空间容器
+	/// 空间容器GUID
 	/// </summary>
-	public RichDataItemData SpaceContainer { get; set; } = new();
+	public Guid SpaceContainerGuid { get; set; }
 	
-	// TODO 应该转移，把这个空间容器的富数据物品数据转移到SaveData里的全局唯一的富数据物品池，在这里只持有这个富数据物品的GUID
-	
+	/// <summary>
+	/// 转换到Json。
+	/// </summary>
+	/// <returns>转换后的<c>JToken</c>，实际上是<c>JObject</c>。</returns>
 	public JToken ToJson()
 	{
-		throw new System.NotImplementedException();
+		JObject jObject = new();
+		JValue jValue = new(SpaceContainerGuid.ToString());
+		jObject[nameof(SpaceContainerGuid)] = jValue;
+		return jObject;
 	}
 
+	/// <summary>
+	/// 从Json解析。
+	/// </summary>
+	/// <param name="jObject">要解析的Json对象。</param>
+	/// <returns>解析完成的<c>SpaceData</c>实例，或者失败时返回<c>null</c>。</returns>
 	public static SpaceData FromJson(JObject jObject)
 	{
-		throw new System.NotImplementedException();
+		if (jObject == null) return null;
+		SpaceData result = new();
+		if (jObject.Value<string>(nameof(SpaceContainerGuid)) is { } valueSpaceContainerGuid && Guid.TryParse(valueSpaceContainerGuid.ToString(), out Guid parsedGuid)) result.SpaceContainerGuid = parsedGuid;
+		return result;
 	}
-
 
 	/// <summary>
 	/// 复制该空间数据实例。
@@ -33,23 +46,8 @@ public class SpaceData : ISaveDataComponent<SpaceData>
 	{
 		SpaceData duplicated = new()
 		{
-			SpaceContainer = SpaceContainer.Duplicate(),
+			SpaceContainerGuid = SpaceContainerGuid,
 		};
 		return duplicated;
-	}
-	
-	/// <summary>
-	/// 从空间注册表项初始化为一个空间数据实例。
-	/// </summary>
-	/// <param name="spaceRegistryObject">需要参考的空间注册表项。</param>
-	/// <returns>新初始化的空间数据实例。</returns>
-	public static SpaceData InitFromSpaceRegistryObject(SpaceRegistryObject spaceRegistryObject)
-	{
-		SpaceData newData = new();
-		foreach ((string itemId, int itemCount) in spaceRegistryObject.PrefillItems)
-		{
-			newData.SpaceContainer.SetData(itemId, itemCount);
-		}
-		return newData;
 	}
 }

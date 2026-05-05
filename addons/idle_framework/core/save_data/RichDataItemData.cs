@@ -60,6 +60,7 @@ public class RichDataItemData : ISaveDataComponent<RichDataItemData>
 	/// <returns>解析好的<c>RichDataItemData</c>实例。</returns>
 	public static RichDataItemData FromJson(JObject jObject)
 	{
+		if (jObject == null) return null;
 		RichDataItemData result = new();
 		foreach ((string key, JToken value) in jObject)
 		{
@@ -69,15 +70,36 @@ public class RichDataItemData : ISaveDataComponent<RichDataItemData>
 					JObject childJObject = (JObject)value;
 					result.Data[key] = FromJson(childJObject);
 					continue;
-				case JTokenType.Array: // JArray是List<RichDataItemData>
+				case JTokenType.Array: // JArray是List<RichDataItemData>或List<string>
 					JArray childJArray = (JArray)value;
-					List<RichDataItemData> list = [];
-					foreach (JToken child in childJArray)
+					List<RichDataItemData> listRdi = [];
+					if (childJArray.Count <= 0) continue;
+					JTokenType childType = childJArray[0].Type;
+					if (childType == JTokenType.String)
 					{
-						if (child.Type != JTokenType.Object) break;
-						list.Add(FromJson((JObject)child));
+						List<string> listString = [];
+						foreach (JToken child in childJArray)
+						{
+							listString.Add(child.Value<string>());
+						}
+						result.Data[key] = listString;
+						continue;
 					}
-					result.Data[key] = list;
+					if (childType == JTokenType.Object)
+					{
+						foreach (JToken child in childJArray)
+						{
+							listRdi.Add(FromJson((JObject)child));
+						}
+						result.Data[key] = listRdi;
+						continue;
+					}
+					Logger.LogError(
+						string.Format(
+							Localization.Tr("log.error.rich_data_item_data.unsupported_jtoken_type_of_child_token_of_jarray"),
+							childType.ToString()
+							)
+						);
 					continue;
 				case JTokenType.Integer:
 					JValue childJValueInt = (JValue)value;
@@ -127,6 +149,9 @@ public class RichDataItemData : ISaveDataComponent<RichDataItemData>
 					case List<RichDataItemData> list:
 						duplicated.Data[key] = list.Duplicate();
 						continue;
+					case List<string> listString:
+						duplicated.Data[key] = new List<string>(listString);
+						continue;
 					default:
 						duplicated.Data[key] = value;
 						break;
@@ -168,7 +193,7 @@ public class RichDataItemData : ISaveDataComponent<RichDataItemData>
 	/// 为本实例的一个键设置值，当重复时覆盖值。如果给定的类型不可以存储，则会丢弃并返回<c>false</c>。
 	/// </summary>
 	/// <param name="key">要存入的键。</param>
-	/// <param name="value">要存入的数据，只支持以下类型：<c>null</c>、<c>long</c>、<c>bool</c>、<c>double</c>、<c>string</c>、<c>List&lt;RichDataItemData&gt;</c>、<c>RichDataItemData</c>。其中<c>null</c>的行为比较特殊，它相当于调用<c>RemoveKey(key)</c>，如果对应键不存在，也会返回<c>false</c>。</param>
+	/// <param name="value">要存入的数据，只支持以下类型：<c>null</c>、<c>long</c>、<c>bool</c>、<c>double</c>、<c>string</c>、<c>List&lt;string&gt;</c>、<c>List&lt;RichDataItemData&gt;</c>、<c>RichDataItemData</c>。其中<c>null</c>的行为比较特殊，它相当于调用<c>RemoveKey(key)</c>，如果对应键不存在，也会返回<c>false</c>。</param>
 	/// <returns>成功与否。</returns>
 	public bool SetData(string key, object value)
 	{
@@ -190,6 +215,9 @@ public class RichDataItemData : ISaveDataComponent<RichDataItemData>
 				return true;
 			case List<RichDataItemData> valueList:
 				Data[key] = valueList;
+				return true;
+			case List<string> valueListString:
+				Data[key] = valueListString;
 				return true;
 			case RichDataItemData valueRichData:
 				Data[key] = valueRichData;

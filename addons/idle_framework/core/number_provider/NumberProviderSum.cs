@@ -20,7 +20,7 @@ public partial class NumberProviderSum : NumberProvider
 	[ExportGroup("Data")]
 	public Array<NumberProvider> SumList { get; set; }
 	
-	public override int GetNumber()
+	public override long GetNumber()
 	{
 		if (recursionLock)
 		{
@@ -28,7 +28,7 @@ public partial class NumberProviderSum : NumberProvider
 			return 0;
 		}
 		recursionLock = true;
-		int result;
+		long result;
 		try
 		{
 			result = SumList.Sum(provider => provider.GetNumber());

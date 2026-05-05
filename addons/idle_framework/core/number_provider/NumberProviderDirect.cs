@@ -14,13 +14,13 @@ public partial class NumberProviderDirect : NumberProvider
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public int Number { get; set; }
+	public long Number { get; set; }
 
 	/// <summary>
 	/// GetValue()的实现
 	/// </summary>
 	/// <returns>返回Value属性的值</returns>
-	public override int GetNumber()
+	public override long GetNumber()
 	{
 		return Number;
 	}

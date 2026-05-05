@@ -194,7 +194,7 @@ public static class SaveAccess
 		};
 		foreach ((string key, SpaceRegistryObject spaceRegistryObject) in gameResource.SpaceRegistry)
 		{
-			newSave.SpaceDatas[key] = SpaceData.InitFromSpaceRegistryObject(spaceRegistryObject);
+			newSave.InstantiateSpaceRegistryObject(key, gameResource);
 		}
 		lock (loadedDatasLock)
 		{
