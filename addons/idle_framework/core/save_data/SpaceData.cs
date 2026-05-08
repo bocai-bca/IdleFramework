@@ -17,11 +17,12 @@ public class SpaceData : ISaveDataComponent<SpaceData>
 	/// 转换到Json。
 	/// </summary>
 	/// <returns>转换后的<c>JToken</c>，实际上是<c>JObject</c>。</returns>
-	public JToken ToJson()
+	public JObject ToJson()
 	{
-		JObject jObject = new();
-		JValue jValue = new(SpaceContainerGuid.ToString());
-		jObject[nameof(SpaceContainerGuid)] = jValue;
+		JObject jObject = new()
+		{
+			[nameof(SpaceContainerGuid)] = new JValue(SpaceContainerGuid.ToString()),
+		};
 		return jObject;
 	}
 

@@ -20,7 +20,7 @@ public class RichDataItemData : ISaveDataComponent<RichDataItemData>
 	/// 转换到Json。
 	/// </summary>
 	/// <returns>转换后的<c>JToken</c>(实际上是<c>JObject</c>)。</returns>
-	public JToken ToJson()
+	public JObject ToJson()
 	{
 		JObject jObject = new();
 		foreach ((string key, object value) in Data)
@@ -32,6 +32,9 @@ public class RichDataItemData : ISaveDataComponent<RichDataItemData>
 					continue;
 				case List<RichDataItemData> list: // List<RichDataItemData>会转换为JArray
 					jObject[key] = list.ToJson();
+					continue;
+				case List<string> listString:
+					jObject[key] = listString.ToJson();
 					continue;
 				case string valueString: // 转换为JValue
 					jObject[key] = new JValue(valueString);
@@ -273,5 +276,20 @@ public static class RichDataItemDataExtension
 			}
 			return result;
 		}
+	}
+
+	/// <summary>
+	/// 将<c>List&lt;string&gt;</c>转换到Json。
+	/// </summary>
+	/// <param name="listString">要转换的<c>List&lt;string&gt;</c>。</param>
+	/// <returns>转换后的<c>JArray</c>。</returns>
+	public static JArray ToJson(this List<string> listString)
+	{
+		JArray result = [];
+		foreach (string str in listString)
+		{
+			result.Add(new JValue(str));
+		}
+		return result;
 	}
 }

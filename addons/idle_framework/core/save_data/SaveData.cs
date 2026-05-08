@@ -35,7 +35,17 @@ public class SaveData
 	/// 富数据物品实例表
 	/// </summary>
 	public Dictionary<Guid, RichDataItemData> RichDataItems { get; set; } = [];
+	
+	/// <summary>
+	/// 容器实例表
+	/// </summary>
+	public Dictionary<Guid, ContainerData> ContainerDatas { get; set; } = [];
 
+	/// <summary>
+	/// 工厂实例表
+	/// </summary>
+	public Dictionary<Guid, FactoryData> FactoryDatas { get; set; } = [];
+	
 	/// <summary>
 	/// 自动富数据物品索引缓存表
 	/// </summary>

@@ -6,19 +6,19 @@ namespace IdleFramework.Core;
 /// 存档数据组件接口，所有存档数据组件应当继承此接口
 /// </summary>
 /// <typeparam name="TChild">存档数据组件类型形参，应当将继承此接口的类型自己作为实参填入此处</typeparam>
-public interface ISaveDataComponent<TChild> where TChild : ISaveDataComponent<TChild>
+public interface ISaveDataComponent<out TChild> where TChild : ISaveDataComponent<TChild>
 {
 	
 	/// <summary>
-	/// 将该存档数据组件转换到<c>JToken</c>。
+	/// 将该存档数据组件转换到<c>JObject</c>。
 	/// </summary>
-	/// <returns>转换后的<c>JToken</c>。</returns>
-	public JToken ToJson();
+	/// <returns>转换后的<c>JObject</c>。</returns>
+	public JObject ToJson();
 
 	/// <summary>
-	/// 从<c>JToken</c>解析为本存档数据组件类型并返回解析完成的实例。
+	/// 从<c>JObject</c>解析为本存档数据组件类型并返回解析完成的实例。
 	/// </summary>
-	/// <param name="jObject"></param>
+	/// <param name="jObject">要解析的<c>JObject</c>。</param>
 	/// <returns>解析完成的实例，如果失败则返回null，或者其他行为。</returns>
 	public static abstract TChild FromJson(JObject jObject);
 

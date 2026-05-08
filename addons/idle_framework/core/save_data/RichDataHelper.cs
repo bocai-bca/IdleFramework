@@ -5,7 +5,7 @@ using Godot;
 namespace IdleFramework.Core;
 
 /// <summary>
-/// 富数据物品数据(RDI)帮助类。
+/// 富数据物品数据(RDI)帮助类。可能会弃用。
 /// </summary>
 public static class RichDataHelper
 {
