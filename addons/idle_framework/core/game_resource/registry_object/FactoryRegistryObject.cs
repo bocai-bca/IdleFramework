@@ -1,4 +1,5 @@
 ﻿using Godot;
+using IdleFramework.Core;
 
 namespace IdleFramework;
 
@@ -14,4 +15,10 @@ public partial class FactoryRegistryObject : Resource
 	[Export]
 	[ExportGroup("Data")]
 	public RecipeOrder RecipeOrder { get; set; }
+	
+	/// <summary>
+	/// 工厂原材料需求模式
+	/// </summary>
+	[Export]
+	public FactoryIngredientRequireMode IngredientRequireMode { get; set; }
 }

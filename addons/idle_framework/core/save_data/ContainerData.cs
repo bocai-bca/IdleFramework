@@ -6,7 +6,7 @@ namespace IdleFramework.Core;
 /// <summary>
 /// 容器数据，于存档数据中作为一个容器实例的数据存储
 /// </summary>
-public class ContainerData : ISaveDataComponent<SpaceData>
+public class ContainerData : ISaveDataComponent<ContainerData>
 {
 	/// <summary>
 	/// 对该容器的ID的缓存，用来在运行时通过游戏资源获取容器注册表。不会经过序列化进入Json对象中。
@@ -23,12 +23,12 @@ public class ContainerData : ISaveDataComponent<SpaceData>
 		throw new System.NotImplementedException();
 	}
 
-	public static SpaceData FromJson(JObject jObject)
+	public static ContainerData FromJson(JObject jObject)
 	{
 		throw new System.NotImplementedException();
 	}
 
-	public SpaceData Duplicate()
+	public ContainerData Duplicate()
 	{
 		throw new System.NotImplementedException();
 	}
