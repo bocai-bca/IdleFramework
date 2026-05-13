@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System;
+using Newtonsoft.Json.Linq;
 
 namespace IdleFramework.Core;
 
@@ -7,18 +8,37 @@ namespace IdleFramework.Core;
 /// </summary>
 public class FactoryData : ISaveDataComponent<FactoryData>
 {
+	/// <summary>
+	/// 工厂原料需求模式
+	/// </summary>
+	public FactoryIngredientRequireMode FactoryMode { get; set; }
+	
 	public JObject ToJson()
 	{
-		throw new System.NotImplementedException();
+		JObject result = new()
+		{
+			[nameof(FactoryMode)] = new JValue(FactoryMode.ToString()),
+		};
+		return result;
 	}
 
 	public static FactoryData FromJson(JObject jObject)
 	{
-		throw new System.NotImplementedException();
+		if (jObject == null) return null;
+		FactoryData result = new();
+		if (jObject.TryGetValue(nameof(FactoryMode), out JToken valueMode) && valueMode.Type == JTokenType.String)
+		{
+			if (Enum.TryParse(valueMode.Value<string>(), out FactoryIngredientRequireMode mode)) result.FactoryMode = mode;
+		}
+		return result;
 	}
 
 	public FactoryData Duplicate()
 	{
-		throw new System.NotImplementedException();
+		FactoryData duplicated = new()
+		{
+			FactoryMode = FactoryMode,
+		};
+		return duplicated;
 	}
 }

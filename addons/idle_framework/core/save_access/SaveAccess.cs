@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Godot;
@@ -7,7 +6,7 @@ using Godot;
 namespace IdleFramework.Core;
 
 /// <summary>
-/// 存档访问，在运行时供UI场景和运行时类读写存档。
+/// 存档访问，在运行时供UI场景和运行时类读写存档。提供以存档为单位级别的API，多数操作不需要访问游戏资源。
 /// </summary>
 public static class SaveAccess
 {
@@ -57,12 +56,20 @@ public static class SaveAccess
 	/// </summary>
 	public static Task<WorkResult> WorkingTask { get; private set; }
 
+	/*
 	/// <summary>
 	/// 已加载的数据，键为游戏ID，值为存档数据。请通过<c>GetDataDuplicatedAwait()</c>和<c>SetDataDuplicatedAwait()</c>访问该字典中的数据。
 	/// 任何时候直接访问本字典都需要使用lock。
 	/// </summary>
 	private static Dictionary<string, SaveData> LoadedDatas { get; } = [];
-
+	*/
+	
+	/// <summary>
+	/// 已加载的数据的辅助类。
+	/// </summary>
+	public static SaveDataHelper LoadedDataHelper { get; set; }
+	
+	/*
 	/// <summary>
 	/// 可等待地从已加载存档数据字典中取值并复制独立实例，如果当前本类的工作线程正在执行，则会阻塞调用方线程。
 	/// 通过本方法获取的<c>SaveData</c>实例不存在于字典中，对其进行修改不会影响字典内的原实例，适合用于需要临时获取、改动值的场合。
@@ -113,16 +120,18 @@ public static class SaveAccess
 	{
 		return LoadedDatas.TryGetValue(key, out saveData);
 	}
+	*/
 	
 	/// <summary>
 	/// 加载给定游戏ID的最后存档，如果成功加载则可以通过<c>LoadedDatas</c>搭配该游戏ID作为键来获取该存档的<c>SaveData</c>实例。
 	/// 出于线程安全考虑，建议在所有情况下使用<c>LoadLatestSaveForGameAsync()</c>。本方法主要供<c>SaveAccess</c>工作线程使用。
 	/// </summary>
-	/// <param name="gameID">要加载存档的游戏ID。</param>
+	/// <param name="gameResource">要加载存档的游戏资源。</param>
 	/// <param name="saveDir">存档起始目录。</param>
 	/// <returns>任务结果。</returns>
-	public static WorkResult LoadLatestSaveForGame(string gameID, string saveDir = DEFAULT_SAVE_DIR) //工作线程方法，不要经过Safety方法而是使用lock直接访问线程保护成员
+	public static WorkResult LoadLatestSaveForGame(GameResource gameResource, string saveDir = DEFAULT_SAVE_DIR) //工作线程方法，不要经过Safety方法而是使用lock直接访问线程保护成员
 	{
+		string gameID = gameResource.GameID;
 		string[] savePathes = GetSavesForGame(gameID, saveDir);
 		if (savePathes.IsEmpty()) return WorkResult.SaveNotFound;
 		string latestSavePath = "";
@@ -155,25 +164,22 @@ public static class SaveAccess
 			Logger.LogError(Localization.Tr("log.error.save_access.save_data_parser_returned_null"));
 			return WorkResult.SaveParsingFailed;
 		}
-		lock (loadedDatasLock)
-		{
-			LoadedDatas[gameID] = saveDataParsed;
-		}
+		LoadedDataHelper = new SaveDataHelper(gameResource, saveDataParsed);
 		return WorkResult.Success;
 	}
 
 	/// <summary>
-	/// 启动多线程加载给定游戏ID的最后存档，作用详见<c>LoadLatestSaveForGame()</c>。
+	/// 启动多线程加载给定游戏资源的最后存档，作用详见<c>LoadLatestSaveForGame()</c>。
 	/// 本类型的工作线程只能同时做一件事，如果<c>SaveAccess.WorkingTask</c>已在工作中，则调用此方法时会阻塞调用方线程直到工作线程完成上一轮工作。
 	/// 返回值可以不await直接丢弃，后续可访问<c>SaveAccess.IsMultiThreadWorking</c>属性获悉异步工作是否完成。
 	/// </summary>
-	/// <param name="gameID">要加载存档的游戏ID</param>
+	/// <param name="gameResource">要加载存档的游戏资源。</param>
 	/// <param name="saveDir">存档起始目录</param>
 	/// <returns>新启动的<c>Task&lt;WorkResult&gt;</c>实例，亦可以从<c>SaveAccess.WorkingTask</c>属性获得</returns>
-	public static async Task<WorkResult> LoadLatestSaveForGameAsync(string gameID, string saveDir = DEFAULT_SAVE_DIR) //含等待方法，请勿在工作线程中使用它
+	public static async Task<WorkResult> LoadLatestSaveForGameAsync(GameResource gameResource, string saveDir = DEFAULT_SAVE_DIR) //含等待方法，请勿在工作线程中使用它
 	{
 		if (IsMultiThreadWorking) WorkingTask.Wait();
-		WorkingTask = Task.Run(() => LoadLatestSaveForGame(gameID, saveDir));
+		WorkingTask = Task.Run(() => LoadLatestSaveForGame(gameResource, saveDir));
 		return await WorkingTask;
 	}
 
@@ -182,24 +188,11 @@ public static class SaveAccess
 	/// 出于线程安全考虑，建议在所有情况下使用<c>CreateSaveForGameAsync()</c>。
 	/// </summary>
 	/// <param name="gameResource">要创建存档的游戏资源。</param>
-	/// <param name="gameVersion">游戏版本。</param>
 	/// <returns>任务结果，只会返回<c>SaveAccess.WorkResult.Success</c>。</returns>
-	public static WorkResult CreateSaveForGame(GameResource gameResource, int gameVersion) //工作线程方法，不要经过Safety方法而是使用lock直接访问线程保护成员
+	public static WorkResult CreateSaveForGame(GameResource gameResource) //工作线程方法，不要经过Safety方法而是使用lock直接访问线程保护成员
 	{
-		SaveData newSave = new()
-		{
-			GameID = gameResource.GameID,
-			GameVersion = gameVersion,
-			LastUpdateUtcTick = TimeHelper.GetUtcNowTick(),
-		};
-		foreach ((string key, SpaceRegistryObject spaceRegistryObject) in gameResource.SpaceRegistry)
-		{
-			newSave.InstantiateSpaceRegistryObject(key, gameResource);
-		}
-		lock (loadedDatasLock)
-		{
-			LoadedDatas[gameResource.GameID] = newSave;
-		}
+		LoadedDataHelper = new SaveDataHelper(gameResource, new SaveData());
+		LoadedDataHelper.InitWholeSave();
 		return WorkResult.Success;
 	}
 
@@ -209,12 +202,11 @@ public static class SaveAccess
 	/// 返回值可以不await直接丢弃，后续可访问<c>SaveAccess.IsMultiThreadWorking</c>属性获悉异步工作是否完成。
 	/// </summary>
 	/// <param name="gameResource">要创建存档的游戏资源。</param>
-	/// <param name="gameVersion">游戏版本。</param>
 	/// <returns>新启动的<c>Task&lt;WorkResult&gt;</c>实例，亦可以从<c>SaveAccess.WorkingTask</c>属性获得</returns>
-	public static async Task<WorkResult> CreateSaveForGameAsync(GameResource gameResource, int gameVersion) //含等待方法，请勿在工作线程中使用它
+	public static async Task<WorkResult> CreateSaveForGameAsync(GameResource gameResource) //含等待方法，请勿在工作线程中使用它
 	{
 		if (IsMultiThreadWorking) WorkingTask.Wait();
-		WorkingTask = Task.Run(() => CreateSaveForGame(gameResource, gameVersion));
+		WorkingTask = Task.Run(() => CreateSaveForGame(gameResource));
 		return await WorkingTask;
 	}
 
@@ -229,9 +221,4 @@ public static class SaveAccess
 		string saveDirCombined = saveDir.PathJoin(gameID);
 		return !Directory.Exists(saveDirCombined) ? [] : Directory.GetFiles(saveDirCombined, "*.ifs", SearchOption.TopDirectoryOnly);
 	}
-	
-	/// <summary>
-	/// <c>LoadedDatas</c>锁
-	/// </summary>
-	private static readonly object loadedDatasLock = new();
 }

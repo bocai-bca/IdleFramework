@@ -9,7 +9,7 @@ namespace IdleFramework;
 public partial class ContainerRegistryObject : Resource
 {
 	/// <summary>
-	/// 该空间容器的物品最大容量覆写
+	/// 该容器的物品最大容量覆写
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]

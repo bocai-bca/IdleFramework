@@ -12,12 +12,12 @@ public class ItemData : ISaveDataComponent<ItemData>
 	/// <summary>
 	/// 物品数量
 	/// </summary>
-	public long Count { get; set; }
+	public ulong Count { get; set; }
 
 	/// <summary>
-	/// 
+	/// 物品实例的GUID表(映射到SaveData的容器表、工厂表、富数据物品数据表)
 	/// </summary>
-	public List<Guid> RichDataItems { get; set; } = [];
+	public List<Guid> Guids { get; set; } = [];
 	
 	public JObject ToJson()
 	{
@@ -25,6 +25,12 @@ public class ItemData : ISaveDataComponent<ItemData>
 		{
 			[nameof(Count)] = new JValue(Count),
 		};
+		JArray richDataItemGuidsJArray = [];
+		foreach (Guid guid in Guids)
+		{
+			richDataItemGuidsJArray.Add(new JValue(guid.ToString()));
+		}
+		result[nameof(Guids)] = richDataItemGuidsJArray;
 		return result;
 	}
 	
@@ -37,7 +43,7 @@ public class ItemData : ISaveDataComponent<ItemData>
 	{
 		if (jObject == null) return null;
 		ItemData result = new();
-		if (jObject.TryGetValue(nameof(Count), out JToken valueCount) && valueCount.Type == JTokenType.Integer) result.Count = valueCount.Value<long>();
+		if (jObject.TryGetValue(nameof(Count), out JToken valueCount) && valueCount.Type == JTokenType.Integer) result.Count = valueCount.Value<ulong>();
 		return result;
 	}
 
@@ -47,6 +53,7 @@ public class ItemData : ISaveDataComponent<ItemData>
 		{
 			Count = Count,
 		};
+		duplicated.Guids.AddRange(Guids);
 		return duplicated;
 	}
 }

@@ -9,14 +9,9 @@ namespace IdleFramework.Core;
 public class ContainerData : ISaveDataComponent<ContainerData>
 {
 	/// <summary>
-	/// 对该容器的ID的缓存，用来在运行时通过游戏资源获取容器注册表。不会经过序列化进入Json对象中。
+	/// 该容器存储的物品，字典键为物品ID，值为物品数量
 	/// </summary>
-	public string ID { get; set; }
-	
-	/// <summary>
-	/// 该容器存储的物品，字典键为物品ID，值为物品数据
-	/// </summary>
-	public Dictionary<string, ItemData> Items { get; } = [];
+	public Dictionary<string, ulong> ItemCounts { get; } = [];
 	
 	public JObject ToJson()
 	{
@@ -32,4 +27,5 @@ public class ContainerData : ISaveDataComponent<ContainerData>
 	{
 		throw new System.NotImplementedException();
 	}
+	
 }

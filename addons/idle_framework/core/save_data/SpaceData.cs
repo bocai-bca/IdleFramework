@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
 namespace IdleFramework.Core;
@@ -12,6 +13,11 @@ public class SpaceData : ISaveDataComponent<SpaceData>
 	/// 空间容器GUID
 	/// </summary>
 	public Guid SpaceContainerGuid { get; set; }
+
+	/// <summary>
+	/// 实例物品GUID表，键为物品ID，值为该物品的实例的GUID的列表。
+	/// </summary>
+	public Dictionary<string, List<Guid>> InstanceItemGuids { get; set; } = new();
 	
 	/// <summary>
 	/// 转换到Json。

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace IdleFramework.Core;
 
@@ -56,14 +57,19 @@ public static class Updater
 	}
 
 	/// <summary>
-	/// 更新存档数据，在调用前可能需使用<c>SetDataSafety()</c>将需要更新的<c>SaveData</c>实例传进本类中。
+	/// 更新存档数据的总入口方法，在调用前可能需使用<c>SetDataSafety()</c>将需要更新的<c>SaveData</c>实例传进本类中。
 	/// 可能较为耗时，且出于线程安全考虑，建议在所有情况下使用<c>UpdateDataAsync()</c>。本方法主要供<c>Updater</c>工作线程使用。
 	/// </summary>
 	/// <param name="moveForwardTicks">向前移动的时间刻数。</param>
 	/// <returns>任务结果。</returns>
 	public static WorkResult UpdateData(long moveForwardTicks) //工作线程方法，不要经过Safety方法而是使用lock直接访问线程保护成员
 	{
-		// TODO
+		bool updateDoneFlag = false;
+		while (!updateDoneFlag)
+		{
+			Guid guidNearestToUpdate;
+			
+		}
 		return WorkResult.Success;
 	}
 

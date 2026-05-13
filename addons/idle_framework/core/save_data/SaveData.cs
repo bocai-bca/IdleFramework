@@ -32,14 +32,14 @@ public class SaveData
 	public Dictionary<string, SpaceData> SpaceDatas { get; set; } = [];
 	
 	/// <summary>
-	/// 富数据物品实例表
-	/// </summary>
-	public Dictionary<Guid, RichDataItemData> RichDataItems { get; set; } = [];
-	
-	/// <summary>
 	/// 容器实例表
 	/// </summary>
 	public Dictionary<Guid, ContainerData> ContainerDatas { get; set; } = [];
+	
+	/// <summary>
+	/// 富数据物品实例表
+	/// </summary>
+	public Dictionary<Guid, RichDataItemData> RichDataItems { get; set; } = [];
 
 	/// <summary>
 	/// 工厂实例表
@@ -201,34 +201,42 @@ public class SaveData
 	}
 
 	/// <summary>
-	/// 从给定游戏资源中获取给定ID的空间注册表项实例化一个空间数据实例，该空间实例以及内部嵌套的富数据对象会自动添加到本<c>SaveData</c>实例中。
+	/// 创建GUID并添加到表，如无需添加某一种数据，对应参数可以为null。
 	/// </summary>
-	/// <param name="spaceId">空间ID。</param>
-	/// <param name="gameResource">游戏资源，用来获取各注册表项。</param>
-	/// <returns>新初始化的空间数据实例。</returns>
-	public void InstantiateSpaceRegistryObject(string spaceId, GameResource gameResource)
+	/// <param name="containerData">要添加的容器数据。</param>
+	/// <param name="factoryData">要添加的工厂数据。</param>
+	/// <param name="richDataItemData">要添加的富数据物品数据。</param>
+	/// <returns>新添加的GUID。</returns>
+	/// <remarks>若给定的三个参数均为null，将不会对数据表作任何操作，但尽管如此也会返回一个新建的GUID，只不过这个GUID在各数据表中都不会有对应键。</remarks>
+	public Guid CreateGuidAndAdd(ContainerData containerData, FactoryData factoryData, RichDataItemData richDataItemData)
 	{
-		SpaceRegistryObject spaceRegistryObject = gameResource.SpaceRegistry[spaceId];
-		SpaceData newSpace = new()
-		{
-			SpaceContainerGuid = Guid.NewGuid(),
-		};
-		RichDataItemData spaceContainerData = new();
-		spaceContainerData.PlaceContainer();
-		foreach ((string itemId, int itemCount) in spaceRegistryObject.PrefillItems)
-		{
-			if (gameResource.ItemRegistry.ContainsKey(itemId)) spaceContainerData.SetData(itemId, itemCount);
-			else
-			{
-				Logger.LogError(string.Format(Localization.Tr("log.error.save_data.item_id_givened_in_space_registry_object_is_not_found_in_item_registry"), itemId, spaceId));
-				continue;
-			}
-			if (gameResource.ContainerRegistry.TryGetValue(itemId, out ContainerRegistryObject containerRegistryObject))
-			{
-				
-			}
-		}
-		RichDataItems[newSpace.SpaceContainerGuid] = spaceContainerData;
-		SpaceDatas[spaceId] = newSpace;
+		Guid guid = Guid.NewGuid();
+		if (containerData is not null) ContainerDatas[guid] = containerData;
+		if (factoryData is not null) FactoryDatas[guid] = factoryData;
+		if (richDataItemData is not null) RichDataItems[guid] = richDataItemData;
+		return guid;
+	}
+
+	/// <summary>
+	/// 从容器注册表项实例化容器数据。
+	/// </summary>
+	/// <param name="containerRegistryObject">要实例化的容器注册表项(本参数暂无实际用途)。</param>
+	/// <returns>新的容器数据实例。</returns>
+	public ContainerData InstantiateRegistryData(ContainerRegistryObject containerRegistryObject)
+	{
+		ContainerData result = new();
+		return result;
+	}
+
+	/// <summary>
+	/// 从工厂注册表项实例化工厂数据。
+	/// </summary>
+	/// <param name="factoryRegistryObject">要实例化的工厂注册表项。</param>
+	/// <returns>新的工厂数据实例。</returns>
+	public FactoryData InstantiateRegistryData(FactoryRegistryObject factoryRegistryObject)
+	{
+		FactoryData result = new();
+		result.FactoryMode = factoryRegistryObject.IngredientRequireMode;
+		return result;
 	}
 }
