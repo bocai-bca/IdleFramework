@@ -68,7 +68,7 @@ public static class SaveAccess
 	/// 已加载的数据的辅助类。
 	/// </summary>
 	public static SaveDataHelper LoadedDataHelper { get; set; }
-	
+
 	/*
 	/// <summary>
 	/// 可等待地从已加载存档数据字典中取值并复制独立实例，如果当前本类的工作线程正在执行，则会阻塞调用方线程。
@@ -191,6 +191,7 @@ public static class SaveAccess
 	/// <returns>任务结果，只会返回<c>SaveAccess.WorkResult.Success</c>。</returns>
 	public static WorkResult CreateSaveForGame(GameResource gameResource) //工作线程方法，不要经过Safety方法而是使用lock直接访问线程保护成员
 	{
+		Logger.LogInfo(string.Format(Localization.Tr("log.info.save_access.creating_new_save_for_game"), gameResource.GameID));
 		LoadedDataHelper = new SaveDataHelper(gameResource, new SaveData());
 		LoadedDataHelper.InitWholeSave();
 		return WorkResult.Success;

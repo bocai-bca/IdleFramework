@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace IdleFramework.Core;
@@ -22,9 +23,13 @@ public partial class MotherNode : Node
         /// </summary>
 		WaitingForSaveLoading,
         /// <summary>
-        /// 主运行-等待更新
+        /// 主运行-计时等待准备开启下一次更新
         /// </summary>
 		MainRunning_WaitingUpdate,
+        /// <summary>
+        /// 主运行-更新中
+        /// </summary>
+        MainRunning_Updating,
         /// <summary>
         /// 当发生无法处理的错误时IdleFramework处于什么都不做的冻结状态，等待用户手动处理
         /// </summary>
@@ -81,6 +86,9 @@ public partial class MotherNode : Node
 		{
 			switch (value)
 			{
+				case State.FreezeForUnhandlableError:
+					Logger.LogError(Localization.Tr("log.error.mother_node.going_to_freeze_for_unhandlable_error"));
+					break;
 			}
 			field = value;
 		}
@@ -134,9 +142,22 @@ public partial class MotherNode : Node
 				StateProcess_WaitingForSaveLoading();
 				break;
 			case State.MainRunning_WaitingUpdate:
-				StateProcess_MainRunning_WaitingUpdate(delta);
+				StateProcess_MainRunning_WaitingUpdate();
+				break;
+			case State.MainRunning_Updating:
+				StateProcess_MainRunning_Updating();
 				break;
 		}
+	}
+
+	/// <summary>
+	/// 使更新器开启一次更新。
+	/// </summary>
+	public void LaunchOnceUpdate()
+	{
+		Updater.SaveDataHelperInHandle ??= SaveAccess.LoadedDataHelper;
+		_ = Updater.UpdateDataAsync();
+		lastUpdateTime = DateTime.UtcNow;
 	}
 
 	/// <summary>

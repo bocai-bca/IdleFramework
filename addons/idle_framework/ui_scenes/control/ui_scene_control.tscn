@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://c2r8vuysvnv0s" path="res://addons/idle_framework/ui_scenes/control/main_theme.tres" id="1_hqrys"]
 [ext_resource type="Script" uid="uid://cxj2ifu8hvv3n" path="res://addons/idle_framework/ui_scenes/control/Control.cs" id="1_wvjk3"]
-[ext_resource type="PackedScene" uid="uid://d87ls62mgltb" path="res://addons/idle_framework/ui_scenes/control/pinned_item/pinned_item.tscn" id="2_oll73"]
+[ext_resource type="PackedScene" uid="uid://0rblm6a520ds" path="res://addons/idle_framework/ui_scenes/control/space_detail_area/space_detail_area.tscn" id="3_hqrys"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_wvjk3"]
 size = Vector2(128, 128)
@@ -45,9 +45,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 alignment = 2
 
-[node name="PinnedItem" parent="VBC/TopBar/VBC/PinnedItemsBar" unique_id=1754760488 instance=ExtResource("2_oll73")]
-layout_mode = 2
-
 [node name="MainSpace" type="HSplitContainer" parent="VBC" unique_id=1903583451]
 layout_mode = 2
 size_flags_vertical = 3
@@ -73,6 +70,9 @@ custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.67
+
+[node name="SpaceDetailArea" parent="VBC/MainSpace/DetailArea" unique_id=570382322 instance=ExtResource("3_hqrys")]
+layout_mode = 2
 
 [node name="BottomBar" type="PanelContainer" parent="VBC" unique_id=1851625811]
 custom_minimum_size = Vector2(0, 32)

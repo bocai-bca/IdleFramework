@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://0rblm6a520ds"]
+
+[ext_resource type="Script" uid="uid://wa450kw3qnoe" path="res://addons/idle_framework/ui_scenes/control/space_detail_area/SpaceDetailArea.cs" id="1_o7nec"]
+
+[node name="SpaceDetailArea" type="ScrollContainer" unique_id=2025177294]
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+follow_focus = true
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+script = ExtResource("1_o7nec")
+
+[node name="VBC" type="VBoxContainer" parent="." unique_id=712164491]
+layout_mode = 2

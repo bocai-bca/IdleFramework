@@ -21,23 +21,30 @@ public abstract partial class UIScene : Node
 	}
 	
 	/// <summary>
-	/// 当主节点开始异步加载存档时会调用本方法
+	/// 当主节点开始存档访问异步加载存档时会调用本方法
 	/// </summary>
 	public virtual void OnSaveStartLoading()
 	{
 	}
 
 	/// <summary>
-	/// 当主节点异步加载存档完成时会调用本方法
+	/// 当主节点检查到存档访问异步加载存档完成时会调用本方法
 	/// </summary>
 	public virtual void OnSaveLoaded()
 	{
 	}
 
 	/// <summary>
-	/// 当主节点异步加载存档出错时会调用本方法，此时不会调用<c>OnSaveLoaded()</c>
+	/// 当主节点检查到存档访问异步加载存档出错时会调用本方法，此时不会调用<c>OnSaveLoaded()</c>
 	/// </summary>
 	public virtual void OnSaveLoadFailed()
+	{
+	}
+
+	/// <summary>
+	/// 当主节点检查到更新器完成一次更新时会调用本方法。
+	/// </summary>
+	public virtual void OnUpdaterDone()
 	{
 	}
 

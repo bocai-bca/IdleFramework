@@ -5,22 +5,34 @@ using System.Threading;
 namespace IdleFramework.Core;
 
 /// <summary>
-/// 存档数据辅助类，是对<c>SaveData</c>的操作工具。提供针对单一存档中部分数据为单位的API，必须搭配游戏资源使用。
-/// 本类型是线程安全的，每个涉及存档数据的操作都会包含锁，如果想要避免因互斥锁导致的性能下降，可以考虑复制<c>SaveData</c>然后通过它创建新的<c>SaveDataHelper</c>实例。
+/// 存档数据辅助器，是对<c>SaveData</c>的操作工具。提供针对单一存档中部分数据为单位的API，必须搭配游戏资源使用。
+/// 本类型提供的方法是线程安全的，每个涉及存档数据的操作都会包含锁，如果想要避免因互斥锁导致的性能下降，可以考虑复制<c>SaveData</c>然后通过它创建新的<c>SaveDataHelper</c>实例。
 /// 请避免在该<c>SaveData</c>不再可用时访问通过它创建的本类实例的方法，否则将发生空引用异常。
 /// </summary>
 public class SaveDataHelper(GameResource targetGameResource, SaveData targetSaveData)
 {
 	/// <summary>
-	/// 目标游戏资源。
+	/// 目标游戏资源。注意，直接获取本属性时，其提供的值本身不是线程安全的。
 	/// </summary>
 	public GameResource UsingGameResource { get; } = targetGameResource;
 	
 	/// <summary>
-	/// 目标存档数据。
+	/// 目标存档数据。注意，直接获取本属性时，其提供的值本身不是线程安全的。
 	/// </summary>
 	public SaveData UsingSaveData { get; } = targetSaveData;
 
+	/// <summary>
+	/// 获取存档数据的上次更新的UTC时间刻。
+	/// </summary>
+	/// <returns>存档数据的<c>LastUpdateUtcTick</c>属性。</returns>
+	public long GetLastUpdateUtcTick()
+	{
+		lock (_lock)
+		{
+			return UsingSaveData.LastUpdateUtcTick;
+		}
+	}
+	
 	/// <summary>
 	/// 将给定实例物品对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
 	/// </summary>

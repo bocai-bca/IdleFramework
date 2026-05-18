@@ -36,8 +36,18 @@ public partial class Control : UIScene, IClassPackedScene
 
 	public override void _Ready()
 	{
-		NTopBar_GameTitle.Text = Localization.Tr(MotherNodeReference.GameResource.NameKey);
-		foreach ((string spaceID, SpaceRegistryObject spaceRegistryObject) in MotherNodeReference.GameResource.SpaceRegistry)
+	}
+
+	public override void _Process(double delta)
+	{
+	}
+
+	public override void OnGameResourceReady()
+	{
+		GameResource gameResource = MotherNodeReference.GameResource;
+		NTopBar_GameTitle.Text = Localization.Tr(gameResource.NameKey);
+		NTopBar_Icon.Texture = gameResource.IconTexture;
+		foreach ((string spaceID, SpaceRegistryObject spaceRegistryObject) in gameResource.SpaceRegistry)
 		{
 			SpaceButton spaceButton = SpaceButton.Create();
 			spaceButton.Text = Localization.Tr(spaceRegistryObject.NameKey);
@@ -47,6 +57,9 @@ public partial class Control : UIScene, IClassPackedScene
 			SpaceButtons[spaceID] = spaceButton;
 		}
 	}
-	
-	
+
+	public override void OnUpdaterDone()
+	{
+		
+	}
 }

@@ -5,7 +5,7 @@ namespace IdleFramework.Core;
 /// <summary>
 /// 提供时间相关的辅助类，封装所有计算方式为命名清晰的方法，以便降低处理时间相关逻辑时的头脑负担
 /// </summary>
-public class TimeHelper
+public static class TimeHelper
 {
     /// <summary>
     /// 获取当前UTC时间，单位为Tick(100纳秒)

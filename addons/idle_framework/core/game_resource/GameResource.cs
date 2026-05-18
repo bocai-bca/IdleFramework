@@ -31,6 +31,12 @@ public partial class GameResource : Resource
 	public int GameVersion { get; set; } = 0;
 	
 	/// <summary>
+	/// 游戏图标。
+	/// </summary>
+	[Export, ExportGroup("Assets")]
+	public Texture2D IconTexture { get; set; }
+	
+	/// <summary>
 	/// 空间注册表，在该列表中添加项即可注册空间，字典键为其id
 	/// </summary>
 	[Export, ExportGroup("Registries")]
@@ -65,6 +71,12 @@ public partial class GameResource : Resource
 	/// </summary>
 	[Export, ExportGroup("Data")]
 	public Array<Translation> Translations { get; set; }
+	
+	/// <summary>
+	/// 最小更新间隔秒数，主节点会尽可能使更新器按照该参数指定的速度进行更新，可以为0或负数(负数与0的作用一致)，设置为过快的值会使更新器不停歇地运行。
+	/// </summary>
+	[Export]
+	public double MinimalUpdateIntervalSeconds { get; set; } = 1.0D;
 	
 	/// <summary>
 	/// 附加数据，供自定义UI场景或游戏资源中的自定义脚本访问。

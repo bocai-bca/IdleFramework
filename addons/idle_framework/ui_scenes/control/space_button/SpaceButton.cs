@@ -10,6 +10,7 @@ namespace IdleFramework.UIScenes.Control;
 public partial class SpaceButton : Button, IClassPackedScene
 {
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/space_button/space_button.tscn");
+	
 	/// <summary>
 	/// 对应的空间ID
 	/// </summary>

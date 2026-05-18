@@ -41,7 +41,7 @@ public class SpaceData : ISaveDataComponent<SpaceData>
 	{
 		if (jObject == null) return null;
 		SpaceData result = new();
-		if (jObject.Value<string>(nameof(SpaceContainerGuid)) is { } valueSpaceContainerGuid && Guid.TryParse(valueSpaceContainerGuid.ToString(), out Guid parsedGuid)) result.SpaceContainerGuid = parsedGuid;
+		if (jObject.Value<string>(nameof(SpaceContainerGuid)) is { } valueSpaceContainerGuid && Guid.TryParse(valueSpaceContainerGuid, out Guid parsedGuid)) result.SpaceContainerGuid = parsedGuid;
 		return result;
 	}
 

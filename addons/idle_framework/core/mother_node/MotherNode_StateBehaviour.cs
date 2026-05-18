@@ -5,6 +5,9 @@ namespace IdleFramework.Core;
 
 public partial class MotherNode
 {
+	/// <summary>
+	/// 上次更新开启的时间，用于控制更新频率
+	/// </summary>
 	public DateTime lastUpdateTime;
 	
 	private void StateProcess_BeforeLoadSave()
@@ -16,7 +19,7 @@ public partial class MotherNode
 	private void StateProcess_WaitingForSaveLoading()
 	{
 		if (!SaveAccess.WorkingTask.IsCompleted) return; //如果SaveAccess工作线程未完成则离开本帧
-		if (!SaveAccess.WorkingTask.IsCompletedSuccessfully) //如果SaveAccess工作线程未成功完成
+		if (!SaveAccess.WorkingTask.IsCompletedSuccessfully) //如果SaveAccess工作线程完成带异常
 		{
 			AggregateException exception = SaveAccess.WorkingTask.Exception;
 			if (exception == null)
@@ -37,6 +40,7 @@ public partial class MotherNode
 				CurrentState = State.MainRunning_WaitingUpdate;
 				break;
 			case SaveAccess.WorkResult.SaveNotFound:
+				Logger.LogInfo(Localization.Tr("log.info.mother_node.save_not_found_cause_creating_new_save"));
 				_ = SaveAccess.CreateSaveForGameAsync(GameResource);
 				CurrentState = State.WaitingForSaveLoading; //实际上是个原地跳转，先预留一个赋值，万一以后要在CurrentState赋值器上插什么事件可以用得到
 				break;
@@ -64,8 +68,46 @@ public partial class MotherNode
 	}
 
 	// 到达MainRunning时应保证存档已经就绪
-	private void StateProcess_MainRunning_WaitingUpdate(double delta)
+	private void StateProcess_MainRunning_WaitingUpdate()
 	{
-		
+		TimeSpan spanToLastUpdate = DateTime.UtcNow - lastUpdateTime;
+		if (spanToLastUpdate.TotalSeconds < GameResource.MinimalUpdateIntervalSeconds) return;
+		LaunchOnceUpdate();
+		CurrentState = State.MainRunning_Updating;
+	}
+
+	private void StateProcess_MainRunning_Updating()
+	{
+		if (!Updater.WorkingTask.IsCompleted) return; //如果Updater工作线程未完成则离开本帧
+		if (!Updater.WorkingTask.IsCompletedSuccessfully) //如果Updater工作线程完成带异常
+		{
+			AggregateException exception = SaveAccess.WorkingTask.Exception;
+			if (exception == null)
+			{
+				Logger.LogError(Localization.Tr("log.error.mother_node.task_unsuccessfully_without_exception_on_updater_async"));
+				CurrentState = State.FreezeForUnhandlableError;
+				return;
+			}
+			Logger.LogError(string.Format(Localization.Tr("log.error.mother_node.unhandled_exception_on_updater_async"), exception));
+			CurrentState = State.FreezeForUnhandlableError;
+			return;
+			//报错完离开本帧
+		}
+		Updater.WorkResult workResult = Updater.WorkingTask.Result;
+		switch (workResult)
+		{
+			case Updater.WorkResult.Success:
+				UISceneInstance.OnUpdaterDone();
+				CurrentState = State.MainRunning_WaitingUpdate;
+				break;
+			case Updater.WorkResult.SaveIsNull:
+				Logger.LogError(Localization.Tr("log.error.mother_node.updater_returned_save_is_null"));
+				CurrentState = State.FreezeForUnhandlableError;
+				break;
+			default:
+				Logger.LogError(Localization.Tr("log.error.mother_node.got_unknown_result_from_updater_async"));
+				CurrentState = State.FreezeForUnhandlableError;
+				break;
+		}
 	}
 }
