@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Godot;
 using Godot.Collections;
 
@@ -83,4 +84,29 @@ public partial class GameResource : Resource
 	/// </summary>
 	[Export]
 	public Dictionary<string, Variant> AdditionData { get; set; } = new();
+	
+	/// <summary>
+	/// 检查给定物品ID是否被注册为容器。
+	/// </summary>
+	/// <param name="itemId">要查询的物品ID。</param>
+	/// <returns>该ID是否被注册为容器。</returns>
+	[Pure]
+	public bool IsContainer(string itemId) => ContainerRegistry.ContainsKey(itemId);
+	
+	/// <summary>
+	/// 检查给定物品ID是否被注册为工厂。
+	/// </summary>
+	/// <param name="itemId">要查询的物品ID。</param>
+	/// <returns>该ID是否被注册为工厂。</returns>
+	[Pure]
+	public bool IsFactory(string itemId) => FactoryRegistry.ContainsKey(itemId);
+
+	/// <summary>
+	/// 直接获取已翻译的空间名称。
+	/// 要让翻译能够运作需要事先将游戏资源的翻译数据加载到翻译域，这通常在游戏资源就绪后(主节点状态离开State.BeforeGameResourceReady后)已由主节点添加到翻译域。
+	/// </summary>
+	/// <param name="spaceId">要获取名称的空间ID。</param>
+	/// <returns>对应空间的已翻译名称。</returns>
+	[Pure]
+	public string GetSpaceNameTranslated(string spaceId) => Localization.Tr(SpaceRegistry[spaceId].NameKey);
 }

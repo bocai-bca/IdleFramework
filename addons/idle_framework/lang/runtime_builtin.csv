@@ -1,5 +1,6 @@
 ,?context,en,zh
 idle_framework,,"IdleFramework","放置引擎"
+space_container,,"Space Container","空间容器"
 alert.title.idle_framework_fatal,,"IdleFramework Fatal Error","放置引擎 致命错误"
 alert.context.idle_framework_launch_failed,,"IdleFramework launch failed.","放置引擎启动失败。"
 alert.context.game_resource_not_specified,,"GameResource not specified.","未指定游戏资源。"
@@ -8,10 +9,11 @@ alert.context.packed_ui_scene_not_specified,,"PackedUIScene not specified.","未
 alert.context.ui_scene_instantiation_error,,"UIScene instantiation error.","UI场景实例化出错。"
 log.info.mother_node.ready_start,,"MotherNode: _Ready() starting.","MotherNode: 正在执行_Ready()。"
 log.info.mother_node.init_check_start,,"MotherNode: InitCheck() starting.","MotherNode: 正在执行InitCheck()。"
-log.info.mother_node.runtime_builtin_translations_loaded,,"MotherNode: Runtime builtin translations were added.","MotherNode: 内置运行时翻译已加载到翻译域"。
+log.info.mother_node.runtime_builtin_translations_loaded,,"MotherNode: Runtime builtin translations were added to domain.","MotherNode: 内置运行时翻译已加载到翻译域"。
 log.info.mother_node.launch_completed,,"MotherNode: Launch completed.","MotherNode: 启动完毕。"
 log.info.mother_node.added_ui_scene,,"MotherNode: Added UIScene to child.","MotherNode: 已添加UI场景为子场景。"
 log.info.mother_node.save_not_found_cause_creating_new_save,,"MotherNode: Save not found causes creating new save.","MotherNode: 未找到已有存档故正在新建存档。"
+log.info.mother_node.ui_scene_translations_loaded,,"MotherNode: UIScene translations were added to domain.","MotherNode: UI场景翻译已加载到翻译域。"
 log.warning.mother_node.placing_ui_scene_but_exist_elder,,"MotherNode: Unexpected to found old UIScene on placing new instance, the old one was enqueued to free.","MotherNode: 超出预期地在放置新UI场景时发现旧实例，旧实例已被添加到节点释放队列。"
 log.error.mother_node.unhandled_exception_on_save_access_async,,"MotherNode: Unhandled exception on SaveAccess async working: {0}","MotherNode: SaveAccess在异步工作时抛出未处理的异常: {0}"
 log.error.mother_node.task_unsuccessfully_without_exception_on_save_access_async,,"MotherNode: Task unsuccessfully without exception on SaveAccess async working.","MotherNode: SaveAccess在异步工作时Task不带异常地未成功完成。"

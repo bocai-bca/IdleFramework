@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://byrvtms101mm"
+
+[deps]
+
+files=["res://addons/idle_framework/ui_scenes/control/lang/ui_scene.en.translation", "res://addons/idle_framework/ui_scenes/control/lang/ui_scene.zh.translation"]
+
+source_file="res://addons/idle_framework/ui_scenes/control/lang/ui_scene.csv"
+dest_files=["res://addons/idle_framework/ui_scenes/control/lang/ui_scene.en.translation", "res://addons/idle_framework/ui_scenes/control/lang/ui_scene.zh.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -47,6 +49,11 @@ public class SaveData
 	public Dictionary<Guid, FactoryData> FactoryDatas { get; set; } = [];
 	
 	/// <summary>
+	/// 实例物品的名称表
+	/// </summary>
+	public Dictionary<Guid, string> InstanceNames { get; set; } = [];
+	
+	/// <summary>
 	/// 将本实例转换为Json对象。
 	/// </summary>
 	/// <returns>转换后的Json对象。</returns>
@@ -56,6 +63,7 @@ public class SaveData
 		JObject containerDatasJObject = new();
 		JObject factoryDatasJObject = new();
 		JObject richDataItemsJObject = new();
+		JObject instanceNamesJObject = new();
 		JObject root = new()
 		{
 			[nameof(GameID)] = GameID,
@@ -64,11 +72,13 @@ public class SaveData
 			[nameof(ContainerDatas)] = containerDatasJObject,
 			[nameof(FactoryDatas)] = factoryDatasJObject,
 			[nameof(RichDataItems)] = richDataItemsJObject,
+			[nameof(InstanceNames)] = instanceNamesJObject,
 		};
 		foreach ((string key, SpaceData spaceData) in SpaceDatas) spaceDatasJObject.Add(key, spaceData.ToJson());
 		foreach ((Guid guid, ContainerData containerData) in ContainerDatas) containerDatasJObject.Add(guid.ToString(), containerData.ToJson());
 		foreach ((Guid guid, FactoryData factoryData) in FactoryDatas) factoryDatasJObject.Add(guid.ToString(), factoryData.ToJson());
 		foreach ((Guid guid, RichDataItemData richDataItem) in RichDataItems) richDataItemsJObject.Add(guid.ToString(), richDataItem.ToJson());
+		foreach ((Guid guid, string instanceName) in InstanceNames) instanceNamesJObject.Add(guid.ToString(), new JValue(instanceName));
 		return root;
 	}
 	
@@ -76,6 +86,7 @@ public class SaveData
 	/// 将本实例序列化为Json文本。
 	/// </summary>
 	/// <returns>转换后的文本。</returns>
+	[Pure]
 	public string ToJsonText()
 	{
 		return ToJson().ToString(Formatting.Indented);
@@ -86,6 +97,7 @@ public class SaveData
 	/// </summary>
 	/// <param name="deep">是否深度复制。</param>
 	/// <returns>复制出来的新实例。</returns>
+	[Pure]
 	public SaveData Duplicate(bool deep = true)
 	{
 		return Duplicate(this, deep);
@@ -97,7 +109,8 @@ public class SaveData
 	/// <param name="originalData">要复制的原始实例。</param>
 	/// <param name="deep">是否深度复制。</param>
 	/// <returns>复制出来的新实例。</returns>
-	public static SaveData Duplicate(SaveData originalData, bool deep = true)
+	[Pure]
+	public static SaveData Duplicate([DisallowNull] SaveData originalData, bool deep = true)
 	{
 		SaveData newInstance = new()
 		{
@@ -146,9 +159,8 @@ public class SaveData
 	/// </summary>
 	/// <param name="jObject">待解析的Json对象。</param>
 	/// <returns>解析完毕的<c>SaveData</c>实例。</returns>
-	public static SaveData FromJson(JObject jObject)
+	public static SaveData FromJson([DisallowNull] JObject jObject)
 	{
-		if (jObject == null) return null;
 		SaveData result = new();
 		if (jObject.Value<string>("GameID") is { } valueGameID) result.GameID = valueGameID;
 		if (jObject.Value<long>("LastUpdateUtcTick") is { } valueLastUpdateUtcTick) result.LastUpdateUtcTick = valueLastUpdateUtcTick;

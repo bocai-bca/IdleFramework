@@ -11,7 +11,7 @@ public class ContainerData : ISaveDataComponent<ContainerData>
 	/// <summary>
 	/// 该容器存储的物品，字典键为物品ID，值为物品数量
 	/// </summary>
-	public Dictionary<string, ulong> ItemCounts { get; } = [];
+	public Dictionary<string, long> ItemCounts { get; } = [];
 	
 	public JObject ToJson()
 	{
@@ -25,7 +25,12 @@ public class ContainerData : ISaveDataComponent<ContainerData>
 
 	public ContainerData Duplicate()
 	{
-		throw new System.NotImplementedException();
+		ContainerData duplicated = new();
+		foreach ((string itemId, long itemCount) in ItemCounts)
+		{
+			duplicated.ItemCounts[itemId] = itemCount;
+		}
+		return duplicated;
 	}
 	
 }

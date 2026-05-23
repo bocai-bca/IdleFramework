@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://d1nmhtvvi2d03"]
+
+[ext_resource type="Script" uid="uid://b0vvb0exg822f" path="res://addons/idle_framework/ui_scenes/control/container_item/ContainerItem.cs" id="1_ph6ai"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_lvj8u"]
+
+[node name="ContainerItem" type="Button" unique_id=884326216]
+custom_minimum_size = Vector2(48, 72)
+offset_right = 48.0
+offset_bottom = 72.0
+text = "0"
+icon = SubResource("PlaceholderTexture2D_lvj8u")
+clip_text = true
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+script = ExtResource("1_ph6ai")

@@ -97,7 +97,7 @@ public partial class MotherNode
 		switch (workResult)
 		{
 			case Updater.WorkResult.Success:
-				UISceneInstance.OnUpdaterDone();
+				UISceneInstance.OnUpdaterDone(Updater.SaveDataHelperInHandle);
 				CurrentState = State.MainRunning_WaitingUpdate;
 				break;
 			case Updater.WorkResult.SaveIsNull:

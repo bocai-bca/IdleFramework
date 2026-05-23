@@ -12,7 +12,7 @@ public class ItemData : ISaveDataComponent<ItemData>
 	/// <summary>
 	/// 物品数量
 	/// </summary>
-	public ulong Count { get; set; }
+	public long Count { get; set; }
 
 	/// <summary>
 	/// 物品实例的GUID表(映射到SaveData的容器表、工厂表、富数据物品数据表)
@@ -43,7 +43,7 @@ public class ItemData : ISaveDataComponent<ItemData>
 	{
 		if (jObject == null) return null;
 		ItemData result = new();
-		if (jObject.TryGetValue(nameof(Count), out JToken valueCount) && valueCount.Type == JTokenType.Integer) result.Count = valueCount.Value<ulong>();
+		if (jObject.TryGetValue(nameof(Count), out JToken valueCount) && valueCount.Type == JTokenType.Integer) result.Count = valueCount.Value<long>();
 		return result;
 	}
 

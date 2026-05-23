@@ -36,6 +36,11 @@ project/assembly_name="IdleFramework"
 
 enabled=PackedStringArray("res://addons/idle_framework/editor_plugin/plugin.cfg", "res://addons/idle_framework/plugin.cfg")
 
+[gui]
+
+timers/tooltip_delay_sec=0.1
+timers/tooltip_delay_sec.editor_hint=0.1
+
 [physics]
 
 common/physics_ticks_per_second=1

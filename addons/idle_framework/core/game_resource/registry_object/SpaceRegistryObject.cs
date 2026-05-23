@@ -32,7 +32,7 @@ public partial class SpaceRegistryObject : Resource
 	/// 如果预装物品给定的数量大于最大容量指定的数量，则初始化填充时会填充此处给定的数量，后续容器中对应物品数量如何变化取决于其他增减逻辑(包括自定义脚本所控制的逻辑)。
 	/// </summary>
 	[Export, ExportGroup("Data")]
-	public Dictionary<string, ulong> PrefillItems { get; set; } = new();
+	public Dictionary<string, long> PrefillItems { get; set; } = new();
 	
 	/// <summary>
 	/// 该空间容器的物品最大容量覆写

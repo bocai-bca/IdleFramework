@@ -2,12 +2,12 @@
 
 [ext_resource type="Theme" uid="uid://c2r8vuysvnv0s" path="res://addons/idle_framework/ui_scenes/control/main_theme.tres" id="1_hqrys"]
 [ext_resource type="Script" uid="uid://cxj2ifu8hvv3n" path="res://addons/idle_framework/ui_scenes/control/Control.cs" id="1_wvjk3"]
-[ext_resource type="PackedScene" uid="uid://0rblm6a520ds" path="res://addons/idle_framework/ui_scenes/control/space_detail_area/space_detail_area.tscn" id="3_hqrys"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_wvjk3"]
 size = Vector2(128, 128)
 
 [node name="UIScene_Control" type="PanelContainer" unique_id=1885108198]
+custom_minimum_size = Vector2(960, 720)
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -15,6 +15,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+tooltip_auto_translate_mode = 2
 theme = ExtResource("1_hqrys")
 script = ExtResource("1_wvjk3")
 
@@ -70,9 +71,6 @@ custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.67
-
-[node name="SpaceDetailArea" parent="VBC/MainSpace/DetailArea" unique_id=570382322 instance=ExtResource("3_hqrys")]
-layout_mode = 2
 
 [node name="BottomBar" type="PanelContainer" parent="VBC" unique_id=1851625811]
 custom_minimum_size = Vector2(0, 32)

@@ -15,6 +15,10 @@ public partial class MotherNode : Node
 	public enum State
 	{
 		/// <summary>
+		/// 游戏资源就绪之前
+		/// </summary>
+		BeforeGameResourceReady,
+		/// <summary>
 		/// 存档读取之前
 		/// </summary>
 		BeforeLoadSave,
@@ -92,7 +96,7 @@ public partial class MotherNode : Node
 			}
 			field = value;
 		}
-	} = State.BeforeLoadSave;
+	} = State.BeforeGameResourceReady;
 
 	public override void _Notification(int what)
 	{
@@ -117,13 +121,15 @@ public partial class MotherNode : Node
 			GetTree().Quit();
 			return;
 		}
-		Localization.LoadRuntimeTranslations(GameResource.Translations);
+		Localization.LoadRuntimeTranslations(GameResource.Translations); //加载游戏资源提供的翻译
 		if (!PlaceUIScene())
 		{
 			GetTree().Quit();
 			return;
 		}
+		GetWindow().MinSize = UISceneInstance.WindowMinSize;
 		Logger.LogInfo(Localization.Tr("log.info.mother_node.launch_completed"));
+		CurrentState = State.BeforeLoadSave;
 		UISceneInstance.OnGameResourceReady();
 	}
 
@@ -223,7 +229,8 @@ public partial class MotherNode : Node
 			OS.Alert(Localization.Tr("alert.context.idle_framework_launch_failed") + "\n" + Localization.Tr("alert.context.packed_ui_scene_not_specified"), Localization.Tr("alert.title.idle_framework_fatal"));
 			return false;
 		}
-		UISceneInstance.MotherNodeReference = this;
+		Localization.LoadRuntimeTranslations(UISceneInstance.UISceneTranslations);
+		Logger.LogInfo(Localization.Tr("log.info.mother_node.ui_scene_translations_loaded"));
 		AddChild(UISceneInstance);
 		Logger.LogInfo(Localization.Tr("log.info.mother_node.added_ui_scene"));
 		return true;

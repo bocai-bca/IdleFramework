@@ -51,7 +51,6 @@ public static class Updater
 			Logger.LogError(Localization.Tr("log.error.updater.save_data_helper_in_handle_is_null"));
 			return WorkResult.SaveIsNull;
 		}
-
 		return WorkResult.Success;
 		bool updateDoneFlag = false;
 		while (!updateDoneFlag)
