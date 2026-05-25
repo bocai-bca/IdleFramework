@@ -28,3 +28,4 @@ export/
 test/
 contents/
 *.uid
+*.DotSettings.user
