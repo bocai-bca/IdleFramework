@@ -1,3 +1,4 @@
+#if IDLE_FRAMEWORK_UISCENE_CONTROL
 using Godot;
 using IdleFramework.Global;
 
@@ -23,3 +24,4 @@ public partial class PinnedItem : PanelContainer, IClassPackedScene
 		}
 	}
 }
+#endif

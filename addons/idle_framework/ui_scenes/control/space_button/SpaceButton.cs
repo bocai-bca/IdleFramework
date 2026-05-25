@@ -1,3 +1,4 @@
+#if IDLE_FRAMEWORK_UISCENE_CONTROL
 using Godot;
 using IdleFramework.Global;
 
@@ -18,3 +19,4 @@ public partial class SpaceButton : Button, IClassPackedScene
 	public string SpaceID { get; set; }
 	*/
 }
+#endif

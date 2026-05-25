@@ -1,3 +1,4 @@
+#if IDLE_FRAMEWORK_UISCENE_CONTROL
 using System;
 using Godot;
 using IdleFramework.Global;
@@ -35,3 +36,4 @@ public partial class FactoryItemContainer : Godot.Control, IClassPackedScene
 	/// <param name="titleName">要设置为的标题名。</param>
 	public void SetTitleName(string titleName) => NFC.Title = titleName;
 }
+#endif

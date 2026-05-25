@@ -1,3 +1,4 @@
+#if IDLE_FRAMEWORK_UISCENE_CONTROL
 using System;
 using System.Collections.Generic;
 using Godot;
@@ -91,3 +92,4 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 		}
 	}
 }
+#endif

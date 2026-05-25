@@ -1,3 +1,4 @@
+#if IDLE_FRAMEWORK_UISCENE_CONTROL
 using System;
 using System.Collections.Generic;
 using Godot;
@@ -9,7 +10,7 @@ namespace IdleFramework.UIScenes.Control;
 /// <summary>
 /// [IdleFramework内置UI场景-控件主题]容器实例展开式容器，在空间详细区域容器中显示一个容器实例的内容物
 /// </summary>
-[GlobalClass]
+[GlobalClass, Tool]
 public partial class ContainerItemContainer : Container, IClassPackedScene
 {
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/container_item_container/container_item_container.tscn");
@@ -86,3 +87,4 @@ public partial class ContainerItemContainer : Container, IClassPackedScene
 		}
 	}
 }
+#endif

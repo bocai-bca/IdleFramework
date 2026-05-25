@@ -1,3 +1,4 @@
+#if IDLE_FRAMEWORK_UISCENE_CONTROL
 using System.Collections.Generic;
 using Godot;
 using IdleFramework.Core;
@@ -96,3 +97,4 @@ public partial class Control : UIScene, IClassPackedScene
 		}
 	}
 }
+#endif

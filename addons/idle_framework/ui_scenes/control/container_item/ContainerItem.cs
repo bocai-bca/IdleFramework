@@ -1,3 +1,4 @@
+#if IDLE_FRAMEWORK_UISCENE_CONTROL
 using Godot;
 using IdleFramework.Global;
 
@@ -23,3 +24,4 @@ public partial class ContainerItem : Button, IClassPackedScene
 	/// <param name="itemCount">物品数量。</param>
 	public void SetItemCount(long itemCount) => Text = itemCount.ToString();
 }
+#endif
