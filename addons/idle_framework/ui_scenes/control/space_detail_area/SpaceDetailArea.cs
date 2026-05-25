@@ -16,6 +16,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 
 	public VBoxContainer NVBC;
 	public ContainerItemContainer NSpaceContainerItemContainer;
+	public readonly Dictionary<Guid, FactoryItemContainer> NFactoryItemContainers = [];
 	public readonly Dictionary<Guid, ContainerItemContainer> NContainerItemContainers = [];
 
 	/// <summary>

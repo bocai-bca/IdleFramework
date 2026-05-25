@@ -1,5 +1,6 @@
 ,?context,en,zh
 ui_scene_control.space_container_name,,"{0} Inventory","{0} 库存"
+ui_scene_control.edit_button,,"Edit","编辑"
 log.info.ui_scene_control_space_detail_area.adding_container_item_container_instance,,"UIScene.Control.SpaceDetailArea: Adding ContainerItemContainer instance.","UIScene.Control.SpaceDetailArea: 正在添加ContainerItemContainer实例。"
 log.error.ui_scene_control_space_detail_area.failed_to_get_all_instance_guids_for_space_id_owned,,"UIScene.Control.SpaceDetailArea: Failed to get all instance GUIDs for Space ID owned by self.","UIScene.Control.SpaceDetailArea: 未能通过自身持有的空间ID获取所有实例GUID。"
 log.info.ui_scene_control_container_item_container.going_to_remove_because_corresponding_guid_is_not_exist_anymore,,"UIScene.Control.ContainerItemContainer: Going to remove this instance because the container instance with the GUID corresponding isn't exist anymore.","UIScene.Control.ContainerItemContainer: 因对应GUID的容器实例不再存在故将移除本实例"

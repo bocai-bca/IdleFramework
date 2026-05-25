@@ -10,11 +10,13 @@ namespace IdleFramework.UIScenes.Control;
 /// [IdleFramework内置UI场景-控件主题]容器实例展开式容器，在空间详细区域容器中显示一个容器实例的内容物
 /// </summary>
 [GlobalClass]
-public partial class ContainerItemContainer : FoldableContainer, IClassPackedScene
+public partial class ContainerItemContainer : Container, IClassPackedScene
 {
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/container_item_container/container_item_container.tscn");
 
+	public FoldableContainer NFC;
 	public HFlowContainer NItems;
+	public Button NEditButton;
 	public readonly Dictionary<string, ContainerItem> NContainerItems = [];
 	
 	/// <summary>
@@ -27,7 +29,14 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 		switch ((long)what)
 		{
 			case NotificationSceneInstantiated:
-				NItems = GetNode<HFlowContainer>("Items");
+				NFC = GetNode<FoldableContainer>("FC");
+				NItems = GetNode<HFlowContainer>("FC/Items");
+				NEditButton = GetNode<Button>("EditButton");
+				NEditButton.Text = Localization.Tr("ui_scene_control.edit_button");
+				break;
+			case NotificationSortChildren:
+				FitChildInRect(NFC, new Rect2(Vector2.Zero, Size));
+				FitChildInRect(NEditButton, new Rect2(new Vector2(Size.X - NEditButton.Size.X, 0F), Vector2.Zero));
 				break;
 		}
 	}
@@ -36,7 +45,7 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 	/// 设置该容器实例展开式容器的标题名，应对应其物品实例的名称
 	/// </summary>
 	/// <param name="titleName">要设置为的标题名。</param>
-	public void SetTitleName(string titleName) => Title = titleName;
+	public void SetTitleName(string titleName) => NFC.Title = titleName;
 
 	/// <summary>
 	/// 完全更新，进行更全面的内容更新。

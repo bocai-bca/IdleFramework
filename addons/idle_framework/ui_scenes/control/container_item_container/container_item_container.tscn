@@ -2,11 +2,22 @@
 
 [ext_resource type="Script" uid="uid://cabn2ayggdn4l" path="res://addons/idle_framework/ui_scenes/control/container_item_container/ContainerItemContainer.cs" id="1_rmsgg"]
 
-[node name="ContainerItemContainer" type="FoldableContainer" unique_id=205801866]
+[node name="ContainerItemContainer" type="Container" unique_id=2123307575]
 offset_right = 960.0
 offset_bottom = 720.0
 size_flags_horizontal = 3
 script = ExtResource("1_rmsgg")
 
-[node name="Items" type="HFlowContainer" parent="." unique_id=3860090]
+[node name="FC" type="FoldableContainer" parent="." unique_id=205801866]
 layout_mode = 2
+size_flags_horizontal = 3
+title = "Title"
+
+[node name="Items" type="HFlowContainer" parent="FC" unique_id=3860090]
+layout_mode = 2
+
+[node name="EditButton" type="Button" parent="." unique_id=1420007188]
+layout_mode = 2
+text = "Edit"
+
+[connection signal="draw" from="." to="." method="RepositionChildren"]

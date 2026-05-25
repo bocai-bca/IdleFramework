@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://c7c0aqohuncta"]
+
+[ext_resource type="Script" uid="uid://dncgkthopbpt2" path="res://addons/idle_framework/ui_scenes/control/factory_item_container/FactoryItemContainer.cs" id="1_x4bs3"]
+
+[node name="FactoryItemContainer" type="Control" unique_id=1577696599]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 960.0
+offset_bottom = 720.0
+size_flags_horizontal = 3
+script = ExtResource("1_x4bs3")
+
+[node name="FC" type="FoldableContainer" parent="." unique_id=99599166]
+layout_mode = 0
+offset_right = 960.0
+offset_bottom = 720.0
+size_flags_horizontal = 3
