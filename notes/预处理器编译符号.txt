@@ -1,0 +1,6 @@
+在IdleFramework.csproj中调整各配置的预处理器编译符号定义。
+
+目前IdleFramework通过条件编译符号控制各UI场景的脚本是否被编译。
+添加IDLE_FRAMEWORK_UISCENE_ALL可以编译所有UI场景，Debug构建配置已默认包含此项，在编辑器中运行项目的构建将会包含所有UI场景。
+
+UI场景-控件，使用IDLE_FRAMEWORK_UISCENE_CONTROL来包含其于构建。

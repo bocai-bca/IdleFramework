@@ -109,4 +109,13 @@ public partial class GameResource : Resource
 	/// <returns>对应空间的已翻译名称。</returns>
 	[Pure]
 	public string GetSpaceNameTranslated(string spaceId) => Localization.Tr(SpaceRegistry[spaceId].NameKey);
+	
+	/// <summary>
+	/// 直接获取已翻译的物品名称。
+	/// 要让翻译能够运作需要事先将游戏资源的翻译数据加载到翻译域，这通常在游戏资源就绪后(主节点状态离开State.BeforeGameResourceReady后)已由主节点添加到翻译域。
+	/// </summary>
+	/// <param name="itemId">要获取名称的物品ID。</param>
+	/// <returns>对应物品的已翻译名称。</returns>
+	[Pure]
+	public string GetItemNameTranslated(string itemId) => Localization.Tr(ItemRegistry[itemId].NameKey);
 }

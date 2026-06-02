@@ -2,16 +2,72 @@
 
 [ext_resource type="Script" uid="uid://dncgkthopbpt2" path="res://addons/idle_framework/ui_scenes/control/factory_item_container/FactoryItemContainer.cs" id="1_x4bs3"]
 
-[node name="FactoryItemContainer" type="Control" unique_id=1577696599]
-layout_mode = 3
-anchors_preset = 0
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_x4bs3"]
+size = Vector2(128, 128)
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_eurn7"]
+size = Vector2(128, 128)
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_4w2nq"]
+size = Vector2(128, 128)
+
+[node name="FactoryItemContainer" type="FoldableContainer" unique_id=99599166]
 offset_right = 960.0
 offset_bottom = 720.0
 size_flags_horizontal = 3
+title = "Title"
 script = ExtResource("1_x4bs3")
 
-[node name="FC" type="FoldableContainer" parent="." unique_id=99599166]
-layout_mode = 0
-offset_right = 960.0
-offset_bottom = 720.0
+[node name="VBC" type="VBoxContainer" parent="." unique_id=1245331408]
+layout_mode = 2
+
+[node name="RecipeButton" type="Button" parent="VBC" unique_id=182277571]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+text = "RecipeName"
+icon = SubResource("PlaceholderTexture2D_x4bs3")
+text_overrun_behavior = 5
+expand_icon = true
+
+[node name="HBC" type="HBoxContainer" parent="VBC" unique_id=382566351]
+layout_mode = 2
+alignment = 1
+
+[node name="InputContainerButton" type="Button" parent="VBC/HBC" unique_id=1219947546]
+custom_minimum_size = Vector2(96, 72)
+layout_mode = 2
+text = "Input"
+icon = SubResource("PlaceholderTexture2D_eurn7")
+text_overrun_behavior = 5
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+
+[node name="Progress" type="VBoxContainer" parent="VBC/HBC" unique_id=1709382630]
+layout_mode = 2
 size_flags_horizontal = 3
+alignment = 1
+
+[node name="TimeText" type="Label" parent="VBC/HBC/Progress" unique_id=1418989227]
+layout_mode = 2
+size_flags_vertical = 1
+text = "11d 4h 51m 4s"
+horizontal_alignment = 1
+vertical_alignment = 1
+text_overrun_behavior = 5
+
+[node name="ProgressBar" type="ProgressBar" parent="VBC/HBC/Progress" unique_id=200244293]
+custom_minimum_size = Vector2(128, 24)
+layout_mode = 2
+size_flags_vertical = 3
+value = 19.19
+
+[node name="OutputContainerButton" type="Button" parent="VBC/HBC" unique_id=1624049310]
+custom_minimum_size = Vector2(96, 72)
+layout_mode = 2
+text = "Output"
+icon = SubResource("PlaceholderTexture2D_4w2nq")
+text_overrun_behavior = 5
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true

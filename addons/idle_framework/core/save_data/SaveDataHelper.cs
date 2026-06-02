@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using System.Threading;
 
 namespace IdleFramework.Core;
@@ -13,6 +12,8 @@ namespace IdleFramework.Core;
 /// </summary>
 public class SaveDataHelper(GameResource targetGameResource, SaveData targetSaveData)
 {
+	#region 使用的数据的成员 Using Data Members
+	
 	/// <summary>
 	/// 目标游戏资源。注意，直接获取本属性时，其提供的值本身不是线程安全的。
 	/// </summary>
@@ -23,11 +24,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// </summary>
 	public SaveData UsingSaveData { get; } = targetSaveData;
 
+	#endregion
+	
+	#region 元数据访问 Meta Accessing
+	
 	/// <summary>
 	/// 获取存档数据的上次更新的UTC时间刻。
 	/// </summary>
 	/// <returns>存档数据的<c>LastUpdateUtcTick</c>属性。</returns>
-	[Pure]
 	public long GetLastUpdateUtcTick()
 	{
 		lock (_lock)
@@ -35,14 +39,17 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			return UsingSaveData.LastUpdateUtcTick;
 		}
 	}
+	
+	#endregion
 
+	#region 实例对象名称访问 InstanceObject Name Accessing
+	
 	/// <summary>
-	/// 通过GUID获取一个物品实例的名称，未找到时返回给定的默认名称。
+	/// 通过GUID获取一个实例对象的名称，未找到时返回给定的默认名称。
 	/// </summary>
-	/// <param name="guid">要查找的实例的GUID。</param>
+	/// <param name="guid">要查找的实例对象的GUID。</param>
 	/// <param name="defaultName">未找到时要返回的默认名称。</param>
-	/// <returns>该物品实例的名称。</returns>
-	[Pure]
+	/// <returns>该实例对象的名称。</returns>
 	public string GetNameForInstance(Guid guid, string defaultName = "")
 	{
 		lock (_lock)
@@ -52,9 +59,9 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
-	/// 设置对应给定GUID的物品实例的名称，如果名称表中原本不存在对应GUID将创建。
+	/// 设置对应给定GUID的实例对象的名称，如果名称表中原本不存在对应GUID将创建。
 	/// </summary>
-	/// <param name="guid">要设置名称的GUID。</param>
+	/// <param name="guid">要设置名称的实例对象的GUID。</param>
 	/// <param name="name">要设置的名称。</param>
 	public void SetNameForInstance(Guid guid, string name)
 	{
@@ -63,7 +70,11 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			UsingSaveData.InstanceNames[guid] = name;
 		}
 	}
+	
+	#endregion
 
+	#region 空间访问 Space Accessing
+	
 	/// <summary>
 	/// 获取给定ID的空间的空间容器的GUID。
 	/// </summary>
@@ -90,21 +101,23 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="spaceId">想要获取其空间容器的空间的ID。</param>
 	/// <param name="instanceItemGuids">获取到的所有物品实例的GUID，键为物品ID，值为GUID列表，如果未找到则返回空字典。</param>
 	/// <returns>成功与否。</returns>
-	public bool GetAllInstanceGuidsInSpace(string spaceId, out Dictionary<string, List<Guid>> instanceItemGuids)
+	public bool GetAllInstanceGuidsInSpace(string spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)
 	{
 		instanceItemGuids = [];
 		lock (_lock)
 		{
 			if (!UsingSaveData.SpaceDatas.TryGetValue(spaceId, out SpaceData spaceData)) return false;
-			foreach ((string itemId, List<Guid> instanceGuid) in spaceData.InstanceItemGuids)
+			foreach ((string itemId, HashSet<Guid> instanceGuid) in spaceData.InstanceItemGuids)
 			{
-				instanceItemGuids[itemId] = new List<Guid>(instanceGuid);
+				instanceItemGuids[itemId] = new HashSet<Guid>(instanceGuid);
 			}
 		}
 		return true;
 	}
 	
+	#endregion
 	
+	#region 容器访问 Container Accessing
 	
 	/// <summary>
 	/// 通过GUID获取一个容器实例，可以选择是否要获取复制品。
@@ -130,7 +143,6 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="containerGuid">要查找的容器GUID。</param>
 	/// <param name="containerItems">结果字典，键为物品ID，值为对应物品的物品数量。如果未能找到给定GUID的容器实例则返回空字典。</param>
 	/// <returns>是否成功获取到对应容器，如果不存在对应GUID的容器则返回<c>false</c>。</returns>
-	[Pure]
 	public bool GetAllItemCountsForContainer(Guid containerGuid, out Dictionary<string, long> containerItems)
 	{
 		ContainerData containerData;
@@ -154,7 +166,6 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// </summary>
 	/// <param name="containerData">要获取数据的容器。</param>
 	/// <returns>结果字典，键为物品ID，值为对应物品的物品数量。</returns>
-	[Pure]
 	public static Dictionary<string, long> GetAllItemCountsForContainer([DisallowNull] ContainerData containerData)
 	{
 		Dictionary<string, long> result = [];
@@ -162,11 +173,43 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		return result;
 	}
 	
+	#endregion
+	
+	#region 容器编组访问 ContainerGroup Accessing
+	
+	// TODO
+	
+	#endregion
+	
+	#region 工厂访问 Factory Accessing
+	
 	/// <summary>
-	/// 将给定实例物品对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// 通过GUID获取一个工厂实例，可以选择是否要获取复制品。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="factoryData">查找到的工厂实例。</param>
+	/// <param name="duplicate">是否要复制获取到的工厂实例。</param>
+	/// <returns>成功与否，如果没有找到则返回<c>false</c>。</returns>
+	public bool GetFactoryForGuid(Guid guid, [MaybeNullWhen(false)] out FactoryData factoryData, bool duplicate = true)
+	{
+		lock (_lock)
+		{
+			if (!UsingSaveData.FactoryDatas.TryGetValue(guid, out factoryData)) return false;
+			factoryData = duplicate ? factoryData.Duplicate() : factoryData;
+		}
+		return true;
+	}
+	
+	#endregion
+	
+	#region 实例对象操作 InstanceObject Operating
+	
+	/// <summary>
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
 	/// </summary>
 	/// <param name="containerData">要添加的容器数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
+	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
 	public Guid AddInstanceObject(ContainerData containerData, Guid guid = default)
 	{
 		if (guid == Guid.Empty) guid = Guid.NewGuid();
@@ -175,10 +218,11 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 	
 	/// <summary>
-	/// 将给定实例物品对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
 	/// </summary>
 	/// <param name="factoryData">要添加的工厂数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
+	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
 	public Guid AddInstanceObject(FactoryData factoryData, Guid guid = default)
 	{
 		if (guid == Guid.Empty) guid = Guid.NewGuid();
@@ -187,10 +231,11 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
-	/// 将给定实例物品对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
 	/// </summary>
 	/// <param name="richDataItemData">要添加的富数据物品数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
+	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
 	public Guid AddInstanceObject(RichDataItemData richDataItemData, Guid guid = default)
 	{
 		if (guid == Guid.Empty) guid = Guid.NewGuid();
@@ -198,8 +243,12 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		return guid;
 	}
 
+	#endregion
+	
+	#region 注册表项实例化 RegistryObject Instantiating
+	
 	/// <summary>
-	/// 从注册表实例化实例数据。
+	/// 从注册表实例化实例物品数据。
 	/// </summary>
 	/// <param name="containerRegistryObject">想要实例化的容器注册表项。</param>
 	/// <returns>实例化的新容器数据。</returns>
@@ -209,7 +258,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
-	/// 从注册表实例化实例数据。
+	/// 从注册表实例化实例物品数据。
 	/// </summary>
 	/// <param name="factoryRegistryObject">想要实例化的工厂注册表项。</param>
 	/// <returns>实例化的新工厂数据。</returns>
@@ -221,6 +270,10 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		};
 		return result;
 	}
+	
+	#endregion
+	
+	#region 存档初始化 SaveData Initializing
 	
 	/// <summary>
 	/// 初始化整个存档，如果现有存档已有数据将不会清空，字典数据进行覆盖操作。
@@ -244,6 +297,10 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		}
 	}
 	
+	#endregion
+	
+	#region 空间操作 Space Operating
+	
 	/// <summary>
 	/// 初始化空间，通过游戏资源的空间注册表为存档数据的空间表创建空间数据实例，同时创建空间容器，并添加到容器表。
 	/// </summary>
@@ -251,25 +308,34 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	{
 		foreach ((string spaceId, SpaceRegistryObject spaceRegistryObject) in UsingGameResource.SpaceRegistry)
 		{
-			SpaceData newSpaceData = new();
-			ContainerData newSpaceContainerData = new();
+			SpaceData newSpaceData = new(); //该空间的空间数据
+			ContainerData newSpaceContainerData = new(); //新空间的空间容器的容器数据
 			foreach ((string itemId, long itemCount) in spaceRegistryObject.PrefillItems) //设置预装物品
 			{
 				newSpaceContainerData.ItemCounts[itemId] = itemCount; //设置物品数量
 				bool hasContainerRegistry = UsingGameResource.ContainerRegistry.TryGetValue(itemId, out ContainerRegistryObject prefillItemContainerRegistryObject);
 				bool hasFactoryRegistry = UsingGameResource.FactoryRegistry.TryGetValue(itemId, out FactoryRegistryObject prefillItemFactoryRegistryObject);
-				if (!hasContainerRegistry && !hasFactoryRegistry) continue;
-				List<Guid> prefillInstanceGuids = [];
-				for (long i = 0; i < itemCount; i++)
+				if (!hasContainerRegistry && !hasFactoryRegistry) continue; //从此往下可确保该物品ID至少有在容器注册表或工厂注册表中被注册成为了一种
+				HashSet<Guid> prefillInstanceGuids = []; //空间容器的预装物品实例GUID表
+				for (long i = 0; i < itemCount; i++) //遍历物品数量次，创建复数个实例物品实例
 				{
-					Guid currentInstanceGuid = Guid.NewGuid();
-					if (hasContainerRegistry) AddInstanceObject(InstantiateRegistryObject(prefillItemContainerRegistryObject), currentInstanceGuid);
-					if (hasFactoryRegistry) AddInstanceObject(InstantiateRegistryObject(prefillItemFactoryRegistryObject), currentInstanceGuid);
+					Guid currentInstanceGuid = Guid.NewGuid(); //创建GUID，待会儿如果容器和工厂同时有，好让它们拥有同一个GUID(而且这是必须的)
+					SetNameForInstance(currentInstanceGuid, UsingGameResource.GetItemNameTranslated(itemId) + "#" + currentInstanceGuid.ToString()[^4..]);
+					if (hasContainerRegistry) //检查是否被注册为容器
+					{
+						//创建容器实例并添加的过程
+						AddInstanceObject(InstantiateRegistryObject(prefillItemContainerRegistryObject), currentInstanceGuid);
+					}
+					if (hasFactoryRegistry) //检查是否被注册为工厂
+					{
+						//创建工厂实例并添加的过程
+						AddInstanceObject(InstantiateRegistryObject(prefillItemFactoryRegistryObject), currentInstanceGuid);
+					}
 					prefillInstanceGuids.Add(currentInstanceGuid);
 				}
 				newSpaceData.InstanceItemGuids[itemId] = prefillInstanceGuids;
 			}
-			SetNameForInstance(newSpaceData.SpaceContainerGuid = AddInstanceObject(newSpaceContainerData), Localization.Tr("space_container"));
+			SetNameForInstance(newSpaceData.SpaceContainerGuid = AddInstanceObject(newSpaceContainerData), Localization.Tr("space_container")); //给空间容器实例设置名字
 			AddSpaceData(spaceId, newSpaceData);
 		}
 	}
@@ -281,6 +347,8 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			UsingSaveData.SpaceDatas[spaceId] = spaceData;
 		}
 	}
+	
+	#endregion
 	
 	/// <summary>
 	/// 保护线程安全用的互斥锁，使用时应尽量缩小原子单元。

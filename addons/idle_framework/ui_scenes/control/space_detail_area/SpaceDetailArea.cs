@@ -1,6 +1,7 @@
-#if IDLE_FRAMEWORK_UISCENE_CONTROL
+#if IDLE_FRAMEWORK_UISCENE_ALL || IDLE_FRAMEWORK_UISCENE_CONTROL
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using IdleFramework.Core;
 using IdleFramework.Global;
@@ -47,6 +48,11 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 		{
 			containerItemContainer.Update(saveDataHelper);
 		}
+
+		foreach (FactoryItemContainer factoryItemContainer in NFactoryItemContainers.Values)
+		{
+			factoryItemContainer.Update(saveDataHelper);
+		}
 	}
 
 	/// <summary>
@@ -55,29 +61,37 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 	/// <param name="saveDataHelper">要使用的存档数据辅助器。</param>
 	public void CollectAndPlaceElements(SaveDataHelper saveDataHelper)
 	{
-		if (!saveDataHelper.GetAllInstanceGuidsInSpace(SpaceId, out Dictionary<string, List<Guid>> instanceItemGuids))
+		if (!saveDataHelper.GetAllInstanceGuidsInSpace(SpaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids))
 		{
 			Logger.LogError(Localization.Tr("log.error.ui_scene_control_space_detail_area.failed_to_get_all_instance_guids_for_space_id_owned"));
 			return;
 		}
 		GameResource gameResource = MotherNode.Instance.GameResource;
-		foreach ((string itemId, List<Guid> itemGuids) in instanceItemGuids)
+		foreach ((string itemId, HashSet<Guid> itemGuids) in instanceItemGuids)
 		{
+			if (gameResource.IsFactory(itemId))
+			{
+				foreach (Guid itemGuid in itemGuids.Where(itemGuid => !NFactoryItemContainers.ContainsKey(itemGuid)))
+				{
+					Logger.LogInfo(Localization.Tr("log.info.ui_scene_control_space_detail_area.adding_factory_item_container_instance"));
+					FactoryItemContainer factoryItemContainer = FactoryItemContainer.Create();
+					factoryItemContainer.FactoryGuid = itemGuid;
+					NFactoryItemContainers[itemGuid] = factoryItemContainer;
+					NVBC.AddChild(factoryItemContainer);
+					factoryItemContainer.FullyUpdate(saveDataHelper);
+				}
+			}
 			if (gameResource.IsContainer(itemId))
 			{
-				foreach (Guid itemGuid in itemGuids)
+				foreach (Guid itemGuid in itemGuids.Where(itemGuid => !NContainerItemContainers.ContainsKey(itemGuid)))
 				{
-					if (NContainerItemContainers.ContainsKey(itemGuid)) continue;
 					Logger.LogInfo(Localization.Tr("log.info.ui_scene_control_space_detail_area.adding_container_item_container_instance"));
 					ContainerItemContainer containerItemContainer = ContainerItemContainer.Create();
 					containerItemContainer.ContainerGuid = itemGuid;
 					NContainerItemContainers[itemGuid] = containerItemContainer;
 					NVBC.AddChild(containerItemContainer);
+					containerItemContainer.FullyUpdate(saveDataHelper);
 				}
-			}
-			if (gameResource.IsFactory(itemId))
-			{
-				
 			}
 		}
 		if (NSpaceContainerItemContainer == null && saveDataHelper.GetSpaceContainerGuidForSpace(SpaceId, out Guid spaceContainerGuid))

@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://c0xoc635riqqu"]
+
+[ext_resource type="Script" uid="uid://6eibyi4jik27" path="res://addons/idle_framework/ui_scenes/control/item_container_edit_button/ItemContainerEditButton.cs" id="1_mjnoo"]
+
+[node name="ItemContainerEditButton" type="Button" unique_id=272690886]
+text = "ui_scene_control.edit_button"
+script = ExtResource("1_mjnoo")

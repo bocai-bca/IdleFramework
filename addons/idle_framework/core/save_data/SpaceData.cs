@@ -15,9 +15,9 @@ public class SpaceData : ISaveDataComponent<SpaceData>
 	public Guid SpaceContainerGuid { get; set; }
 
 	/// <summary>
-	/// 实例物品GUID表，键为物品ID，值为该物品的实例的GUID的列表。
+	/// 实例物品GUID表，键为物品ID，值为该物品的实例的GUID的散列集。
 	/// </summary>
-	public Dictionary<string, List<Guid>> InstanceItemGuids { get; set; } = new();
+	public Dictionary<string, HashSet<Guid>> InstanceItemGuids { get; set; } = new();
 	
 	/// <summary>
 	/// 转换到Json。

@@ -49,9 +49,14 @@ public class SaveData
 	public Dictionary<Guid, FactoryData> FactoryDatas { get; set; } = [];
 	
 	/// <summary>
-	/// 实例物品的名称表
+	/// 实例对象的名称表
 	/// </summary>
 	public Dictionary<Guid, string> InstanceNames { get; set; } = [];
+	
+	/// <summary>
+	/// 容器编组表
+	/// </summary>
+	public Dictionary<Guid, GuidGroup> ContainerGroups { get; set; } = [];
 	
 	/// <summary>
 	/// 将本实例转换为Json对象。
