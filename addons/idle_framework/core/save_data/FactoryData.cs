@@ -13,11 +13,35 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	/// </summary>
 	public FactoryIngredientRequireMode FactoryMode { get; set; }
 	
+	/// <summary>
+	/// 当前正执行的配方的ID，如果没有在执行配方则为空字符串
+	/// </summary>
+	public string CurrentRecipe { get; set; } = string.Empty;
+	
+	/// <summary>
+	/// 配方执行的开始时间
+	/// </summary>
+	public DateTime StartTime { get; set; }
+	
+	/// <summary>
+	/// 输入容器的GUID
+	/// </summary>
+	public Guid InputContainerGuid { get; set; }
+	
+	/// <summary>
+	/// 输出容器的GUID
+	/// </summary>
+	public Guid OutputContainerGuid { get; set; }
+	
 	public JObject ToJson()
 	{
 		JObject result = new()
 		{
 			[nameof(FactoryMode)] = new JValue(FactoryMode.ToString()),
+			[nameof(CurrentRecipe)] = new JValue(CurrentRecipe),
+			[nameof(StartTime)] = new JValue(StartTime.Ticks),
+			[nameof(InputContainerGuid)] = new JValue(InputContainerGuid),
+			[nameof(OutputContainerGuid)] = new JValue(OutputContainerGuid),
 		};
 		return result;
 	}
@@ -30,6 +54,22 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		{
 			if (Enum.TryParse(valueMode.Value<string>(), out FactoryIngredientRequireMode mode)) result.FactoryMode = mode;
 		}
+		if (jObject.TryGetValue(nameof(CurrentRecipe), out JToken valueCurrentRecipe) && valueCurrentRecipe.Type == JTokenType.String)
+		{
+			result.CurrentRecipe = valueCurrentRecipe.Value<string>();
+		}
+		if (jObject.TryGetValue(nameof(StartTime), out JToken valueStartTime) && valueStartTime.Type == JTokenType.Integer)
+		{
+			result.StartTime = new DateTime(valueStartTime.Value<long>());
+		}
+		if (jObject.TryGetValue(nameof(InputContainerGuid), out JToken valueInputContainerGuid) && valueInputContainerGuid.Type == JTokenType.Guid)
+		{
+			result.InputContainerGuid = valueInputContainerGuid.Value<Guid>();
+		}
+		if (jObject.TryGetValue(nameof(InputContainerGuid), out JToken valueOutputContainerGuid) && valueOutputContainerGuid.Type == JTokenType.Guid)
+		{
+			result.OutputContainerGuid = valueOutputContainerGuid.Value<Guid>();
+		}
 		return result;
 	}
 
@@ -38,6 +78,10 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		FactoryData duplicated = new()
 		{
 			FactoryMode = FactoryMode,
+			CurrentRecipe = CurrentRecipe,
+			StartTime = StartTime,
+			InputContainerGuid = InputContainerGuid,
+			OutputContainerGuid = OutputContainerGuid,
 		};
 		return duplicated;
 	}

@@ -16,6 +16,9 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/factory_item_container/factory_item_container.tscn");
 	
 	public Button NEditButton;
+	public Label NProgressTimeText;
+	public ProgressBar NProgressProgressBar;
+	public Label NProgressStandbyText;
 	
 	/// <summary>
 	/// 对应的工厂实例的GUID
@@ -27,6 +30,10 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		switch ((long)what)
 		{
 			case NotificationSceneInstantiated:
+				NProgressTimeText = GetNode<Label>("VBC/HBC/Progress/TimeText");
+				NProgressProgressBar = GetNode<ProgressBar>("VBC/HBC/Progress/ProgressBar");
+				NProgressStandbyText = GetNode<Label>("VBC/HBC/Progress/StandbyText");
+				NProgressStandbyText.Text = Localization.Tr("ui_scene_control.standby");
 				NEditButton = ItemContainerEditButton.Create();
 				NEditButton.Text = Localization.Tr("ui_scene_control.edit_button");
 				AddTitleBarControl(NEditButton);
@@ -56,11 +63,21 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	/// <param name="saveDataHelper">要使用的存档数据辅助器。</param>
 	public void Update(SaveDataHelper saveDataHelper)
 	{
-		if (false /*TODO 这里可以通过从SaveDataHelper获取工厂实例的数据，来一举两得完成对工厂实例是否存在的检测和取得用来反映到场景节点的数据*/)
+		if (!saveDataHelper.GetFactoryForGuid(FactoryGuid, out FactoryData factoryData))
 		{
 			Logger.LogInfo(Localization.Tr("log.info.ui_scene_control_factory_item_container.going_to_remove_because_corresponding_guid_is_not_exist_anymore"));
 			QueueFree();
 			return;
+		}
+		if (factoryData.CurrentRecipe == string.Empty)
+		{
+			NProgressStandbyText.Visible = true;
+			NProgressTimeText.Visible = NProgressProgressBar.Visible = false;
+		}
+		else
+		{
+			NProgressStandbyText.Visible = false;
+			NProgressTimeText.Visible = NProgressProgressBar.Visible = true;
 		}
 	}
 }

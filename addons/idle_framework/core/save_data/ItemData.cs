@@ -28,7 +28,7 @@ public class ItemData : ISaveDataComponent<ItemData>
 		JArray richDataItemGuidsJArray = [];
 		foreach (Guid guid in Guids)
 		{
-			richDataItemGuidsJArray.Add(new JValue(guid.ToString()));
+			richDataItemGuidsJArray.Add(new JValue(guid));
 		}
 		result[nameof(Guids)] = richDataItemGuidsJArray;
 		return result;

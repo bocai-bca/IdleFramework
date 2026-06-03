@@ -21,7 +21,10 @@ script = ExtResource("1_x4bs3")
 [node name="VBC" type="VBoxContainer" parent="." unique_id=1245331408]
 layout_mode = 2
 
-[node name="RecipeButton" type="Button" parent="VBC" unique_id=182277571]
+[node name="RecipeBar" type="VBoxContainer" parent="VBC" unique_id=1574978643]
+layout_mode = 2
+
+[node name="RecipeButton" type="Button" parent="VBC/RecipeBar" unique_id=182277571]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 text = "RecipeName"
@@ -61,6 +64,14 @@ custom_minimum_size = Vector2(128, 24)
 layout_mode = 2
 size_flags_vertical = 3
 value = 19.19
+
+[node name="StandbyText" type="Label" parent="VBC/HBC/Progress" unique_id=784053989]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+text = "ui_scene_control.standby"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="OutputContainerButton" type="Button" parent="VBC/HBC" unique_id=1624049310]
 custom_minimum_size = Vector2(96, 72)
