@@ -70,7 +70,7 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 			if (!NContainerItems.TryGetValue(itemId, out ContainerItem containerItem))
 			{
 				containerItem = ContainerItem.Create();
-				if (MotherNode.Instance.GameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject))
+				if (saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject))
 				{
 					containerItem.Icon = itemRegistryObject.IconTexture;
 					containerItem.TooltipText = Localization.Tr(itemRegistryObject.NameKey);

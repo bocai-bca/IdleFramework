@@ -66,7 +66,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 			Logger.LogError(Localization.Tr("log.error.ui_scene_control_space_detail_area.failed_to_get_all_instance_guids_for_space_id_owned"));
 			return;
 		}
-		GameResource gameResource = MotherNode.Instance.GameResource;
+		GameResource gameResource = saveDataHelper.UsingGameResource;
 		foreach ((string itemId, HashSet<Guid> itemGuids) in instanceItemGuids)
 		{
 			if (gameResource.IsFactory(itemId))

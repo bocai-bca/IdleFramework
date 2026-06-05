@@ -19,11 +19,16 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	public Label NProgressTimeText;
 	public ProgressBar NProgressProgressBar;
 	public Label NProgressStandbyText;
+	public Button NInputContainerButton;
+	public Button NOutputContainerButton;
 	
 	/// <summary>
 	/// 对应的工厂实例的GUID
 	/// </summary>
 	public Guid FactoryGuid { get; set; }
+
+	public Guid InputContainerGuidCache = Guid.Empty;
+	public Guid OutputContainerGuidCache = Guid.Empty;
 	
 	public override void _Notification(int what)
 	{
@@ -37,6 +42,10 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 				NEditButton = ItemContainerEditButton.Create();
 				NEditButton.Text = Localization.Tr("ui_scene_control.edit_button");
 				AddTitleBarControl(NEditButton);
+				NInputContainerButton = GetNode<Button>("VBC/HBC/InputContainerButton");
+				NInputContainerButton.TooltipText = Localization.Tr("ui_scene_control.click_to_set_container");
+				NOutputContainerButton = GetNode<Button>("VBC/HBC/OutputContainerButton");
+				NOutputContainerButton.TooltipText = Localization.Tr("ui_scene_control.click_to_set_container");
 				break;
 		}
 	}
@@ -78,6 +87,29 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		{
 			NProgressStandbyText.Visible = false;
 			NProgressTimeText.Visible = NProgressProgressBar.Visible = true;
+			if (!saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
+			{
+				Logger.LogError(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_get_recipe_registry_object_for_current_recipe"));
+			}
+		}
+		UpdateContainerButton(saveDataHelper, NInputContainerButton, factoryData.InputContainerGuid, InputContainerGuidCache);
+		UpdateContainerButton(saveDataHelper, NOutputContainerButton, factoryData.OutputContainerGuid, OutputContainerGuidCache);
+	}
+
+	public static void UpdateContainerButton(SaveDataHelper saveDataHelper, Button buttonNode, Guid containerGuidCurrent, Guid containerGuidCache)
+	{
+		if (!saveDataHelper.IsContainerMixinExistsForGuid(containerGuidCurrent))
+		{
+			buttonNode.Icon = null;
+			buttonNode.Text = "--";
+		}
+		else
+		{
+			if (containerGuidCurrent == containerGuidCache) return;
+			containerGuidCurrent = containerGuidCache;
+			string itemIdForGuid = saveDataHelper.QueryItemIdForGuid(containerGuidCurrent);
+			buttonNode.Icon = itemIdForGuid != string.Empty && saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemIdForGuid, out ItemRegistryObject itemRegistryObject) ? itemRegistryObject.IconTexture : null;
+			buttonNode.Text = saveDataHelper.GetNameForInstance(containerGuidCurrent);
 		}
 	}
 }

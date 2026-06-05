@@ -5,46 +5,49 @@ using Newtonsoft.Json.Linq;
 namespace IdleFramework.Core;
 
 /// <summary>
-/// GUID编组，一种实例对象。表示一群不重复的GUID。
+/// 容器编组，一种实例对象。表示一群不重复的容器GUID。
 /// </summary>
-public class GuidGroup : ISaveDataComponent<GuidGroup>
+public class ContainerGroup : GuidGroup, ISaveDataComponent<ContainerGroup>
 {
 	/// <summary>
-	/// 该GUID编组的存储集合
+	/// 图标物品ID
 	/// </summary>
-	public HashSet<Guid> Guids { get; } = [];
+	public string IconItemID { get; set; }
 
-	public HashSet<Guid>.Enumerator GetEnumerator() => Guids.GetEnumerator();
-	public bool Add(Guid guid) => Guids.Add(guid);
-	public bool Remove(Guid guid) => Guids.Remove(guid);
-	public bool Contains(Guid guid) => Guids.Contains(guid);
-	
-	public JObject ToJson()
+	public new JObject ToJson()
 	{
 		JArray guidsJArray = [];
 		JObject result = new()
 		{
 			[nameof(Guids)] = guidsJArray,
+			[nameof(IconItemID)] = new JValue(IconItemID),
 		};
 		foreach (Guid guid in Guids) guidsJArray.Add(new JValue(guid));
 		return result;
 	}
-
-	public static GuidGroup FromJson(JObject jObject)
+	
+	public new static ContainerGroup FromJson(JObject jObject)
 	{
 		if (jObject == null) return null;
-		GuidGroup result = new();
+		ContainerGroup result = new();
 		if (jObject.TryGetValue(nameof(Guids), out JToken valueGuids) && valueGuids.Type == JTokenType.Array)
 		{
 			JArray guidsArray = valueGuids.Value<JArray>();
 			foreach (JToken guidJToken in guidsArray) if (guidJToken.Type == JTokenType.Guid) result.Guids.Add(guidJToken.Value<Guid>());
 		}
+		if (jObject.TryGetValue(nameof(IconItemID), out JToken valueIconItem) && valueIconItem.Type == JTokenType.String)
+		{
+			result.IconItemID = valueIconItem.Value<string>();
+		}
 		return result;
 	}
 
-	public GuidGroup Duplicate()
+	public new ContainerGroup Duplicate()
 	{
-		GuidGroup duplicated = new();
+		ContainerGroup duplicated = new()
+		{
+			IconItemID = IconItemID,
+		};
 		foreach (Guid guid in Guids) duplicated.Guids.Add(guid);
 		return duplicated;
 	}

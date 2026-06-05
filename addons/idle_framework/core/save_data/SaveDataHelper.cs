@@ -42,7 +42,40 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	
 	#endregion
 
-	#region 实例对象名称访问 InstanceObject Name Accessing
+	#region 实例对象访问 InstanceObject Accessing
+	
+	#region 物品查询 Item Querying
+	
+	/// <summary>
+	/// GUID到原始物品ID的缓存表。
+	/// 此表不应在单个运行时生命周期中重置，因为GUID在理论上不应被重用，当一个GUID已确认被用于什么物品时，它没道理在后续变更为其他物品的实例对象的GUID。
+	/// </summary>
+	public Dictionary<Guid, string> GuidToItemIdCache { get; } = [];
+
+	/// <summary>
+	/// 通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <returns>该GUID的所有者所属于的物品ID，如果未找到则返回空字符串。</returns>
+	public string QueryItemIdForGuid(Guid guid)
+	{
+		if (GuidToItemIdCache.TryGetValue(guid, out string result)) return result;
+		foreach (string spaceId in UsingGameResource.SpaceRegistry.Keys)
+		{
+			if (!GetAllInstanceGuidsInSpace(spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)) continue;
+			foreach ((string itemId, HashSet<Guid> hashSet) in instanceItemGuids)
+			{
+				if (!hashSet.Contains(guid)) continue;
+				GuidToItemIdCache.Add(guid, itemId);
+				return itemId;
+			}
+		}
+		return string.Empty;
+	}
+	
+	#endregion
+	
+	#region 名称存取 Name GetAndSet
 	
 	/// <summary>
 	/// 通过GUID获取一个实例对象的名称，未找到时返回给定的默认名称。
@@ -52,10 +85,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <returns>该实例对象的名称。</returns>
 	public string GetNameForInstance(Guid guid, string defaultName = "")
 	{
-		lock (_lock)
-		{
-			return UsingSaveData.InstanceNames.GetValueOrDefault(guid, defaultName);
-		}
+		lock (_lock) return UsingSaveData.InstanceNames.GetValueOrDefault(guid, defaultName);
 	}
 
 	/// <summary>
@@ -65,15 +95,70 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="name">要设置的名称。</param>
 	public void SetNameForInstance(Guid guid, string name)
 	{
-		lock (_lock)
-		{
-			UsingSaveData.InstanceNames[guid] = name;
-		}
+		lock (_lock) UsingSaveData.InstanceNames[guid] = name;
 	}
+	
+	#endregion
+	
+	#region 数据实例操作 Data Instance Operating
+	
+	/// <summary>
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// </summary>
+	/// <param name="containerData">要添加的容器数据。</param>
+	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
+	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
+	public Guid AddInstanceObject(ContainerData containerData, Guid guid = default)
+	{
+		if (guid == Guid.Empty) guid = Guid.NewGuid();
+		lock (_lock) UsingSaveData.ContainerDatas[guid] = containerData;
+		return guid;
+	}
+	
+	/// <summary>
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// </summary>
+	/// <param name="factoryData">要添加的工厂数据。</param>
+	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
+	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
+	public Guid AddInstanceObject(FactoryData factoryData, Guid guid = default)
+	{
+		if (guid == Guid.Empty) guid = Guid.NewGuid();
+		lock (_lock) UsingSaveData.FactoryDatas[guid] = factoryData;
+		return guid;
+	}
+
+	/// <summary>
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// </summary>
+	/// <param name="richDataItemData">要添加的富数据物品数据。</param>
+	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
+	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
+	public Guid AddInstanceObject(RichDataItemData richDataItemData, Guid guid = default)
+	{
+		if (guid == Guid.Empty) guid = Guid.NewGuid();
+		lock (_lock) UsingSaveData.RichDataItems[guid] = richDataItemData;
+		return guid;
+	}
+
+	#endregion
 	
 	#endregion
 
 	#region 空间访问 Space Accessing
+
+	/// <summary>
+	/// 获取所有空间数据的ID。
+	/// 此方法暂时不推荐使用，因为可以直接通过不使用锁地访问游戏数据来获得。
+	/// </summary>
+	/// <returns>所有空间数据的ID。</returns>
+	public ICollection<string> GetAllSpaceIds()
+	{
+		lock (_lock)
+		{
+			return UsingSaveData.SpaceDatas.Keys;
+		}
+	}
 	
 	/// <summary>
 	/// 获取给定ID的空间的空间容器的GUID。
@@ -100,7 +185,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// </summary>
 	/// <param name="spaceId">想要获取其空间容器的空间的ID。</param>
 	/// <param name="instanceItemGuids">获取到的所有物品实例的GUID，键为物品ID，值为GUID列表，如果未找到则返回空字典。</param>
-	/// <returns>成功与否。</returns>
+	/// <returns>成功与否，一般不太可能为<c>false</c>因为空间数据会在存档数据初始化时实例化所有空间注册表项。</returns>
 	public bool GetAllInstanceGuidsInSpace(string spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)
 	{
 		instanceItemGuids = [];
@@ -118,6 +203,67 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	#endregion
 	
 	#region 容器访问 Container Accessing
+	
+	#region 混合 Mixin
+
+	/// <summary>
+	/// 查找是否存在对应给定GUID的容器实例或容器编组。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <returns>是否存在对应GUID的容器实例或容器编组。</returns>
+	public bool IsContainerMixinExistsForGuid(Guid guid)
+	{
+		lock (_lock)
+		{
+			return UsingSaveData.ContainerDatas.ContainsKey(guid) || UsingSaveData.ContainerGroups.ContainsKey(guid);
+		}
+	}
+	
+	/// <summary>
+	/// 获取给定GUID的容器或容器编组中的所有物品数量。本方法相当于获取特定单一容器或一个容器编组中的所有嵌套容器的<c>ContainerData.ItemCounts</c>字典的复制品。
+	/// 方法的时间复杂度为O(n)。
+	/// 如果同时存在相同GUID的容器实例和容器编组，将只返回容器实例的物品，因为理论上不允许有相同GUID的容器实例和容器编组存在。
+	/// 如果查找到的容器编组存在嵌套，则会递归进去进一步搜索物品。
+	/// </summary>
+	/// <param name="containerMixinGuid">要查找的容器实例或容器编组的GUID。</param>
+	/// <param name="containerItems">结果字典，键为物品ID，值为对应物品的物品数量。如果未能找到给定GUID的容器实例或容器编组则返回空字典。</param>
+	/// <returns>是否成功获取到对应容器实例或容器编组，如果不存在对应GUID的容器实例或容器编组则返回<c>false</c>。</returns>
+	public bool GetAllItemCountsForContainerMixin(Guid containerMixinGuid, out Dictionary<string, long> containerItems)
+	{
+		bool gotContainerData;
+		bool gotContainerGroup;
+		ContainerData containerData;
+		ContainerGroup containerGroup;
+		//获取容器实例或容器编组，并复制
+		lock (_lock)
+		{
+			gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out containerData);
+			if (gotContainerData) containerData = containerData.Duplicate();
+			gotContainerGroup = UsingSaveData.ContainerGroups.TryGetValue(containerMixinGuid, out containerGroup);
+			if (gotContainerGroup) containerGroup = containerGroup.Duplicate();
+		}
+		if (gotContainerData) //如果找到了容器实例
+		{
+			//从容器中获取所有物品并返回
+			containerItems = GetAllItemCountsForContainer(containerData);
+			return true;
+		}
+		containerItems = [];
+		if (!gotContainerGroup) return false; //如果没有找到容器实例或容器编组，在这里返回为失败状态
+		foreach (Guid guidContainerMixin in containerGroup.Guids) //遍历取得的容器编组的所有GUID
+		{
+			if (!GetAllItemCountsForContainerMixin(guidContainerMixin, out Dictionary<string, long> deepContainerItems)) continue; //如果当前GUID没有查询到容器实例或容器编组则进入下一个GUID
+			foreach ((string deepItemId, long deepItemCount) in deepContainerItems) //遍历取得的深层容器物品
+			{
+				containerItems[deepItemId] = deepItemCount + containerItems.GetValueOrDefault(deepItemId, 0); //追加当前深层物品的数量进浅层容器物品表
+			}
+		}
+		return true;
+	}
+	
+	#endregion
+	
+	#region 仅容器 Container Only
 	
 	/// <summary>
 	/// 通过GUID获取一个容器实例，可以选择是否要获取复制品。
@@ -175,9 +321,26 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	
 	#endregion
 	
-	#region 容器编组访问 ContainerGroup Accessing
+	#region 仅容器编组 ContainerGroup Only
 	
-	// TODO
+	/// <summary>
+	/// 通过GUID获取一个容器编组，可以选择是否要获取复制品。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="containerGroup">查找到的容器编组。</param>
+	/// <param name="duplicate">是否要复制获取到的容器编组。</param>
+	/// <returns>成功与否，如果没有找到则返回<c>false</c>。</returns>
+	public bool GetContainerGroupForGuid(Guid guid, [MaybeNullWhen(false)] out ContainerGroup containerGroup, bool duplicate = true)
+	{
+		lock (_lock)
+		{
+			if (!UsingSaveData.ContainerGroups.TryGetValue(guid, out containerGroup)) return false;
+			containerGroup = duplicate ? containerGroup.Duplicate() : containerGroup;
+		}
+		return true;
+	}
+	
+	#endregion
 	
 	#endregion
 	
@@ -200,49 +363,6 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		return true;
 	}
 	
-	#endregion
-	
-	#region 实例对象操作 InstanceObject Operating
-	
-	/// <summary>
-	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
-	/// </summary>
-	/// <param name="containerData">要添加的容器数据。</param>
-	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
-	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
-	public Guid AddInstanceObject(ContainerData containerData, Guid guid = default)
-	{
-		if (guid == Guid.Empty) guid = Guid.NewGuid();
-		lock (_lock) UsingSaveData.ContainerDatas[guid] = containerData;
-		return guid;
-	}
-	
-	/// <summary>
-	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
-	/// </summary>
-	/// <param name="factoryData">要添加的工厂数据。</param>
-	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
-	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
-	public Guid AddInstanceObject(FactoryData factoryData, Guid guid = default)
-	{
-		if (guid == Guid.Empty) guid = Guid.NewGuid();
-		lock (_lock) UsingSaveData.FactoryDatas[guid] = factoryData;
-		return guid;
-	}
-
-	/// <summary>
-	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
-	/// </summary>
-	/// <param name="richDataItemData">要添加的富数据物品数据。</param>
-	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
-	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
-	public Guid AddInstanceObject(RichDataItemData richDataItemData, Guid guid = default)
-	{
-		if (guid == Guid.Empty) guid = Guid.NewGuid();
-		lock (_lock) UsingSaveData.RichDataItems[guid] = richDataItemData;
-		return guid;
-	}
-
 	#endregion
 	
 	#region 注册表项实例化 RegistryObject Instantiating

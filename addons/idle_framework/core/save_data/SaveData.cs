@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -56,7 +55,7 @@ public class SaveData
 	/// <summary>
 	/// 容器编组表
 	/// </summary>
-	public Dictionary<Guid, GuidGroup> ContainerGroups { get; set; } = [];
+	public Dictionary<Guid, ContainerGroup> ContainerGroups { get; set; } = [];
 	
 	/// <summary>
 	/// 将本实例转换为Json对象。
@@ -69,6 +68,7 @@ public class SaveData
 		JObject factoryDatasJObject = new();
 		JObject richDataItemsJObject = new();
 		JObject instanceNamesJObject = new();
+		JObject containerGroupJObject = new();
 		JObject root = new()
 		{
 			[nameof(GameID)] = GameID,
@@ -78,12 +78,14 @@ public class SaveData
 			[nameof(FactoryDatas)] = factoryDatasJObject,
 			[nameof(RichDataItems)] = richDataItemsJObject,
 			[nameof(InstanceNames)] = instanceNamesJObject,
+			[nameof(ContainerGroups)] = containerGroupJObject,
 		};
 		foreach ((string key, SpaceData spaceData) in SpaceDatas) spaceDatasJObject.Add(key, spaceData.ToJson());
 		foreach ((Guid guid, ContainerData containerData) in ContainerDatas) containerDatasJObject.Add(guid.ToString(), containerData.ToJson());
 		foreach ((Guid guid, FactoryData factoryData) in FactoryDatas) factoryDatasJObject.Add(guid.ToString(), factoryData.ToJson());
 		foreach ((Guid guid, RichDataItemData richDataItem) in RichDataItems) richDataItemsJObject.Add(guid.ToString(), richDataItem.ToJson());
 		foreach ((Guid guid, string instanceName) in InstanceNames) instanceNamesJObject.Add(guid.ToString(), new JValue(instanceName));
+		foreach ((Guid guid, ContainerGroup containerGroup) in ContainerGroups) containerGroupJObject.Add(guid.ToString(), containerGroup.ToJson());
 		return root;
 	}
 	
@@ -91,7 +93,6 @@ public class SaveData
 	/// 将本实例序列化为Json文本。
 	/// </summary>
 	/// <returns>转换后的文本。</returns>
-	[Pure]
 	public string ToJsonText()
 	{
 		return ToJson().ToString(Formatting.Indented);
@@ -102,7 +103,6 @@ public class SaveData
 	/// </summary>
 	/// <param name="deep">是否深度复制。</param>
 	/// <returns>复制出来的新实例。</returns>
-	[Pure]
 	public SaveData Duplicate(bool deep = true)
 	{
 		return Duplicate(this, deep);
@@ -114,7 +114,6 @@ public class SaveData
 	/// <param name="originalData">要复制的原始实例。</param>
 	/// <param name="deep">是否深度复制。</param>
 	/// <returns>复制出来的新实例。</returns>
-	[Pure]
 	public static SaveData Duplicate([DisallowNull] SaveData originalData, bool deep = true)
 	{
 		SaveData newInstance = new()
@@ -124,38 +123,49 @@ public class SaveData
 			LastUpdateUtcTick = originalData.LastUpdateUtcTick,
 			SpaceDatas = originalData.SpaceDatas,
 			RichDataItems = originalData.RichDataItems,
+			ContainerDatas = originalData.ContainerDatas,
+			FactoryDatas = originalData.FactoryDatas,
+			InstanceNames = originalData.InstanceNames,
+			ContainerGroups = originalData.ContainerGroups,
 		};
-		if (deep)
+		if (!deep) return newInstance;
+		newInstance.SpaceDatas = [];
+		foreach ((string key, SpaceData originalSpaceData) in originalData.SpaceDatas)
 		{
-			newInstance.SpaceDatas = [];
-			foreach ((string key, SpaceData originalSpaceData) in originalData.SpaceDatas)
-			{
-				SpaceData newSpaceData = originalSpaceData.Duplicate();
-				if (newSpaceData is null) continue;
-				newInstance.SpaceDatas[key] = newSpaceData;
-			}
-			newInstance.ContainerDatas = [];
-			foreach ((Guid guid, ContainerData originalContainerData) in originalData.ContainerDatas)
-			{
-				ContainerData newContainerData = originalContainerData.Duplicate();
-				if (newContainerData is null) continue;
-				newInstance.ContainerDatas[guid] = newContainerData;
-			}
-			newInstance.FactoryDatas = [];
-			foreach ((Guid guid, FactoryData originalFactoryData) in originalData.FactoryDatas)
-			{
-				FactoryData newFactoryData = originalFactoryData.Duplicate();
-				if (newFactoryData is null) continue;
-				newInstance.FactoryDatas[guid] = newFactoryData;
-			}
-			newInstance.RichDataItems = [];
-			foreach ((Guid guid, RichDataItemData originalRichDataItem) in originalData.RichDataItems)
-			{
-				RichDataItemData newRichDataItemData = originalRichDataItem.Duplicate();
-				if (newRichDataItemData is null) continue;
-				newInstance.RichDataItems[guid] = newRichDataItemData;
-			}
+			SpaceData newSpaceData = originalSpaceData.Duplicate();
+			if (newSpaceData is null) continue;
+			newInstance.SpaceDatas[key] = newSpaceData;
 		}
+		newInstance.ContainerDatas = [];
+		foreach ((Guid guid, ContainerData originalContainerData) in originalData.ContainerDatas)
+		{
+			ContainerData newData = originalContainerData.Duplicate();
+			if (newData is null) continue;
+			newInstance.ContainerDatas[guid] = newData;
+		}
+		newInstance.FactoryDatas = [];
+		foreach ((Guid guid, FactoryData originalFactoryData) in originalData.FactoryDatas)
+		{
+			FactoryData newData = originalFactoryData.Duplicate();
+			if (newData is null) continue;
+			newInstance.FactoryDatas[guid] = newData;
+		}
+		newInstance.RichDataItems = [];
+		foreach ((Guid guid, RichDataItemData originalRichDataItem) in originalData.RichDataItems)
+		{
+			RichDataItemData newData = originalRichDataItem.Duplicate();
+			if (newData is null) continue;
+			newInstance.RichDataItems[guid] = newData;
+		}
+		newInstance.ContainerGroups = [];
+		foreach ((Guid guid, ContainerGroup originalContainerGroup) in originalData.ContainerGroups)
+		{
+			ContainerGroup newData = originalContainerGroup.Duplicate();
+			if (newData is null) continue;
+			newInstance.ContainerGroups[guid] = newData;
+		}
+		newInstance.InstanceNames = [];
+		foreach ((Guid guid, string name) in originalData.InstanceNames) newInstance.InstanceNames[guid] = name;
 		return newInstance;
 	}
 	
