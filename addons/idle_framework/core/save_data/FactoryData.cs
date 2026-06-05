@@ -32,6 +32,11 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	/// 输出容器的GUID
 	/// </summary>
 	public Guid OutputContainerGuid { get; set; }
+
+	/// <summary>
+	/// 工厂ID缓存，由更新器赋值，不会被持久化。
+	/// </summary>
+	public string FactoryIdCache = string.Empty;
 	
 	public JObject ToJson()
 	{

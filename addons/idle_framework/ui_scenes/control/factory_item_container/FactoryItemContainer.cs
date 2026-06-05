@@ -21,12 +21,14 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	public Label NProgressStandbyText;
 	public Button NInputContainerButton;
 	public Button NOutputContainerButton;
+	public Button NRecipeButton;
 	
 	/// <summary>
 	/// 对应的工厂实例的GUID
 	/// </summary>
 	public Guid FactoryGuid { get; set; }
 
+	public FactoryRegistryObject FactoryRegistryObjectCache;
 	public Guid InputContainerGuidCache = Guid.Empty;
 	public Guid OutputContainerGuidCache = Guid.Empty;
 	
@@ -46,6 +48,7 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 				NInputContainerButton.TooltipText = Localization.Tr("ui_scene_control.click_to_set_container");
 				NOutputContainerButton = GetNode<Button>("VBC/HBC/OutputContainerButton");
 				NOutputContainerButton.TooltipText = Localization.Tr("ui_scene_control.click_to_set_container");
+				NRecipeButton = GetNode<Button>("VBC/RecipeBar/RecipeButton");
 				break;
 		}
 	}
@@ -87,9 +90,22 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		{
 			NProgressStandbyText.Visible = false;
 			NProgressTimeText.Visible = NProgressProgressBar.Visible = true;
+		}
+		if (string.IsNullOrEmpty(factoryData.FactoryIdCache))
+		{
+			NRecipeButton.Disabled = true;
+			NRecipeButton.Icon = null;
+			NRecipeButton.Text = Localization.Tr("ui_scene_control.waiting_for_update");
+		}
+		else
+		{
 			if (!saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
 			{
 				Logger.LogError(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_get_recipe_registry_object_for_current_recipe"));
+			}
+			else
+			{
+				UpdateRecipeBar(saveDataHelper, factoryData, recipeRegistryObject);
 			}
 		}
 		UpdateContainerButton(saveDataHelper, NInputContainerButton, factoryData.InputContainerGuid, InputContainerGuidCache);
@@ -111,6 +127,11 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 			buttonNode.Icon = itemIdForGuid != string.Empty && saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemIdForGuid, out ItemRegistryObject itemRegistryObject) ? itemRegistryObject.IconTexture : null;
 			buttonNode.Text = saveDataHelper.GetNameForInstance(containerGuidCurrent);
 		}
+	}
+
+	public void UpdateRecipeBar(SaveDataHelper saveDataHelper, FactoryData factoryData, RecipeRegistryObject recipeRegistryObject)
+	{
+		
 	}
 }
 #endif

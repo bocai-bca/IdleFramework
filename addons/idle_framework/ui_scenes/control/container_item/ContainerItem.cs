@@ -11,17 +11,26 @@ namespace IdleFramework.UIScenes.Control;
 public partial class ContainerItem : Button, IClassPackedScene
 {
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/container_item/container_item.tscn");
+
+	/// <summary>
+	/// 物品名称缓存
+	/// </summary>
+	public string ItemNameCache;
 	
 	/// <summary>
 	/// 设置物品图标。
 	/// </summary>
 	/// <param name="itemIcon">物品图标。</param>
 	public void SetItemIcon(Texture2D itemIcon) => Icon = itemIcon;
-	
+
 	/// <summary>
 	/// 设置物品数量。
 	/// </summary>
 	/// <param name="itemCount">物品数量。</param>
-	public void SetItemCount(long itemCount) => Text = itemCount.ToString();
+	public void SetItemCount(long itemCount)
+	{
+		Text = itemCount.NumberToShortText();
+		TooltipText = ItemNameCache + "\n" + itemCount;
+	}
 }
 #endif

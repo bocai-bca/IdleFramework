@@ -72,13 +72,13 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 				containerItem = ContainerItem.Create();
 				if (saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject))
 				{
-					containerItem.Icon = itemRegistryObject.IconTexture;
-					containerItem.TooltipText = Localization.Tr(itemRegistryObject.NameKey);
+					containerItem.ItemNameCache = Localization.Tr(itemRegistryObject.NameKey);
+					containerItem.SetItemIcon(itemRegistryObject.IconTexture);
 				}
 				NContainerItems[itemId] = containerItem;
 				NItems.AddChild(containerItem);
 			}
-			containerItem.Text = itemCount.ToString();
+			containerItem.SetItemCount(itemCount);
 		}
 	}
 }

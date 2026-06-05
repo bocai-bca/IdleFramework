@@ -11,6 +11,8 @@ namespace IdleFramework;
 [GlobalClass]
 public partial class RecipeOrderManualSelect : RecipeOrder
 {
+	public override bool IsManuallable => true;
+	
 	/// <summary>
 	/// 本下单器的配方ID列表，会呈现在GUI上供玩家手动选择，因此不要重复出现相同ID
 	/// </summary>

@@ -10,11 +10,28 @@ namespace IdleFramework;
 public partial class RecipeRegistryObject : Resource
 {
 	/// <summary>
+	/// 配方名称翻译键。
+	/// </summary>
+	[Export, ExportGroup("Assets")]
+	public string NameKey { get; set; } = "";
+
+	/// <summary>
+	/// 配方描述翻译键。
+	/// </summary>
+	[Export]
+	public string LoreKey { get; set; } = "";
+	
+	/// <summary>
+	/// 该配方的图标。
+	/// </summary>
+	[Export]
+	public Texture2D IconTexture;
+	
+	/// <summary>
 	/// 该配方的原材料表。
 	/// 如果原材料物品的数值提供器返回结果是会变化的，生产器会在配方订单创建时确定需求数量，在满足该需求数量的情况下才进行生产计时，在计时完毕后再次访问数值提供器取得需求数量，并扣除此时得到的需求数量个原料，而如果原料库存量未能满足此时的需求数量，该次生产将被重置到初始状态。
 	/// </summary>
-	[Export]
-	[ExportGroup("Data")]
+	[Export, ExportGroup("Data")]
 	public Dictionary<string, NumberProvider> Ingredients = new();
 	
 	/// <summary>

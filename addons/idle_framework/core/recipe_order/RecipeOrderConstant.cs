@@ -9,6 +9,8 @@ namespace IdleFramework;
 [GlobalClass]
 public partial class RecipeOrderConstant : RecipeOrder
 {
+	public override bool IsManuallable => false;
+
 	/// <summary>
 	/// 本下单器会返回的配方ID
 	/// </summary>

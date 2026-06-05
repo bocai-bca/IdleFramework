@@ -10,6 +10,8 @@ namespace IdleFramework;
 [GlobalClass]
 public partial class RecipeOrderListRandom : RecipeOrder
 {
+	public override bool IsManuallable => false;
+	
 	/// <summary>
 	/// 本下单器的配方ID列表，允许重复出现相同ID，重复ID会表现为提高该ID被抽中的概率
 	/// </summary>
