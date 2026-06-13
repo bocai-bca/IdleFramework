@@ -41,3 +41,5 @@ log.error.rich_data_item_data.cannot_convert_an_unsupported_jtoken_type_into_a_r
 log.error.rich_data_item_data.unsupported_jtoken_type_of_child_token_of_jarray,,"RichDataItemData: Unsupported JToken type of child token of JArray: {0}","RichDataItemData: JArray的子令牌为不支持的JToken类型: {0}"
 log.error.rich_data_helper.save_data_rdi_dictionary_givened_is_null,,"RichDataHelper: SaveData RDI Dictionary givened is null.","RichDataHelper: 给定的SaveData富数据物品字典为null。"
 log.error.updater.save_data_helper_in_handle_is_null,,"Updater: SaveDataHelperInHandle is null.","Updater: SaveDataHelperInHandle为null。"
+log.error.updater.unexcepted_to_failed_to_get_all_instance_guids_for_items_in_space,,"Updater: Unexcepted to failed to get all instance guids for items in space """{0}""".","Updater: 超出预期地未能获取空间"""{0}"""的所有实例对象GUID。"
+log.error.updater.unexcepted_to_failed_to_get_factory_for_guid,,"Updater: Unexcepted to failed to get FactoryData for GUID: """{0}""".","Updater: 超出预期地未能获取GUID为"""{0}"""的FactoryData。"

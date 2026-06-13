@@ -61,7 +61,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 	/// <param name="saveDataHelper">要使用的存档数据辅助器。</param>
 	public void CollectAndPlaceElements(SaveDataHelper saveDataHelper)
 	{
-		if (!saveDataHelper.GetAllInstanceGuidsInSpace(SpaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids))
+		if (!saveDataHelper.GetAllInstanceGuidsOfItemsInSpace(SpaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids))
 		{
 			Logger.LogError(Localization.Tr("log.error.ui_scene_control_space_detail_area.failed_to_get_all_instance_guids_for_space_id_owned"));
 			return;

@@ -24,6 +24,16 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	public DateTime StartTime { get; set; }
 	
 	/// <summary>
+	/// 配方执行的结束时间，仅适用于部分工厂模式
+	/// </summary>
+	public DateTime DoneTime { get; set; }
+	
+	/// <summary>
+	/// 配方已工作的时间刻数，仅适用于部分工厂模式
+	/// </summary>
+	public long RecipeProcessedTicks { get; set; }
+	
+	/// <summary>
 	/// 输入容器的GUID
 	/// </summary>
 	public Guid InputContainerGuid { get; set; }
@@ -33,6 +43,11 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	/// </summary>
 	public Guid OutputContainerGuid { get; set; }
 
+	/// <summary>
+	/// 该工厂是否已经开始生产
+	/// </summary>
+	public bool WasStarted { get; set; }
+	
 	/// <summary>
 	/// 工厂ID缓存，由更新器赋值，不会被持久化。
 	/// </summary>
@@ -45,8 +60,10 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			[nameof(FactoryMode)] = new JValue(FactoryMode.ToString()),
 			[nameof(CurrentRecipe)] = new JValue(CurrentRecipe),
 			[nameof(StartTime)] = new JValue(StartTime.Ticks),
+			[nameof(DoneTime)] = new JValue(DoneTime.Ticks),
 			[nameof(InputContainerGuid)] = new JValue(InputContainerGuid),
 			[nameof(OutputContainerGuid)] = new JValue(OutputContainerGuid),
+			[nameof(WasStarted)] = new JValue(WasStarted),
 		};
 		return result;
 	}
@@ -67,6 +84,10 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		{
 			result.StartTime = new DateTime(valueStartTime.Value<long>());
 		}
+		if (jObject.TryGetValue(nameof(DoneTime), out JToken valueDoneTime) && valueDoneTime.Type == JTokenType.Integer)
+		{
+			result.DoneTime = new DateTime(valueDoneTime.Value<long>());
+		}
 		if (jObject.TryGetValue(nameof(InputContainerGuid), out JToken valueInputContainerGuid) && valueInputContainerGuid.Type == JTokenType.Guid)
 		{
 			result.InputContainerGuid = valueInputContainerGuid.Value<Guid>();
@@ -74,6 +95,11 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		if (jObject.TryGetValue(nameof(InputContainerGuid), out JToken valueOutputContainerGuid) && valueOutputContainerGuid.Type == JTokenType.Guid)
 		{
 			result.OutputContainerGuid = valueOutputContainerGuid.Value<Guid>();
+		}
+
+		if (jObject.TryGetValue(nameof(WasStarted), out JToken valueWasStarted) && valueWasStarted.Type == JTokenType.Boolean)
+		{
+			result.WasStarted = valueWasStarted.Value<bool>();
 		}
 		return result;
 	}
@@ -87,6 +113,7 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			StartTime = StartTime,
 			InputContainerGuid = InputContainerGuid,
 			OutputContainerGuid = OutputContainerGuid,
+			WasStarted = WasStarted,
 		};
 		return duplicated;
 	}

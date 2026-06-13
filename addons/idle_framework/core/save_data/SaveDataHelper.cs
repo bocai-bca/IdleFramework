@@ -34,10 +34,16 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <returns>存档数据的<c>LastUpdateUtcTick</c>属性。</returns>
 	public long GetLastUpdateUtcTick()
 	{
-		lock (_lock)
-		{
-			return UsingSaveData.LastUpdateUtcTick;
-		}
+		lock (_lock) return UsingSaveData.LastUpdateUtcTick;
+	}
+
+	/// <summary>
+	/// 设置存档数据的上次更新的UTC时间刻。
+	/// </summary>
+	/// <param name="tick">要设置进存档数据的<c>LastUpdateUtcTick</c>属性的值。</param>
+	public void SetLastUpdateUtcTick(long tick)
+	{
+		lock (_lock) UsingSaveData.LastUpdateUtcTick = tick;
 	}
 	
 	#endregion
@@ -62,7 +68,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		if (GuidToItemIdCache.TryGetValue(guid, out string result)) return result;
 		foreach (string spaceId in UsingGameResource.SpaceRegistry.Keys)
 		{
-			if (!GetAllInstanceGuidsInSpace(spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)) continue;
+			if (!GetAllInstanceGuidsOfItemsInSpace(spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)) continue;
 			foreach ((string itemId, HashSet<Guid> hashSet) in instanceItemGuids)
 			{
 				if (!hashSet.Contains(guid)) continue;
@@ -103,7 +109,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	#region 数据实例操作 Data Instance Operating
 	
 	/// <summary>
-	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。如果已有相同GUID的容器数据则会进行覆盖。
 	/// </summary>
 	/// <param name="containerData">要添加的容器数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
@@ -116,7 +122,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 	
 	/// <summary>
-	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。如果已有相同GUID的工厂数据则会进行覆盖。
 	/// </summary>
 	/// <param name="factoryData">要添加的工厂数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
@@ -129,7 +135,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
-	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。
+	/// 将给定实例对象添加到存档数据并返回GUID，如果不指定自定义的GUID将随机创建新的GUID。如果已有相同GUID的富数据物品数据则会进行覆盖。
 	/// </summary>
 	/// <param name="richDataItemData">要添加的富数据物品数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
@@ -156,7 +162,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	{
 		lock (_lock)
 		{
-			return UsingSaveData.SpaceDatas.Keys;
+			return new List<string>(UsingSaveData.SpaceDatas.Keys);
 		}
 	}
 	
@@ -186,7 +192,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="spaceId">想要获取其空间容器的空间的ID。</param>
 	/// <param name="instanceItemGuids">获取到的所有物品实例的GUID，键为物品ID，值为GUID列表，如果未找到则返回空字典。</param>
 	/// <returns>成功与否，一般不太可能为<c>false</c>因为空间数据会在存档数据初始化时实例化所有空间注册表项。</returns>
-	public bool GetAllInstanceGuidsInSpace(string spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)
+	public bool GetAllInstanceGuidsOfItemsInSpace(string spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)
 	{
 		instanceItemGuids = [];
 		lock (_lock)
@@ -361,6 +367,18 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			factoryData = duplicate ? factoryData.Duplicate() : factoryData;
 		}
 		return true;
+	}
+
+	/// <summary>
+	/// 获取所有工厂的GUID集合。
+	/// </summary>
+	/// <returns>一个容纳当前所有工厂GUID的集合。</returns>
+	public ICollection<Guid> GetAllGuidsForFactories()
+	{
+		lock (_lock)
+		{
+			return new List<Guid>(UsingSaveData.FactoryDatas.Keys);
+		}
 	}
 	
 	#endregion
