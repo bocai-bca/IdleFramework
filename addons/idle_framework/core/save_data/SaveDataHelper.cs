@@ -114,7 +114,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="containerData">要添加的容器数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
 	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
-	public Guid AddInstanceObject(ContainerData containerData, Guid guid = default)
+	public Guid SetInstanceObject(ContainerData containerData, Guid guid = default)
 	{
 		if (guid == Guid.Empty) guid = Guid.NewGuid();
 		lock (_lock) UsingSaveData.ContainerDatas[guid] = containerData;
@@ -127,7 +127,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="factoryData">要添加的工厂数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
 	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
-	public Guid AddInstanceObject(FactoryData factoryData, Guid guid = default)
+	public Guid SetInstanceObject(FactoryData factoryData, Guid guid = default)
 	{
 		if (guid == Guid.Empty) guid = Guid.NewGuid();
 		lock (_lock) UsingSaveData.FactoryDatas[guid] = factoryData;
@@ -140,7 +140,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="richDataItemData">要添加的富数据物品数据。</param>
 	/// <param name="guid">要使用的GUID，可以使用<c>Guid.NewGuid()</c>创建新GUID，或者不使用此项参数(保持此项参数的值为default)来自动创建新的GUID。</param>
 	/// <returns>该实例物品被添加为的GUID，在不指定自定义GUID的情况下返回随机的新GUID，否则返回给定的自定义GUID。</returns>
-	public Guid AddInstanceObject(RichDataItemData richDataItemData, Guid guid = default)
+	public Guid SetInstanceObject(RichDataItemData richDataItemData, Guid guid = default)
 	{
 		if (guid == Guid.Empty) guid = Guid.NewGuid();
 		lock (_lock) UsingSaveData.RichDataItems[guid] = richDataItemData;
@@ -462,18 +462,18 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 					if (hasContainerRegistry) //检查是否被注册为容器
 					{
 						//创建容器实例并添加的过程
-						AddInstanceObject(InstantiateRegistryObject(prefillItemContainerRegistryObject), currentInstanceGuid);
+						SetInstanceObject(InstantiateRegistryObject(prefillItemContainerRegistryObject), currentInstanceGuid);
 					}
 					if (hasFactoryRegistry) //检查是否被注册为工厂
 					{
 						//创建工厂实例并添加的过程
-						AddInstanceObject(InstantiateRegistryObject(prefillItemFactoryRegistryObject), currentInstanceGuid);
+						SetInstanceObject(InstantiateRegistryObject(prefillItemFactoryRegistryObject), currentInstanceGuid);
 					}
 					prefillInstanceGuids.Add(currentInstanceGuid);
 				}
 				newSpaceData.InstanceItemGuids[itemId] = prefillInstanceGuids;
 			}
-			SetNameForInstance(newSpaceData.SpaceContainerGuid = AddInstanceObject(newSpaceContainerData), Localization.Tr("space_container")); //给空间容器实例设置名字
+			SetNameForInstance(newSpaceData.SpaceContainerGuid = SetInstanceObject(newSpaceContainerData), Localization.Tr("space_container")); //给空间容器实例设置名字
 			AddSpaceData(spaceId, newSpaceData);
 		}
 	}

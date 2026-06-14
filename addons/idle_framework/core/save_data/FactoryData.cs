@@ -24,14 +24,9 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	public DateTime StartTime { get; set; }
 	
 	/// <summary>
-	/// 配方执行的结束时间，仅适用于部分工厂模式
-	/// </summary>
-	public DateTime DoneTime { get; set; }
-	
-	/// <summary>
 	/// 配方已工作的时间刻数，仅适用于部分工厂模式
 	/// </summary>
-	public long RecipeProcessedTicks { get; set; }
+	public long RecipeRemainingTicks { get; set; }
 	
 	/// <summary>
 	/// 输入容器的GUID
@@ -60,7 +55,6 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			[nameof(FactoryMode)] = new JValue(FactoryMode.ToString()),
 			[nameof(CurrentRecipe)] = new JValue(CurrentRecipe),
 			[nameof(StartTime)] = new JValue(StartTime.Ticks),
-			[nameof(DoneTime)] = new JValue(DoneTime.Ticks),
 			[nameof(InputContainerGuid)] = new JValue(InputContainerGuid),
 			[nameof(OutputContainerGuid)] = new JValue(OutputContainerGuid),
 			[nameof(WasStarted)] = new JValue(WasStarted),
@@ -83,10 +77,6 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		if (jObject.TryGetValue(nameof(StartTime), out JToken valueStartTime) && valueStartTime.Type == JTokenType.Integer)
 		{
 			result.StartTime = new DateTime(valueStartTime.Value<long>());
-		}
-		if (jObject.TryGetValue(nameof(DoneTime), out JToken valueDoneTime) && valueDoneTime.Type == JTokenType.Integer)
-		{
-			result.DoneTime = new DateTime(valueDoneTime.Value<long>());
 		}
 		if (jObject.TryGetValue(nameof(InputContainerGuid), out JToken valueInputContainerGuid) && valueInputContainerGuid.Type == JTokenType.Guid)
 		{
@@ -111,6 +101,7 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			FactoryMode = FactoryMode,
 			CurrentRecipe = CurrentRecipe,
 			StartTime = StartTime,
+			RecipeRemainingTicks = RecipeRemainingTicks,
 			InputContainerGuid = InputContainerGuid,
 			OutputContainerGuid = OutputContainerGuid,
 			WasStarted = WasStarted,
