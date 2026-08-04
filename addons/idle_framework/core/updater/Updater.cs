@@ -103,6 +103,11 @@ public static class Updater
 	/// <returns>该工厂是否导致容器发生变化，为true则意味着更新器应当进行下一轮循环。</returns>
 	private static bool updateFactory([NotNull]FactoryData factoryData, InfiniteTaggedValue<long> timeSpanTicksAllowFactoriesToMoveOn, out InfiniteTaggedValue<long> minimalTimeSpanTicksToNextSomethingChanging)
 	{
+		if (factoryData.CurrentRecipe == string.Empty)
+		{
+			minimalTimeSpanTicksToNextSomethingChanging = 0L;
+			return false;
+		}
 		bool containerChanged = false;
 		switch (factoryData.FactoryMode)
 		{

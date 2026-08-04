@@ -1,6 +1,5 @@
 #if IDLE_FRAMEWORK_UISCENE_ALL || IDLE_FRAMEWORK_UISCENE_CONTROL
 using System;
-using System.Collections.Generic;
 using Godot;
 using IdleFramework.Core;
 using IdleFramework.Global;
@@ -27,10 +26,15 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	/// 对应的工厂实例的GUID
 	/// </summary>
 	public Guid FactoryGuid { get; set; }
-
-	public FactoryRegistryObject FactoryRegistryObjectCache;
-	public Guid InputContainerGuidCache = Guid.Empty;
-	public Guid OutputContainerGuidCache = Guid.Empty;
+	
+	public FactoryRegistryObject factoryRegistryObjectCache;
+	public Guid inputContainerGuidCache = Guid.Empty;
+	public Guid outputContainerGuidCache = Guid.Empty;
+	
+	/// <summary>
+	/// 当前正在执行的配方ID的缓存，为null代表未初始化，为string.Empty代表空配方
+	/// </summary>
+	public string recipeCache;
 	
 	public override void _Notification(int what)
 	{
@@ -91,25 +95,9 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 			NProgressStandbyText.Visible = false;
 			NProgressTimeText.Visible = NProgressProgressBar.Visible = true;
 		}
-		if (string.IsNullOrEmpty(factoryData.FactoryIdCache))
-		{
-			NRecipeButton.Disabled = true;
-			NRecipeButton.Icon = null;
-			NRecipeButton.Text = Localization.Tr("ui_scene_control.waiting_for_update");
-		}
-		else
-		{
-			if (!saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
-			{
-				Logger.LogError(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_get_recipe_registry_object_for_current_recipe"));
-			}
-			else
-			{
-				UpdateRecipeBar(saveDataHelper, factoryData, recipeRegistryObject);
-			}
-		}
-		UpdateContainerButton(saveDataHelper, NInputContainerButton, factoryData.InputContainerGuid, InputContainerGuidCache);
-		UpdateContainerButton(saveDataHelper, NOutputContainerButton, factoryData.OutputContainerGuid, OutputContainerGuidCache);
+		UpdateRecipeBar(saveDataHelper, factoryData);
+		UpdateContainerButton(saveDataHelper, NInputContainerButton, factoryData.InputContainerGuid, inputContainerGuidCache);
+		UpdateContainerButton(saveDataHelper, NOutputContainerButton, factoryData.OutputContainerGuid, outputContainerGuidCache);
 	}
 
 	public static void UpdateContainerButton(SaveDataHelper saveDataHelper, Button buttonNode, Guid containerGuidCurrent, Guid containerGuidCache)
@@ -129,9 +117,27 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		}
 	}
 
-	public void UpdateRecipeBar(SaveDataHelper saveDataHelper, FactoryData factoryData, RecipeRegistryObject recipeRegistryObject)
+	/// <summary>
+	/// 更新配方栏。
+	/// </summary>
+	/// <param name="saveDataHelper">可使用的存档数据辅助器。</param>
+	/// <param name="factoryData">本实例对应的工厂数据。</param>
+	public void UpdateRecipeBar(SaveDataHelper saveDataHelper, FactoryData factoryData)
 	{
-		
+		if (factoryData.CurrentRecipe == recipeCache) return;
+		recipeCache = factoryData.CurrentRecipe;
+		if (recipeCache == string.Empty)
+		{
+			NRecipeButton.Icon = null;
+			NRecipeButton.Text = Localization.Tr("ui_scene_control.click_to_set_recipe");
+		}
+		if (!saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
+		{
+			Logger.LogError(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_get_recipe_registry_object_for_current_recipe"));
+			return;
+		}
+		NRecipeButton.Icon = recipeRegistryObject.IconTexture;
+		NRecipeButton.Text = Localization.Tr(recipeRegistryObject.NameKey);
 	}
 }
 #endif
