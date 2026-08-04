@@ -59,7 +59,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	public Dictionary<Guid, string> GuidToItemIdCache { get; } = [];
 
 	/// <summary>
-	/// 通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
+	/// 非互斥锁方法。通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
 	/// </summary>
 	/// <param name="guid">要查找的GUID。</param>
 	/// <returns>该GUID的所有者所属于的物品ID，如果未找到则返回空字符串。</returns>
@@ -77,6 +77,30 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			}
 		}
 		return string.Empty;
+	}
+
+	/// <summary>
+	/// 非互斥锁方法。通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="itemId">该GUID的所有者所属于的物品ID，如果未找到则为空字符串。</param>
+	/// <returns>是否成功找到给定GUID的物品ID。</returns>
+	public bool QueryItemIdForGuid(Guid guid, out string itemId)
+	{
+		if (GuidToItemIdCache.TryGetValue(guid, out itemId)) return true;
+		foreach (string spaceId in UsingGameResource.SpaceRegistry.Keys)
+		{
+			if (!GetAllInstanceGuidsOfItemsInSpace(spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)) continue;
+			foreach ((string instanceItemId, HashSet<Guid> hashSet) in instanceItemGuids)
+			{
+				if (!hashSet.Contains(guid)) continue;
+				GuidToItemIdCache.Add(guid, instanceItemId);
+				itemId = instanceItemId;
+				return true;
+			}
+		}
+		itemId = null;
+		return false;
 	}
 	
 	#endregion
@@ -266,6 +290,23 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		}
 		return true;
 	}
+
+	/// <summary>
+	/// 尝试从给定GUID的容器或容器编组中消耗物品，并返回是否成功消耗要求的物品，如果给定的容器或容器编组不满足要求的物品数量则不会消耗物品。
+	/// 方法的时间复杂度为O(n)，n代表给定GUID可探索到的容器或容器编组的总数。
+	/// 如果查找到的容器编组存在嵌套，则会递归进去进一步搜索物品。
+	/// </summary>
+	/// <param name="containerMixinGuid">要遍历的容器实例或容器编组的GUID。</param>
+	/// <param name="itemCounts">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例或容器编组中存在(库存数量大于0)。</param>
+	/// <returns>是否成功消耗要求的物品数量。</returns>
+	public bool TryConsumeItemCountsForContainerMixin(Guid containerMixinGuid, Dictionary<string, long> itemCounts)
+	{
+		//注意要避免在lock中使用辅助器方法。
+		//检查物品是否满足
+		
+		//尝试消耗物品
+		return true;
+	}
 	
 	#endregion
 	
@@ -323,6 +364,54 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		Dictionary<string, long> result = [];
 		foreach ((string itemId, long itemCount) in containerData.ItemCounts) result[itemId] = itemCount;
 		return result;
+	}
+	
+	/// <summary>
+	/// 尝试从给定GUID的容器中消耗物品，并返回是否成功消耗要求的物品，如果给定的容器不满足要求的物品数量则不会消耗物品。
+	/// 方法的时间复杂度近似O(n)，n代表要求消耗的物品类型的总数。
+	/// </summary>
+	/// <param name="containerGuid">要消耗物品的容器实例的GUID。</param>
+	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例中存在(库存数量大于0)。</param>
+	/// <returns>是否成功消耗要求的物品数量。</returns>
+	public bool TryConsumeItemsForContainer(Guid containerGuid, Dictionary<string, long> itemCountsForConsume)
+	{
+		lock (_lock)
+		{
+			if (!UsingSaveData.ContainerDatas.TryGetValue(containerGuid, out ContainerData containerData)) return false;
+			//检查物品是否满足
+			foreach ((string requiredItemId, long requiredItemCount) in itemCountsForConsume)
+			{
+				if (!containerData.ItemCounts.TryGetValue(requiredItemId, out long haveItemCount)) return false;
+				if (haveItemCount < requiredItemCount) return false;
+			}
+			//消耗物品
+			foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts) containerData.ItemCounts[requiredItemId] -= Math.Clamp(requiredItemCount, 0L, long.MaxValue);
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 尝试向给定GUID的容器中添加物品，并返回是否成功添加给定的物品，如果给定的容器物品数量溢出也将成功添加物品。
+	/// 方法的时间复杂度近似O(n)，n代表要求添加的物品类型的总数。
+	/// </summary>
+	/// <param name="containerGuid">要添加物品的容器实例的GUID。</param>
+	/// <param name="itemCountsForAdd">要添加的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会执行操作。</param>
+	/// <returns>是否成功添加给定的物品。在找不到符合给定GUID的容器实例或无法获取该容器实例所属的物品ID或无法在注册表中寻找到物品ID的注册表项时会返回<c>false</c>。</returns>
+	public bool TryAddItemsForContainer(Guid containerGuid, Dictionary<string, long> itemCountsForAdd)
+	{
+		lock (_lock)
+		{
+			if (!UsingSaveData.ContainerDatas.TryGetValue(containerGuid, out ContainerData containerData)) return false;
+			if (!QueryItemIdForGuid(containerGuid, out string itemId)) return false;
+			if (!UsingGameResource.ContainerRegistry.TryGetValue(itemId, out ContainerRegistryObject containerRegistryObject)) return false;
+			foreach ((string addItemId, long addItemCount) in itemCountsForAdd)
+			{
+				long maxStackThisItem = containerRegistryObject.ItemMaxStacks.GetCountForItem(UsingGameResource.ItemRegistry, addItemId);
+				long maxAddThisItem = maxStackThisItem - maxStackThisItem;
+				containerData.ItemCounts[addItemId] += Math.Min(addItemCount, maxAddThisItem);
+			}
+		}
+		return true;
 	}
 	
 	#endregion

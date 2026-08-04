@@ -6,17 +6,17 @@ namespace IdleFramework.Global;
 /// 无限标记值类型，可以用于创建泛型实例来表达数值为无限的数。
 /// </summary>
 /// <typeparam name="TValue">泛型类型参数。</typeparam>
-public struct InfiniteTaggedValue<TValue>(TValue value, bool isInfinite) where TValue : struct
+public record struct InfiniteTaggedValue<TValue>(TValue Value, bool IsInfinite) where TValue : struct
 {
 	/// <summary>
 	/// 存储的原始泛型类型的值。
 	/// </summary>
-	public TValue Value = value;
+	public TValue Value = Value;
 
 	/// <summary>
 	/// 是否无限
 	/// </summary>
-	public bool IsInfinite = isInfinite;
+	public bool IsInfinite = IsInfinite;
 
 	public static implicit operator InfiniteTaggedValue<TValue>(TValue value) => new(value, false);
 }
@@ -24,7 +24,7 @@ public struct InfiniteTaggedValue<TValue>(TValue value, bool isInfinite) where T
 public static class InfiniteTaggedValueExtension
 {
 	/// <summary>
-	/// 对于为0的无限long，其被认定为0
+	/// 对于为0的无限long，其被认定为0。请尽量使用<c>long.MaxValue</c>或<c>long.MinValue</c>填充用于表达无限值的实例的<c>Value</c>字段。
 	/// </summary>
 	extension(InfiniteTaggedValue<long>)
 	{
@@ -222,8 +222,8 @@ public static class InfiniteTaggedValueExtension
 		// Provided by Deepseek LLM.
 		/// <summary>
 		/// 将值 <paramref name="from"/> 向目标 <paramref name="to"/> 移动不超过 <paramref name="delta"/> 的距离。
-		/// 涉及无限值时，有限步长只能到达边界值（<c>long.MaxValue</c>/<c>long.MinValue</c>），无限步长可到达对方无限值。
-		/// 返回的无限值实例总是将 <c>Value</c> 规范化为边界值。
+		/// 涉及无限值时，有限步长只能到达边界值(<c>long.MaxValue</c>/<c>long.MinValue</c>)，无限步长可到达对方无限值。
+		/// 返回的无限值实例总是将<c>Value</c>规范化为边界值。
 		/// </summary>
 		/// <param name="from">当前值。</param>
 		/// <param name="to">目标值。</param>

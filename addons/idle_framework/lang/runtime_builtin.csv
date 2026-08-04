@@ -44,3 +44,4 @@ log.error.updater.save_data_helper_in_handle_is_null,,"Updater: SaveDataHelperIn
 log.error.updater.unexcepted_to_failed_to_get_all_instance_guids_for_items_in_space,,"Updater: Unexcepted to failed to get all instance guids for items in space """{0}""".","Updater: 超出预期地未能获取空间"""{0}"""的所有实例对象GUID。"
 log.error.updater.unexcepted_to_failed_to_get_factory_for_guid,,"Updater: Unexcepted to failed to get FactoryData for GUID: """{0}""".","Updater: 超出预期地未能获取GUID为"""{0}"""的FactoryData。"
 log.error.updater.a_factory_data_taking_an_unknown_factory_mode,,"Updater: A FactoryData taking an unknown Factory Mode.","Updater: 一个FactoryData持有着一个未知的工厂模式。"
+log.error.updater.a_factory_data_taking_an_unknown_recipe,,"Updater: A FactoryData taking an unknown Recipe.","Updater: 一个FactoryData持有着一个未知的配方。"

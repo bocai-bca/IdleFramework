@@ -103,7 +103,7 @@ public static class Updater
 	/// <returns>该工厂是否导致容器发生变化，为true则意味着更新器应当进行下一轮循环。</returns>
 	private static bool updateFactory([NotNull]FactoryData factoryData, InfiniteTaggedValue<long> timeSpanTicksAllowFactoriesToMoveOn, out InfiniteTaggedValue<long> minimalTimeSpanTicksToNextSomethingChanging)
 	{
-		bool result = false;
+		bool containerChanged = false;
 		switch (factoryData.FactoryMode)
 		{
 			case FactoryIngredientRequireMode.CheckAndConsumeAtStart:
@@ -111,11 +111,19 @@ public static class Updater
 				if (currentRecipeRemainingTime <= 0L)
 				{
 					//生产完毕，输出产品到容器
-					
+					if (!SaveDataHelperInHandle.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
+					{
+						Logger.LogError(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_recipe"));
+						minimalTimeSpanTicksToNextSomethingChanging = 0L;
+						return false;
+					}
+					Dictionary<string, long> itemGoingToAdd = [];
+					foreach ((string itemId, NumberProvider numberProvider) in recipeRegistryObject.Results) itemGoingToAdd[itemId] = numberProvider.GetNumber();
+					containerChanged = SaveDataHelperInHandle.TryAddItemsForContainer(factoryData.OutputContainerGuid, itemGoingToAdd);
 				}
 				factoryData.RecipeRemainingTicks = currentRecipeRemainingTime.Value;
 				minimalTimeSpanTicksToNextSomethingChanging = currentRecipeRemainingTime.Value;
-				return result;
+				return containerChanged;
 		}
 		Logger.LogError(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_factory_mode"));
 		minimalTimeSpanTicksToNextSomethingChanging = 0L;
