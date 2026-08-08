@@ -1,4 +1,6 @@
 ,?context,en,zh
+ui_scene_control.fold_all,,"Fold all","全部折叠"
+ui_scene_control.expand_all,,"Expand all","全部展开"
 ui_scene_control.space_container_name,,"{0} Inventory","{0} 库存"
 ui_scene_control.edit_button,,"Edit","编辑"
 ui_scene_control.standby,,"Standby...","待机中..."

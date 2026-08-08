@@ -36,6 +36,8 @@ public partial class Control : UIScene, IClassPackedScene
 	public PanelContainer NMainSpace_DetailArea;
 	public readonly Dictionary<string, SpaceDetailArea> NSpaceDetailAreas = [];
 	public readonly Dictionary<string, SpaceButton> NSpaceButtons = [];
+	public PanelContainer NPopupContainer;
+	public TabPopup NTabPopup;
 	
 	public override void _Notification(int what)
 	{
@@ -47,6 +49,10 @@ public partial class Control : UIScene, IClassPackedScene
 				NTopBar_PinnedItemsBar = GetNode<HBoxContainer>("VBC/TopBar/VBC/PinnedItemsBar");
 				NMainSpace_SpaceButtons = GetNode<VBoxContainer>("VBC/MainSpace/SideBar/SC/SpaceButtons");
 				NMainSpace_DetailArea = GetNode<PanelContainer>("VBC/MainSpace/DetailArea");
+				NPopupContainer = GetNode<PanelContainer>("PopupContainer");
+				NTabPopup = GetNode<TabPopup>("TabPopup");
+				NTabPopup.AddedTabs += OnPopupAddedTabs;
+				NTabPopup.TabsAllClosed += OnPopupTabsAllClosed;
 				break;
 		}
 	}
@@ -95,6 +101,22 @@ public partial class Control : UIScene, IClassPackedScene
 		{
 			spaceDetailArea.Visible = detailAreaSpaceId == pressedSpaceId;
 		}
+	}
+
+	/// <summary>
+	/// 信号方法-连接到TabPopup的TabsAllClosed，当其关闭所有标签页时，隐藏PopupContainer
+	/// </summary>
+	public void OnPopupTabsAllClosed()
+	{
+		NPopupContainer.Visible = false;
+	}
+
+	/// <summary>
+	/// 信号方法-连接到TabPopup的AddedTabs，当其打开新标签页时，显示PopupContainer
+	/// </summary>
+	public void OnPopupAddedTabs()
+	{
+		NPopupContainer.Visible = true;
 	}
 }
 #endif

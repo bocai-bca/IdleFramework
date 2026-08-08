@@ -16,7 +16,9 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 {
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/space_detail_area/space_detail_area.tscn");
 
-	public VBoxContainer NVBC;
+	public VBoxContainer NContentContainer;
+	public Button NExpandAllButton;
+	public Button NFoldAllButton;
 	public ContainerItemContainer NSpaceContainerItemContainer;
 	public readonly Dictionary<Guid, FactoryItemContainer> NFactoryItemContainers = [];
 	public readonly Dictionary<Guid, ContainerItemContainer> NContainerItemContainers = [];
@@ -31,7 +33,13 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 		switch ((long)what)
 		{
 			case NotificationSceneInstantiated:
-				NVBC = GetNode<VBoxContainer>("VBC");
+				NContentContainer = GetNode<VBoxContainer>("VBC/ContentContainer");
+				NExpandAllButton = GetNode<Button>("VBC/ButtonBar/ExpandAllButton");
+				NExpandAllButton.Text = Localization.Tr("ui_scene_control.expand_all");
+				NExpandAllButton.Pressed += ExpandAllContent;
+				NFoldAllButton = GetNode<Button>("VBC/ButtonBar/FoldAllButton");
+				NFoldAllButton.Text = Localization.Tr("ui_scene_control.fold_all");
+				NFoldAllButton.Pressed += FoldAllContent;
 				break;
 		}
 	}
@@ -44,15 +52,28 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 	{
 		CollectAndPlaceElements(saveDataHelper);
 		NSpaceContainerItemContainer?.Update(saveDataHelper);
-		foreach (ContainerItemContainer containerItemContainer in NContainerItemContainers.Values)
-		{
-			containerItemContainer.Update(saveDataHelper);
-		}
+		foreach (ContainerItemContainer containerItemContainer in NContainerItemContainers.Values) containerItemContainer.Update(saveDataHelper);
+		foreach (FactoryItemContainer factoryItemContainer in NFactoryItemContainers.Values) factoryItemContainer.Update(saveDataHelper);
+	}
 
-		foreach (FactoryItemContainer factoryItemContainer in NFactoryItemContainers.Values)
-		{
-			factoryItemContainer.Update(saveDataHelper);
-		}
+	/// <summary>
+	/// 折叠所有内容容器。
+	/// </summary>
+	public void FoldAllContent()
+	{
+		foreach (ContainerItemContainer containerItemContainer in NContainerItemContainers.Values) containerItemContainer.Fold();
+		foreach (FactoryItemContainer factoryItemContainer in NFactoryItemContainers.Values) factoryItemContainer.Fold();
+		NSpaceContainerItemContainer.Fold();
+	}
+
+	/// <summary>
+	/// 展开所有内容容器。
+	/// </summary>
+	public void ExpandAllContent()
+	{
+		foreach (ContainerItemContainer containerItemContainer in NContainerItemContainers.Values) containerItemContainer.Expand();
+		foreach (FactoryItemContainer factoryItemContainer in NFactoryItemContainers.Values) factoryItemContainer.Expand();
+		NSpaceContainerItemContainer.Expand();
 	}
 
 	/// <summary>
@@ -77,7 +98,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 					FactoryItemContainer factoryItemContainer = FactoryItemContainer.Create();
 					factoryItemContainer.FactoryGuid = itemGuid;
 					NFactoryItemContainers[itemGuid] = factoryItemContainer;
-					NVBC.AddChild(factoryItemContainer);
+					NContentContainer.AddChild(factoryItemContainer);
 					factoryItemContainer.FullyUpdate(saveDataHelper);
 				}
 			}
@@ -89,7 +110,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 					ContainerItemContainer containerItemContainer = ContainerItemContainer.Create();
 					containerItemContainer.ContainerGuid = itemGuid;
 					NContainerItemContainers[itemGuid] = containerItemContainer;
-					NVBC.AddChild(containerItemContainer);
+					NContentContainer.AddChild(containerItemContainer);
 					containerItemContainer.FullyUpdate(saveDataHelper);
 				}
 			}
@@ -101,7 +122,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 			spaceContainerItemContainer.Name = new StringName("SpaceContainer");
 			saveDataHelper.SetNameForInstance(spaceContainerGuid, string.Format(Localization.Tr("ui_scene_control.space_container_name"), gameResource.GetSpaceNameTranslated(SpaceId)));
 			NSpaceContainerItemContainer = spaceContainerItemContainer;
-			NVBC.AddChild(spaceContainerItemContainer);
+			NContentContainer.AddChild(spaceContainerItemContainer);
 			spaceContainerItemContainer.FullyUpdate(saveDataHelper);
 		}
 	}

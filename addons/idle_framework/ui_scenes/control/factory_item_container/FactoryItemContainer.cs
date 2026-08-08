@@ -130,8 +130,9 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		{
 			NRecipeButton.Icon = null;
 			NRecipeButton.Text = Localization.Tr("ui_scene_control.click_to_set_recipe");
+			return;
 		}
-		if (!saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
+		if (!saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(recipeCache, out RecipeRegistryObject recipeRegistryObject))
 		{
 			Logger.LogError(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_get_recipe_registry_object_for_current_recipe"));
 			return;

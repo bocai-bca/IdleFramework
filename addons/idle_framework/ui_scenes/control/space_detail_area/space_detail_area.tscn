@@ -15,3 +15,18 @@ script = ExtResource("1_o7nec")
 [node name="VBC" type="VBoxContainer" parent="." unique_id=712164491]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="ButtonBar" type="HBoxContainer" parent="VBC" unique_id=1572389970]
+layout_mode = 2
+alignment = 2
+
+[node name="ExpandAllButton" type="Button" parent="VBC/ButtonBar" unique_id=257939244]
+layout_mode = 2
+text = "Expand all"
+
+[node name="FoldAllButton" type="Button" parent="VBC/ButtonBar" unique_id=1877778179]
+layout_mode = 2
+text = "Fold all"
+
+[node name="ContentContainer" type="VBoxContainer" parent="VBC" unique_id=1427754776]
+layout_mode = 2
