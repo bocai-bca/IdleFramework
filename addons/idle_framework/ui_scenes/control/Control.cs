@@ -50,7 +50,7 @@ public partial class Control : UIScene, IClassPackedScene
 				NMainSpace_SpaceButtons = GetNode<VBoxContainer>("VBC/MainSpace/SideBar/SC/SpaceButtons");
 				NMainSpace_DetailArea = GetNode<PanelContainer>("VBC/MainSpace/DetailArea");
 				NPopupContainer = GetNode<PanelContainer>("PopupContainer");
-				NTabPopup = GetNode<TabPopup>("TabPopup");
+				NTabPopup = GetNode<TabPopup>("PopupContainer/TabPopup");
 				NTabPopup.AddedTabs += OnPopupAddedTabs;
 				NTabPopup.TabsAllClosed += OnPopupTabsAllClosed;
 				break;
