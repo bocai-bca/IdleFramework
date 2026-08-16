@@ -27,9 +27,11 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 	public delegate void TabsAllClosedEventHandler();
 
 	/// <summary>
-	/// 当前的所有标签页表，键为标签页的易识名(用于避免重复添加相同内容的标签页)，值为对对应标签页节点的索引。
+	/// 当前的所有标签页表，键为标签页的易识名(用于避免重复添加相同内容的标签页)，值为对对应标签页节点的索引和节点索引。
 	/// </summary>
-	public Dictionary<string, int> tabs = [];
+	public Dictionary<string, KeyValuePair<int, PopupTabBase>> tabs = [];
+	
+	//TODO 由于PopupTabBase的框架设计颠覆，本类现有的方法和tabs字段也要重构，具体怎么重构还没想好，自己看着办吧
 
 	public override void _Notification(int what)
 	{
@@ -46,11 +48,12 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 	/// <param name="tabName">要添加的标签页名称。</param>
 	/// <param name="tabNode">要添加的标签页节点。</param>
 	/// <returns>是否成功添加。如果已有同名标签页，则会添加失败。</returns>
-	public bool TryAddTab(string tabName, Godot.Control tabNode)
+	public bool TryAddTab(string tabName, PopupTabBase tabNode)
 	{
 		if (tabs.ContainsKey(tabName)) return false;
+		tabNode.TabName = tabName;
 		AddChild(tabNode);
-		tabs[tabName] = GetTabCount() - 1;
+		tabs[tabName] = new KeyValuePair<int, PopupTabBase>(GetTabCount() - 1, tabNode);
 		EmitSignal(SignalName.AddedTabs);
 		return true;
 	}
@@ -61,14 +64,14 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 	/// <param name="tabName">要获取节点的标签页的名称。</param>
 	/// <param name="tabNode">对应标签页的节点，如果没有成功获取到则为<c>null</c>。</param>
 	/// <returns>是否成功获取指定标签页的节点，如果当前没有对应名称的标签页，则返回<c>false</c>。</returns>
-	public bool TryGetTab(string tabName, out Godot.Control tabNode)
+	public bool TryGetTab(string tabName, out PopupTabBase tabNode)
 	{
-		if (!tabs.TryGetValue(tabName, out int tabIndex))
+		if (!tabs.TryGetValue(tabName, out KeyValuePair<int, PopupTabBase> tab))
 		{
 			tabNode = null;
 			return false;
 		}
-		tabNode = GetTabControl(tabIndex);
+		tabNode = tab.Value;
 		return true;
 	}
 	
@@ -79,9 +82,13 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 	/// <returns>是否成功移除指定标签页，如果当前没有对应名称的标签页，则返回<c>false</c>。</returns>
 	public bool TryRemoveTab(string tabName)
 	{
-		if (!tabs.TryGetValue(tabName, out int tabIndex)) return false;
-		foreach ((string tabNameInList, int tabIndexInList) in tabs) if (tabIndexInList > tabIndex) tabs[tabNameInList] -= 1;
-		GetTabControl(tabIndex).QueueFree();
+		if (!tabs.TryGetValue(tabName, out KeyValuePair<int, PopupTabBase> tabTarget)) return false;
+		foreach ((string tabNameInList, KeyValuePair<int, PopupTabBase> tabInAll) in tabs)
+		{
+			if (tabInAll.Key <= tabTarget.Key) continue;
+			tabs[tabNameInList] = new KeyValuePair<int, PopupTabBase>(tabs[tabNameInList].Key - 1, tabs[tabNameInList].Value);
+		}
+		tabTarget.Value.QueueFree();
 		tabs.Remove(tabName);
 		if (tabs.Count == 0) EmitSignal(SignalName.TabsAllClosed);
 		return true;
@@ -94,8 +101,8 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 	/// <returns>是否成功聚焦到指定标签页，如果当前没有对应名称的标签页，则返回<c>false</c>。</returns>
 	public bool TryOpenTab(string tabName)
 	{
-		if (!tabs.TryGetValue(tabName, out int tabIndex)) return false;
-		CurrentTab = tabIndex;
+		if (!tabs.TryGetValue(tabName, out KeyValuePair<int, PopupTabBase> tabTarget)) return false;
+		CurrentTab = tabTarget.Key;
 		return true;
 	}
 }

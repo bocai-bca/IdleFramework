@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://c4l0ict5ssegq"]
+
+[ext_resource type="Script" uid="uid://c6mes06g50k4j" path="res://addons/idle_framework/ui_scenes/control/popup_tabs/item_detail/PopupTabItemDetail.cs" id="1_0cx7t"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_c0ktc"]
+size = Vector2(128, 128)
+
+[sub_resource type="LabelSettings" id="LabelSettings_gigt3"]
+font_size = 24
+
+[node name="PopupTab_ItemDetail" type="PanelContainer" unique_id=1708558112]
+custom_minimum_size = Vector2(256, 256)
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("1_0cx7t")
+
+[node name="MC" type="MarginContainer" parent="." unique_id=1963891744]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBC" type="VBoxContainer" parent="MC" unique_id=1838868816]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="HBC" type="HBoxContainer" parent="MC/VBC" unique_id=2051376569]
+layout_mode = 2
+alignment = 1
+
+[node name="ItemIcon" type="TextureRect" parent="MC/VBC/HBC" unique_id=258987878]
+layout_mode = 2
+texture = SubResource("PlaceholderTexture2D_c0ktc")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="ItemName" type="Label" parent="MC/VBC/HBC" unique_id=1699887686]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 3.0
+text = "ItemName"
+label_settings = SubResource("LabelSettings_gigt3")
+vertical_alignment = 1
+clip_text = true
+
+[node name="SC" type="ScrollContainer" parent="MC/VBC" unique_id=2035400453]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ItemDescription" type="Label" parent="MC/VBC/SC" unique_id=1455292643]
+layout_mode = 2
+size_flags_vertical = 3
+text = "The description of this item."
+
+[node name="BottonBar" type="HBoxContainer" parent="MC/VBC" unique_id=447577095]
+layout_mode = 2
+alignment = 2
+
+[node name="PinButton" type="Button" parent="MC/VBC/BottonBar" unique_id=175005175]
+layout_mode = 2
+text = "Pin"
+
+[node name="CloseButton" type="Button" parent="MC/VBC/BottonBar" unique_id=259239398]
+layout_mode = 2
+text = "Close"

@@ -32,12 +32,15 @@ public partial class Control : UIScene, IClassPackedScene
 	public TextureRect NTopBar_Icon;
 	public Label NTopBar_GameTitle;
 	public HBoxContainer NTopBar_PinnedItemsBar;
+	public readonly Dictionary<string, PinnedItem> NPinnedItems = [];
 	public VBoxContainer NMainSpace_SpaceButtons;
 	public PanelContainer NMainSpace_DetailArea;
 	public readonly Dictionary<string, SpaceDetailArea> NSpaceDetailAreas = [];
 	public readonly Dictionary<string, SpaceButton> NSpaceButtons = [];
 	public PanelContainer NPopupContainer;
-	public TabPopup NTabPopup;
+
+	public static Control Instance;
+	public static TabPopup TabPopup;
 	
 	public override void _Notification(int what)
 	{
@@ -50,15 +53,17 @@ public partial class Control : UIScene, IClassPackedScene
 				NMainSpace_SpaceButtons = GetNode<VBoxContainer>("VBC/MainSpace/SideBar/SC/SpaceButtons");
 				NMainSpace_DetailArea = GetNode<PanelContainer>("VBC/MainSpace/DetailArea");
 				NPopupContainer = GetNode<PanelContainer>("PopupContainer");
-				NTabPopup = GetNode<TabPopup>("PopupContainer/TabPopup");
-				NTabPopup.AddedTabs += OnPopupAddedTabs;
-				NTabPopup.TabsAllClosed += OnPopupTabsAllClosed;
+				TabPopup = GetNode<TabPopup>("PopupContainer/TabPopup");
+				TabPopup.Connect(TabPopup.SignalName.AddedTabs, Callable.From(OnPopupAddedTabs));
+				TabPopup.Connect(TabPopup.SignalName.TabsAllClosed, Callable.From(OnPopupTabsAllClosed));
 				break;
+			
 		}
 	}
 
 	public override void _Ready()
 	{
+		Instance = this;
 	}
 
 	public override void _Process(double delta)
