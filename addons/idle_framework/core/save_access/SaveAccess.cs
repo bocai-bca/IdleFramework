@@ -56,72 +56,11 @@ public static class SaveAccess
 	/// </summary>
 	public static Task<WorkResult> WorkingTask { get; private set; }
 
-	/*
-	/// <summary>
-	/// 已加载的数据，键为游戏ID，值为存档数据。请通过<c>GetDataDuplicatedAwait()</c>和<c>SetDataDuplicatedAwait()</c>访问该字典中的数据。
-	/// 任何时候直接访问本字典都需要使用lock。
-	/// </summary>
-	private static Dictionary<string, SaveData> LoadedDatas { get; } = [];
-	*/
-	
 	/// <summary>
 	/// 已加载的数据的辅助类。
 	/// </summary>
 	public static SaveDataHelper LoadedDataHelper { get; set; }
 
-	/*
-	/// <summary>
-	/// 可等待地从已加载存档数据字典中取值并复制独立实例，如果当前本类的工作线程正在执行，则会阻塞调用方线程。
-	/// 通过本方法获取的<c>SaveData</c>实例不存在于字典中，对其进行修改不会影响字典内的原实例，适合用于需要临时获取、改动值的场合。
-	/// 具有一定性能开销，请考虑降低使用频率。
-	/// </summary>
-	/// <param name="key">要索引的键。</param>
-	/// <param name="saveData">获取到的存档数据的复制品实例。</param>
-	/// <param name="duplicate">是否复制实例，如果为<c>false</c>则将返回字典中原始实例的引用。为确保多线程安全，建议在所有情况下都保持<c>true</c>来获取复制品实例。</param>
-	/// <returns>成功与否，例如若<c>LoadedDatas</c>中不存在给定的<c>key</c>则返回<c>false</c>test。</returns>
-	public static bool GetDataSafety(string key, out SaveData saveData, bool duplicate = true) //含等待方法，请勿在工作线程中使用它
-	{
-		if (IsMultiThreadWorking) WorkingTask.Wait();
-		lock (loadedDatasLock)
-		{
-			if (!LoadedDatas.TryGetValue(key, out saveData)) return false;
-			if (duplicate) saveData = saveData.Duplicate();
-		}
-		return true;
-	}
-
-	/// <summary>
-	/// 可等待地向已加载存档数据字典中存储给定<c>SaveData</c>实例的复制品，如果当前本类的工作线程正在执行，则会阻塞调用方线程。
-	/// 本方法存入字典的实例是与实参传入的实例相互独立的，后续修改原先传入的实例不会影响已存入字典的实例。
-	/// 具有一定性能开销，请考虑降低使用频率。
-	/// </summary>
-	/// <param name="key">要存储的键。</param>
-	/// <param name="saveData">要存储的存档数据实例。</param>
-	/// /// <param name="duplicate">是否复制实例，如果为<c>false</c>则将向字典存入原始实例的引用。为确保多线程安全，建议在所有情况下都保持<c>true</c>来存入复制品实例。</param>
-	/// <returns>成功与否，总是返回true</returns>
-	public static bool SetDataSafety(string key, SaveData saveData, bool duplicate = true) //含等待方法，请勿在工作线程中使用它
-	{
-		if (IsMultiThreadWorking) WorkingTask.Wait();
-		lock (loadedDatasLock)
-		{
-			LoadedDatas[key] = duplicate ? saveData.Duplicate() : saveData;
-		}
-		return true;
-	}
-
-	/// <summary>
-	/// <c>GetDataSafety()</c>的无线程安全设计版本，与其的区别是本方法不会等待工作线程完成、不经过互斥锁、返回原始实例引用。设计于调试时手动调用，<c>SaveAccess</c>自身不会使用它。
-	/// 具有潜在的高危险性，除非你真正知道自己在做什么，否则不要使用！
-	/// </summary>
-	/// <param name="key">要索引的键。</param>
-	/// <param name="saveData">获取到的存档数据的复制品实例。</param>
-	/// <returns>成功与否，例如若<c>LoadedDatas</c>中不存在给定的<c>key</c>则返回<c>false</c>test。</returns>
-	public static bool GetDataUnsafety(string key, out SaveData saveData)
-	{
-		return LoadedDatas.TryGetValue(key, out saveData);
-	}
-	*/
-	
 	/// <summary>
 	/// 加载给定游戏ID的最后存档，如果成功加载则可以通过<c>LoadedDatas</c>搭配该游戏ID作为键来获取该存档的<c>SaveData</c>实例。
 	/// 出于线程安全考虑，建议在所有情况下使用<c>LoadLatestSaveForGameAsync()</c>。本方法主要供<c>SaveAccess</c>工作线程使用。

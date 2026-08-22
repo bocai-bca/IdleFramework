@@ -1,5 +1,6 @@
 #if IDLE_FRAMEWORK_UISCENE_ALL || IDLE_FRAMEWORK_UISCENE_CONTROL
 using Godot;
+using IdleFramework.Core;
 using IdleFramework.Global;
 
 namespace IdleFramework.UIScenes.Control;
@@ -35,9 +36,22 @@ public partial class PopupTabItemDetail : PopupTabBase, IClassPackedScene
 		}
 	}
 
+	public void SetContentForItemId(string itemId)
+	{
+		if (!SaveAccess.LoadedDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject)) return;
+		NItemIcon.Texture = itemRegistryObject.IconTexture;
+		NItemName.Text = Localization.Tr(itemRegistryObject.NameKey);
+		NItemDescription.Text = Localization.Tr(itemRegistryObject.LoreKey);
+	}
+
+	public override string GetTitleName()
+	{
+		return string.Format(Localization.Tr("ui_scene_control.popup_tab_title.item_detail"), NItemName.Text);
+	}
+
 	public void OnCloseButtonPressed()
 	{
-		EmitSignal(PopupTabBase.SignalName.Close, TabName);
+		EmitSignal(PopupTabBase.SignalName.Close);
 	}
 }
 #endif

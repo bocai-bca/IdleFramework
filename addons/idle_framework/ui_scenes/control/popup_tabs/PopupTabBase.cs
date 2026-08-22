@@ -19,5 +19,11 @@ public abstract partial class PopupTabBase: PanelContainer
 	/// 标签页的名称，为面向<c>TabPopup</c>的管理名称，用作标签页的唯一标识名，会在添加到<c>TabPopup</c>时被其赋值。
 	/// </summary>
 	public string TabName { get; set; }
+
+	/// <summary>
+	/// 获取本节点的标题名。
+	/// </summary>
+	/// <returns>本节点的标题名。</returns>
+	public abstract string GetTitleName();
 }
 #endif

@@ -15,9 +15,6 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 {
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/container_item_container/container_item_container.tscn");
 
-	[Signal]
-	public delegate void ItemButtonClickedEventHandler(string itemId);
-	
 	public HFlowContainer NItems;
 	public Button NEditButton;
 	public readonly Dictionary<string, ContainerItem> NContainerItems = [];
@@ -91,11 +88,11 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 	/// 信号方法-当本按钮被点击时调用，打开物品详细信息弹窗。
 	/// </summary>
 	/// <param name="buttonItemId">按钮物品ID。</param>
-	public void OnButtonPressed(string buttonItemId)
+	public static void OnButtonPressed(string buttonItemId)
 	{
-		EmitSignal(nameof(ItemButtonClickedEventHandler), buttonItemId);
-		//TODO 这里可能要修改，最终实现点击物品按钮以后弹出物品详细信息弹窗的功能，或许这个信号方法不应该出现在这里，或者本方法直接实现让主节点打开弹窗的功能
-		
+		PopupTabItemDetail popupTabItemDetail = PopupTabItemDetail.Create();
+		popupTabItemDetail.SetContentForItemId(buttonItemId);
+		Control.TabPopupInstance.TryAddTabAndOpen("ItemDetail." + buttonItemId, popupTabItemDetail);
 	}
 }
 #endif

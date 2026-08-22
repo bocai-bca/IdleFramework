@@ -39,8 +39,14 @@ public partial class Control : UIScene, IClassPackedScene
 	public readonly Dictionary<string, SpaceButton> NSpaceButtons = [];
 	public PanelContainer NPopupContainer;
 
-	public static Control Instance;
-	public static TabPopup TabPopup;
+	/// <summary>
+	/// 一个便于子节点访问的单例设计引用。
+	/// </summary>
+	public static Control Instance { get; set; }
+	/// <summary>
+	/// 一个便于子节点访问的弹窗标签页的单例设计引用。
+	/// </summary>
+	public static TabPopup TabPopupInstance { get; set; }
 	
 	public override void _Notification(int what)
 	{
@@ -53,9 +59,9 @@ public partial class Control : UIScene, IClassPackedScene
 				NMainSpace_SpaceButtons = GetNode<VBoxContainer>("VBC/MainSpace/SideBar/SC/SpaceButtons");
 				NMainSpace_DetailArea = GetNode<PanelContainer>("VBC/MainSpace/DetailArea");
 				NPopupContainer = GetNode<PanelContainer>("PopupContainer");
-				TabPopup = GetNode<TabPopup>("PopupContainer/TabPopup");
-				TabPopup.Connect(TabPopup.SignalName.AddedTabs, Callable.From(OnPopupAddedTabs));
-				TabPopup.Connect(TabPopup.SignalName.TabsAllClosed, Callable.From(OnPopupTabsAllClosed));
+				TabPopupInstance = GetNode<TabPopup>("PopupContainer/TabPopup");
+				TabPopupInstance.Connect(TabPopup.SignalName.AddedTabs, Callable.From((string _) => OnPopupAddedTabs()));
+				TabPopupInstance.Connect(TabPopup.SignalName.TabsAllClosed, Callable.From(OnPopupTabsAllClosed));
 				break;
 			
 		}

@@ -15,15 +15,15 @@ public partial class MotherNode : Node
 	public enum State
 	{
 		/// <summary>
-		/// 游戏资源就绪之前
+		/// 游戏资源就绪之前。
 		/// </summary>
 		BeforeGameResourceReady,
 		/// <summary>
-		/// 存档读取之前
+		/// 存档读取之前。此时<c>SaveAccess.LoadedDataHelper</c>不可用。
 		/// </summary>
 		BeforeLoadSave,
         /// <summary>
-        /// 等待存档读取
+        /// 等待存档读取。此时<c>SaveAccess.LoadedDataHelper</c>不可用。
         /// </summary>
 		WaitingForSaveLoading,
         /// <summary>
@@ -50,6 +50,7 @@ public partial class MotherNode : Node
 	/// <summary>
 	/// 游戏资源，指定一个<c>IdleFramework.GameResource</c>，作为定义游戏内容的数据源。
 	/// 出于线程安全考虑，不要在运行时修改游戏资源以及其中嵌套的任何内容，游戏资源在设计上应当是只读的。
+	/// 虽然在游戏启动后本属性总是可用，但推荐规范是在UI场景的脚本中使用<c>SaveAccess.LoadedDataHelper.UsingGameResource</c>访问游戏资源。
 	/// </summary>
 	[Export]
 	public GameResource GameResource { get; set; }

@@ -8,7 +8,19 @@
 size = Vector2(128, 128)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c0ktc"]
-bg_color = Color(0, 0, 0, 0.12156863)
+bg_color = Color(0, 0, 0, 0.49803922)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hqrys"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.1, 0.1, 0.1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
 
 [node name="UIScene_Control" type="PanelContainer" unique_id=1885108198]
 custom_minimum_size = Vector2(960, 720)
@@ -93,5 +105,6 @@ custom_minimum_size = Vector2(640, 480)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_hqrys")
 script = ExtResource("3_hqrys")
 metadata/_custom_type_script = "uid://daltv7k37o6ku"

@@ -7,7 +7,7 @@ using IdleFramework.Global;
 namespace IdleFramework.Core;
 
 /// <summary>
-/// 更新器，对存档数据进行更新的类
+/// 更新器，对存档数据进行更新的类。由<c>MotherNode</c>管理。
 /// </summary>
 public static class Updater
 {
@@ -38,6 +38,7 @@ public static class Updater
 
 	/// <summary>
 	/// 更新器处理的存档数据辅助器。
+	/// 通常由<c>MotherNode</c>赋值，等效于<c>SaveAccess.LoadedDataHelper</c>。
 	/// </summary>
 	public static SaveDataHelper SaveDataHelperInHandle { get; set; }
 	
