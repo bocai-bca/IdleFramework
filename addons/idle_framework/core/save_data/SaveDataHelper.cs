@@ -7,7 +7,7 @@ namespace IdleFramework.Core;
 
 /// <summary>
 /// 存档数据辅助器，是对<c>SaveData</c>的操作工具。提供针对单一存档中部分数据为单位的API，必须搭配游戏资源使用。
-/// 除非有明确说明，否则默认本类型提供的方法是线程安全的，每个涉及存档数据的操作都会包含锁，如果想要避免因互斥锁阻塞导致的性能下降，可以考虑复制<c>SaveData</c>然后通过它创建新的<c>SaveDataHelper</c>实例。
+/// 除非有明确说明，否则默认本类型提供的方法是线程安全的，每个涉及存档数据的操作都会包含锁，如果想要避免因互斥锁阻塞导致的性能下降，可以考虑复制<c>SaveData</c>然后通过它创建新的<c>SaveDataHelper</c>实例，对新实例的修改不会影响到原先的实例。
 /// 请避免在该<c>SaveData</c>不再可用时访问通过它创建的本类实例的方法，否则将发生空引用异常。
 /// </summary>
 public class SaveDataHelper(GameResource targetGameResource, SaveData targetSaveData)
@@ -99,7 +99,6 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 				return true;
 			}
 		}
-		itemId = null;
 		return false;
 	}
 	
@@ -459,15 +458,32 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
+	/// 尝试为持有特定GUID的工厂实例设置配方ID，对应工厂将被强制设置为相应ID，因此配方是否可用于对应工厂需要由调用方自行作出判断。
+	/// 如果要设置的配方ID与原本该工厂的配方ID一致，则不会更新该工厂的数据，同时也返回<c>true</c>。
+	/// </summary>
+	/// <param name="guid">要设置配方的工厂实例的GUID。</param>
+	/// <param name="recipeId">要设置为的配方ID。</param>
+	/// <returns>成功与否，如果没有找到对应工厂则返回<c>false</c>。</returns>
+	public bool TrySetRecipeForFactory(Guid guid, string recipeId)
+	{
+		lock (_lock)
+		{
+			if (!UsingSaveData.FactoryDatas.TryGetValue(guid, out FactoryData factoryData)) return false;
+			if (recipeId == factoryData.CurrentRecipe) return true;
+			factoryData.CurrentRecipe = recipeId;
+			factoryData.RecipeRemainingTicks = 0L;
+			factoryData.WasStarted = false;
+		}
+		return true;
+	}
+
+	/// <summary>
 	/// 获取所有工厂的GUID集合。
 	/// </summary>
 	/// <returns>一个容纳当前所有工厂GUID的集合。</returns>
 	public ICollection<Guid> GetAllGuidsForFactories()
 	{
-		lock (_lock)
-		{
-			return new List<Guid>(UsingSaveData.FactoryDatas.Keys);
-		}
+		lock (_lock) return new List<Guid>(UsingSaveData.FactoryDatas.Keys);
 	}
 	
 	#endregion

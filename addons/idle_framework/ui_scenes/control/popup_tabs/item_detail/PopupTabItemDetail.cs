@@ -6,7 +6,7 @@ using IdleFramework.Global;
 namespace IdleFramework.UIScenes.Control;
 
 /// <summary>
-/// [IdleFramework内置UI场景-控件主题]容器实例展开式容器，在空间详细区域容器中显示一个容器实例的内容物
+/// [IdleFramework内置UI场景-控件主题]物品详细信息弹窗标签页，用于显示一个物品的详细信息，如名称、图标、描述，并提供一个置顶按钮供玩家将该物品置顶。
 /// </summary>
 [GlobalClass]
 public partial class PopupTabItemDetail : PopupTabBase, IClassPackedScene

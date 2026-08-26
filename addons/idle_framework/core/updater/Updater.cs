@@ -130,6 +130,7 @@ public static class Updater
 				factoryData.RecipeRemainingTicks = currentRecipeRemainingTime.Value;
 				minimalTimeSpanTicksToNextSomethingChanging = currentRecipeRemainingTime.Value;
 				return containerChanged;
+			// TODO 完成更多工厂模式的更新逻辑
 		}
 		Logger.LogError(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_factory_mode"));
 		minimalTimeSpanTicksToNextSomethingChanging = 0L;
