@@ -1,5 +1,6 @@
 #if IDLE_FRAMEWORK_UISCENE_ALL || IDLE_FRAMEWORK_UISCENE_CONTROL
 using System;
+using System.Collections;
 using Godot;
 using IdleFramework.Core;
 using IdleFramework.Global;
@@ -27,7 +28,6 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	/// </summary>
 	public Guid FactoryGuid { get; set; }
 	
-	public FactoryRegistryObject factoryRegistryObjectCache;
 	public Guid inputContainerGuidCache = Guid.Empty;
 	public Guid outputContainerGuidCache = Guid.Empty;
 	
@@ -53,6 +53,7 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 				NOutputContainerButton = GetNode<Button>("VBC/HBC/OutputContainerButton");
 				NOutputContainerButton.TooltipText = Localization.Tr("ui_scene_control.click_to_set_container");
 				NRecipeButton = GetNode<Button>("VBC/RecipeBar/RecipeButton");
+				NRecipeButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnRecipeButtonPresses));
 				break;
 		}
 	}
@@ -69,6 +70,22 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	/// <param name="saveDataHelper">要使用的存档数据辅助器。</param>
 	public void FullyUpdate(SaveDataHelper saveDataHelper)
 	{
+		if (!saveDataHelper.QueryItemIdForGuid(FactoryGuid, out string itemId))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_query_item_id_for_this_factory_guid"), FactoryGuid.ToString()));
+			QueueFree();
+			return;
+		}
+		if (!saveDataHelper.UsingGameResource.FactoryRegistry.TryGetValue(itemId, out FactoryRegistryObject factoryRegistryObject))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_get_factory_registry_object_for_factory_id"), itemId));
+			QueueFree();
+			return;
+		}
+		if (!factoryRegistryObject.RecipeOrder.IsManuallable)
+		{
+			NRecipeButton.Disabled = true;
+		}
 		SetTitleName(saveDataHelper.GetNameForInstance(FactoryGuid));
 		Update(saveDataHelper);
 	}
@@ -139,6 +156,14 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		}
 		NRecipeButton.Icon = recipeRegistryObject.IconTexture;
 		NRecipeButton.Text = Localization.Tr(recipeRegistryObject.NameKey);
+	}
+
+	/// <summary>
+	/// 信号方法-当配方选择按钮被按下时触发。
+	/// </summary>
+	public void OnRecipeButtonPresses()
+	{
+		
 	}
 }
 #endif

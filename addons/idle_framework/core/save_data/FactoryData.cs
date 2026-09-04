@@ -9,6 +9,11 @@ namespace IdleFramework.Core;
 public class FactoryData : ISaveDataComponent<FactoryData>
 {
 	/// <summary>
+	/// 工厂配方下单器
+	/// </summary>
+	public RecipeOrderData RecipeOrderData { get; set; }
+	
+	/// <summary>
 	/// 工厂原料需求模式
 	/// </summary>
 	public FactoryIngredientRequireMode FactoryMode { get; set; }
@@ -52,6 +57,7 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	{
 		JObject result = new()
 		{
+			[nameof(RecipeOrderData)] = RecipeOrderData.ToJson(),
 			[nameof(FactoryMode)] = new JValue(FactoryMode.ToString()),
 			[nameof(CurrentRecipe)] = new JValue(CurrentRecipe),
 			[nameof(StartTime)] = new JValue(StartTime.Ticks),
@@ -66,6 +72,13 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	{
 		if (jObject == null) return null;
 		FactoryData result = new();
+		if (jObject.TryGetValue(nameof(RecipeOrderData), out JToken valueRecipeOrderData) && valueRecipeOrderData.Type == JTokenType.Object)
+		{
+			if (valueRecipeOrderData is JObject valueRecipeOrderDataJObject)
+			{
+				result.RecipeOrderData = RecipeOrderData.FromJson(valueRecipeOrderDataJObject);
+			}
+		}
 		if (jObject.TryGetValue(nameof(FactoryMode), out JToken valueMode) && valueMode.Type == JTokenType.String)
 		{
 			if (Enum.TryParse(valueMode.Value<string>(), out FactoryIngredientRequireMode mode)) result.FactoryMode = mode;
@@ -86,7 +99,6 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		{
 			result.OutputContainerGuid = valueOutputContainerGuid.Value<Guid>();
 		}
-
 		if (jObject.TryGetValue(nameof(WasStarted), out JToken valueWasStarted) && valueWasStarted.Type == JTokenType.Boolean)
 		{
 			result.WasStarted = valueWasStarted.Value<bool>();

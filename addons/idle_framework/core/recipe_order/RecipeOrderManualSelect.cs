@@ -58,24 +58,7 @@ public partial class RecipeOrderManualSelect : RecipeOrder
 	public bool EnqueueRecipe(string recipe)
 	{
 		if (IsFull) return false;
-		if (RecipeQueue.Count == 0)
-		{
-			RecipeQueue.Enqueue(recipe);
-			PushRecipe();
-			return true;
-		}
 		RecipeQueue.Enqueue(recipe);
 		return true;
-	}
-
-	/// <summary>
-	/// 推送配方的覆写
-	/// </summary>
-	public override void PushRecipe()
-	{
-		if (RecipeQueue.TryDequeue(out string recipe))
-		{
-			EmitSignal(RecipeOrder.SignalName.RecipePush, recipe);
-		}
 	}
 }
