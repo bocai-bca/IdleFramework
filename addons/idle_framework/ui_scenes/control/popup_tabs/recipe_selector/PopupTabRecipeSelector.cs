@@ -104,7 +104,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 
 	public void OnSelectButtonPressed()
 	{
-		SaveAccess.LoadedDataHelper.TrySetRecipeForFactory(factoryGuidCache, selectedRecipeId);
+		SaveAccess.LoadedDataHelper.TryEnqueueRecipeForManualFactory(factoryGuidCache, selectedRecipeId, true);
 		OnCloseButtonPressed();
 	}
 	

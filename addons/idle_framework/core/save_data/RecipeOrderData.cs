@@ -12,19 +12,19 @@ public class RecipeOrderData: ISaveDataComponent<RecipeOrderData>
 	/// <summary>
 	/// 整型参数表
 	/// </summary>
-	public List<long> ArgumentsLong { get; init; } = [];
+	public List<long> DataListLong { get; init; } = [];
 	
 	/// <summary>
-	/// 字符串参数表
+	/// 字符串队列表
 	/// </summary>
-	public List<string> ArgumentsString { get; init; } = [];
+	public Queue<string> DataQueueString { get; init; } = [];
 	
 	public JObject ToJson()
 	{
 		JObject result = new()
 		{
-			[nameof(ArgumentsLong)] = new JArray(ArgumentsLong.Select(x => new JValue(x))),
-			[nameof(ArgumentsString)] = new JArray(ArgumentsString.Select(x => new JValue(x))),
+			[nameof(DataListLong)] = new JArray(DataListLong.Select(x => new JValue(x))),
+			[nameof(DataQueueString)] = new JArray(DataQueueString.Select(x => new JValue(x))),
 		};
 		return result;
 	}
@@ -33,18 +33,18 @@ public class RecipeOrderData: ISaveDataComponent<RecipeOrderData>
 	{
 		if (jObject == null) return null;
 		RecipeOrderData result = new();
-		if (jObject.TryGetValue(nameof(ArgumentsLong), out JToken valueArgumentsLong) && valueArgumentsLong.Type == JTokenType.Array)
+		if (jObject.TryGetValue(nameof(DataListLong), out JToken valueArgumentsLong) && valueArgumentsLong.Type == JTokenType.Array)
 		{
 			foreach (JValue jValue in valueArgumentsLong.Values<JValue>())
 			{
-				if (jValue.Type == JTokenType.Integer) result.ArgumentsLong.Add(jValue.Value<long>());
+				if (jValue.Type == JTokenType.Integer) result.DataListLong.Add(jValue.Value<long>());
 			}
 		}
-		if (jObject.TryGetValue(nameof(ArgumentsString), out JToken valueArgumentsString) && valueArgumentsString.Type == JTokenType.Array)
+		if (jObject.TryGetValue(nameof(DataQueueString), out JToken valueArgumentsString) && valueArgumentsString.Type == JTokenType.Array)
 		{
 			foreach (JValue jValue in valueArgumentsString.Values<JValue>())
 			{
-				if (jValue.Type == JTokenType.String) result.ArgumentsString.Add(jValue.Value<string>());
+				if (jValue.Type == JTokenType.String) result.DataQueueString.Enqueue(jValue.Value<string>());
 			}
 		}
 		return result;
@@ -54,8 +54,8 @@ public class RecipeOrderData: ISaveDataComponent<RecipeOrderData>
 	{
 		RecipeOrderData duplicated = new()
 		{ 
-			ArgumentsLong = [..ArgumentsLong],
-			ArgumentsString = [..ArgumentsString],
+			DataListLong = [..DataListLong],
+			DataQueueString = new Queue<string>([..DataQueueString]),
 		};
 		return duplicated;
 	}

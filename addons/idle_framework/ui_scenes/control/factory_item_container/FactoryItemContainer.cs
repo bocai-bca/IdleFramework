@@ -1,6 +1,5 @@
 #if IDLE_FRAMEWORK_UISCENE_ALL || IDLE_FRAMEWORK_UISCENE_CONTROL
 using System;
-using System.Collections;
 using Godot;
 using IdleFramework.Core;
 using IdleFramework.Global;

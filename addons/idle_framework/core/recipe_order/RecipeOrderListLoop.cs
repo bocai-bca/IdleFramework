@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System.Collections.Generic;
+using Godot;
 using Godot.Collections;
 
 namespace IdleFramework;
@@ -13,25 +14,22 @@ public partial class RecipeOrderListLoop : RecipeOrder
 	public override bool IsManuallable => false;
 	
 	/// <summary>
-	/// 本下单器的配方ID列表，允许重复出现相同ID
+	/// 本下单器的配方ID列表，允许重复出现相同ID。
+	/// 赋值器是一个后备访问接口，请勿轻易使用。
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
 	public Array<string> RecipeIDs { get; set; } = [];
 
 	/// <summary>
-	/// 本下单器的索引记录
-	/// </summary>
-	public int indexCounter;
-	
-	/// <summary>
 	/// 拉取配方，按顺序依次返回RecipeIDs
 	/// </summary>
 	/// <returns>本下单器实例提供的配方</returns>
-	public override string PullRecipe()
+	public override string PullRecipe(List<long> argumentsLong, Queue<string> queueString)
 	{
+		int indexCounter = (int)argumentsLong[0];
 		string result = RecipeIDs[indexCounter];
-		indexCounter = (indexCounter + 1) % RecipeIDs.Count;
+		argumentsLong[0] = (indexCounter + 1) % RecipeIDs.Count;
 		return result;
 	}
 }

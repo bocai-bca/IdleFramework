@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System.Collections.Generic;
+using Godot;
 
 namespace IdleFramework;
 
@@ -12,17 +13,18 @@ public partial class RecipeOrderConstant : RecipeOrder
 	public override bool IsManuallable => false;
 
 	/// <summary>
-	/// 本下单器会返回的配方ID
+	/// 本下单器会返回的配方ID。
+	/// 赋值器是一个后备访问接口，请勿轻易使用。
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
 	public string RecipeID { get; set; } = "";
 	
 	/// <summary>
-	/// 拉取配方，固定返回RecipeID属性的值
+	/// 拉取配方，返回固定的配方ID。
 	/// </summary>
-	/// <returns>本下单器实例提供的配方</returns>
-	public override string PullRecipe()
+	/// <returns>本下单器实例提供的配方。</returns>
+	public override string PullRecipe(List<long> argumentsLong, Queue<string> queueString)
 	{
 		return RecipeID;
 	}

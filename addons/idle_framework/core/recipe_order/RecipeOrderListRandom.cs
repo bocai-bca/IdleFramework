@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System.Collections.Generic;
+using Godot;
 using Godot.Collections;
 
 namespace IdleFramework;
@@ -13,7 +14,8 @@ public partial class RecipeOrderListRandom : RecipeOrder
 	public override bool IsManuallable => false;
 	
 	/// <summary>
-	/// 本下单器的配方ID列表，允许重复出现相同ID，重复ID会表现为提高该ID被抽中的概率
+	/// 本下单器的配方ID列表，允许重复出现相同ID，重复ID会表现为提高该ID被抽中的概率。
+	/// 赋值器是一个后备访问接口，请勿轻易使用。
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
@@ -23,7 +25,7 @@ public partial class RecipeOrderListRandom : RecipeOrder
 	/// 拉取配方，返回RecipeIDs中随机抽取的一项
 	/// </summary>
 	/// <returns>本下单器实例提供的配方</returns>
-	public override string PullRecipe()
+	public override string PullRecipe(List<long> argumentsLong, Queue<string> queueString)
 	{
 		return RecipeIDs[GD.RandRange(0, RecipeIDs.Count - 1)];
 	}

@@ -104,12 +104,16 @@ public static class Updater
 	/// <returns>该工厂是否导致容器发生变化，为true则意味着更新器应当进行下一轮循环。</returns>
 	private static bool updateFactory([NotNull]FactoryData factoryData, InfiniteTaggedValue<long> timeSpanTicksAllowFactoriesToMoveOn, out InfiniteTaggedValue<long> minimalTimeSpanTicksToNextSomethingChanging)
 	{
-		if (factoryData.CurrentRecipe == string.Empty)
+		if (!factoryData.WasStarted) // 如果工厂未开始
 		{
-			minimalTimeSpanTicksToNextSomethingChanging = 0L;
-			return false;
+			// 尝试开始工厂
+			// TODO
+			// 如果工厂无法开始(如无配方队列等)
+			minimalTimeSpanTicksToNextSomethingChanging = 0L; // 设置最小跳过时间
+			return false; // 返回没有更改容器
 		}
-		bool containerChanged = false;
+		bool containerChanged = false; // 创建局部变量用来记录是否更改过容器
+		// 工厂运行和收获
 		switch (factoryData.FactoryMode)
 		{
 			case FactoryIngredientRequireMode.CheckAndConsumeAtStart:
@@ -132,6 +136,7 @@ public static class Updater
 				return containerChanged;
 			// TODO 完成更多工厂模式的更新逻辑
 		}
+		// 如果到达此处，说明该工厂处于未知的工厂模式，这属于异常状态
 		Logger.LogError(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_factory_mode"));
 		minimalTimeSpanTicksToNextSomethingChanging = 0L;
 		return false;

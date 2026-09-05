@@ -59,7 +59,8 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	public Dictionary<Guid, string> GuidToItemIdCache { get; } = [];
 
 	/// <summary>
-	/// 非互斥锁方法。通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
+	/// (注意，本方法是间接含锁的)
+	/// 通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
 	/// </summary>
 	/// <param name="guid">要查找的GUID。</param>
 	/// <returns>该GUID的所有者所属于的物品ID，如果未找到则返回空字符串。</returns>
@@ -80,7 +81,8 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
-	/// 非互斥锁方法。通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
+	/// (注意，本方法是间接含锁的)
+	/// 通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
 	/// </summary>
 	/// <param name="guid">要查找的GUID。</param>
 	/// <param name="itemId">该GUID的所有者所属于的物品ID，如果未找到则为空字符串。</param>
@@ -398,10 +400,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <returns>是否成功添加给定的物品。在找不到符合给定GUID的容器实例或无法获取该容器实例所属的物品ID或无法在注册表中寻找到物品ID的注册表项时会返回<c>false</c>。</returns>
 	public bool TryAddItemsForContainer(Guid containerGuid, Dictionary<string, long> itemCountsForAdd)
 	{
+		if (!QueryItemIdForGuid(containerGuid, out string itemId))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), containerGuid));
+			return false;
+		}
 		lock (_lock)
 		{
 			if (!UsingSaveData.ContainerDatas.TryGetValue(containerGuid, out ContainerData containerData)) return false;
-			if (!QueryItemIdForGuid(containerGuid, out string itemId)) return false;
 			if (!UsingGameResource.ContainerRegistry.TryGetValue(itemId, out ContainerRegistryObject containerRegistryObject)) return false;
 			foreach ((string addItemId, long addItemCount) in itemCountsForAdd)
 			{
@@ -443,36 +449,84 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <summary>
 	/// 通过GUID获取一个工厂实例，可以选择是否要获取复制品。
 	/// </summary>
-	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="factoryGuid">要查找的GUID。</param>
 	/// <param name="factoryData">查找到的工厂实例。</param>
 	/// <param name="duplicate">是否要复制获取到的工厂实例。</param>
 	/// <returns>成功与否，如果没有找到则返回<c>false</c>。</returns>
-	public bool GetFactoryForGuid(Guid guid, [MaybeNullWhen(false)] out FactoryData factoryData, bool duplicate = true)
+	public bool GetFactoryForGuid(Guid factoryGuid, [MaybeNullWhen(false)] out FactoryData factoryData, bool duplicate = true)
 	{
 		lock (_lock)
 		{
-			if (!UsingSaveData.FactoryDatas.TryGetValue(guid, out factoryData)) return false;
+			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out factoryData)) return false;
 			factoryData = duplicate ? factoryData.Duplicate() : factoryData;
 		}
 		return true;
 	}
 
 	/// <summary>
+	/// 尝试为持有特定GUID的注册为手动配方下单器的工厂实例向配方队列中添加一个配方ID，对应配方下单器数据会被强制追加相应配方ID，因此该配方是否是该配方下单器允许的范畴需要由调用方自行作出判断。
+	/// </summary>
+	/// <param name="factoryGuid">要添加配方进队列的工厂实例的GUID。</param>
+	/// <param name="recipeId">要添加的配方ID。</param>
+	/// <param name="blockIfOutOfCapacity">是否容许超出容量，如果为<c>true</c>，则本方法会额外地进行容量判断，并在超额入队时抛弃本次操作。并且额外地会在未能查找到工厂物品ID、未能获取工厂注册表项、对应工厂的配方下单器不是可存储型的情况下直接返回<c>false</c>。</param>
+	/// <returns>成功与否，如果没有找到对应工厂则返回<c>false</c>，若<c>allowOutOfCapacity</c>为<c>true</c>，则会在因超出容量而遭拒绝时返回<c>false</c>。</returns>
+	public bool TryEnqueueRecipeForManualFactory(Guid factoryGuid, string recipeId, bool blockIfOutOfCapacity)
+	{
+		// 需要检查上限的差分
+		if (blockIfOutOfCapacity)
+		{
+			if (!QueryItemIdForGuid(factoryGuid, out string itemId))
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), factoryGuid));
+				return false;
+			}
+			if (!UsingGameResource.FactoryRegistry.TryGetValue(itemId, out FactoryRegistryObject factoryRegistryObject))
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_factory_registry_object_in_game_resource_for_item_id"), itemId));
+				return false;
+			}
+			if (factoryRegistryObject.RecipeOrder is not RecipeOrderStorable recipeOrderStorable)
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.the_recipe_order_of_factory_registry_object_with_item_id_is_not_recipe_order_storable"), itemId));
+				return false;
+			}
+			lock (_lock)
+			{
+				if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out FactoryData factoryData)) return false;
+				if (factoryData.RecipeOrderData.DataQueueString.Count >= recipeOrderStorable.StoreSize.GetNumber())
+				{
+					Logger.LogFaster(Localization.Tr("log.info.save_data_helper.target_recipe_order_storable_is_full"));
+					return false;
+				}
+				factoryData.RecipeOrderData.DataQueueString.Enqueue(recipeId);
+			}
+			return true;
+		}
+		// 不需要检查上限的差分
+		lock (_lock)
+		{
+			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out FactoryData factoryData)) return false;
+			factoryData.RecipeOrderData.DataQueueString.Enqueue(recipeId);
+		}
+		return true;
+	}
+
+	/// <summary>
 	/// 尝试为持有特定GUID的工厂实例设置配方ID，对应工厂将被强制设置为相应ID，因此配方是否可用于对应工厂需要由调用方自行作出判断。
+	/// 不会与配方下单器及其实例数据交互。
 	/// 如果要设置的配方ID与原本该工厂的配方ID一致，则不会更新该工厂的数据，同时也返回<c>true</c>。
 	/// </summary>
-	/// <param name="guid">要设置配方的工厂实例的GUID。</param>
+	/// <param name="factoryGuid">要设置配方的工厂实例的GUID。</param>
 	/// <param name="recipeId">要设置为的配方ID。</param>
 	/// <returns>成功与否，如果没有找到对应工厂则返回<c>false</c>。</returns>
-	public bool TrySetRecipeForFactory(Guid guid, string recipeId)
+	public bool TrySetRecipeForFactory(Guid factoryGuid, string recipeId)
 	{
 		lock (_lock)
 		{
-			if (!UsingSaveData.FactoryDatas.TryGetValue(guid, out FactoryData factoryData)) return false;
+			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out FactoryData factoryData)) return false;
 			if (recipeId == factoryData.CurrentRecipe) return true;
 			factoryData.CurrentRecipe = recipeId;
 			factoryData.RecipeRemainingTicks = 0L;
-			factoryData.WasStarted = false;
 		}
 		return true;
 	}
@@ -481,9 +535,9 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// 获取所有工厂的GUID集合。
 	/// </summary>
 	/// <returns>一个容纳当前所有工厂GUID的集合。</returns>
-	public ICollection<Guid> GetAllGuidsForFactories()
+	public List<Guid> GetAllGuidsForFactories()
 	{
-		lock (_lock) return new List<Guid>(UsingSaveData.FactoryDatas.Keys);
+		lock (_lock) return [..UsingSaveData.FactoryDatas.Keys];
 	}
 	
 	#endregion

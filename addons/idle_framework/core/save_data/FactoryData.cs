@@ -24,6 +24,11 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	public string CurrentRecipe { get; set; } = string.Empty;
 	
 	/// <summary>
+	/// 该工厂是否已经开始生产，是对<c>CurrentRecipe</c>的检查的封装。
+	/// </summary>
+	public bool WasStarted => CurrentRecipe == string.Empty;
+	
+	/// <summary>
 	/// 配方执行的开始时间
 	/// </summary>
 	public DateTime StartTime { get; set; }
@@ -42,16 +47,6 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	/// 输出容器的GUID
 	/// </summary>
 	public Guid OutputContainerGuid { get; set; }
-
-	/// <summary>
-	/// 该工厂是否已经开始生产
-	/// </summary>
-	public bool WasStarted { get; set; }
-	
-	/// <summary>
-	/// 工厂ID缓存，由更新器赋值，不会被持久化。
-	/// </summary>
-	public string FactoryIdCache = string.Empty;
 	
 	public JObject ToJson()
 	{
@@ -63,7 +58,6 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			[nameof(StartTime)] = new JValue(StartTime.Ticks),
 			[nameof(InputContainerGuid)] = new JValue(InputContainerGuid),
 			[nameof(OutputContainerGuid)] = new JValue(OutputContainerGuid),
-			[nameof(WasStarted)] = new JValue(WasStarted),
 		};
 		return result;
 	}
@@ -99,10 +93,6 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		{
 			result.OutputContainerGuid = valueOutputContainerGuid.Value<Guid>();
 		}
-		if (jObject.TryGetValue(nameof(WasStarted), out JToken valueWasStarted) && valueWasStarted.Type == JTokenType.Boolean)
-		{
-			result.WasStarted = valueWasStarted.Value<bool>();
-		}
 		return result;
 	}
 
@@ -116,7 +106,6 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			RecipeRemainingTicks = RecipeRemainingTicks,
 			InputContainerGuid = InputContainerGuid,
 			OutputContainerGuid = OutputContainerGuid,
-			WasStarted = WasStarted,
 		};
 		return duplicated;
 	}
