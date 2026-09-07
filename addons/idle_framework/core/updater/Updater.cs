@@ -58,7 +58,7 @@ public static class Updater
 		uint infiniteLoopingTimerWhenTargetTimeReached = uint.MaxValue; //当存档的数据对应时间已到达更新目标时间但由于某些0耗时循环在发生而不断继续存档更新时，本变量充当计时器来限制这种循环迭代的最大次数，超出次数时将强制跳出循环，以免无法终止。
 		long saveTimeCache = SaveDataHelperInHandle.GetLastUpdateUtcTick(); //存档的数据对应时间的缓存，相当于LastUpdateUtcTick的缓存，只在此处读取一次，后续全部用来参与逻辑运算和写入到存档。
 		InfiniteTaggedValue<long> timeSpanTicksAllowFactoriesToMoveOn = 0L; //在一轮循环中允许每个工厂各自将自身的数据向前推进的时间长度，单位为tick
-		while (true)
+		while (true) // 对所有工厂发起遍历
 		{
 			InfiniteTaggedValue<long> minimalTimeSpanTicksToNextSomethingChanging = long.MaxValue; //到达下一状态所需时间最短的对象的所需时间，将在一轮循环中收集，单位为tick
 			bool wasContainerChanged = false; //记录本轮更新中是否有容器变化，用于控制是否继续循环，还是认为环境热寂而结束循环
@@ -75,9 +75,16 @@ public static class Updater
 					foreach (Guid currentFactoryGuid in currentItemInstanceGuidsSet)
 					{
 						//这里是遍历每个工厂实例的GUID
+						SaveDataHelperInHandle.TryRunRecipeOrderForFactory(currentFactoryGuid, true); // 如果工厂未开始，尝试开始工厂
 						if (!SaveDataHelperInHandle.GetFactoryForGuid(currentFactoryGuid, out FactoryData currentFactory))
 						{
 							Logger.LogError(string.Format(Localization.Tr("log.error.updater.unexcepted_to_failed_to_get_factory_for_guid"), currentFactoryGuid));
+							continue;
+						}
+						if (!currentFactory.WasStarted) // 如果工厂还是未开始，意味着工厂无法开始(如无配方队列等)
+						{
+							minimalTimeSpanTicksToNextSomethingChanging = 0L; // 设置最小跳过时间
+							wasContainerChanged = false;
 							continue;
 						}
 						//在这里更新这个工厂，使用timeSpanTicksAllowFactoriesToMoveOn让工厂推进，并结合情况修改wasContainerChanged和minimalTimeSpanTickToNextSomethingChanging
@@ -87,7 +94,12 @@ public static class Updater
 					}
 				}
 			}
-			if (!wasContainerChanged || infiniteLoopingTimerWhenTargetTimeReached == 0) break;
+			if (!wasContainerChanged) break;
+			if (infiniteLoopingTimerWhenTargetTimeReached == 0)
+			{
+				Logger.LogWarning(Localization.Tr("log.warning.updater.timed_out_on_factory_updating_loop"));
+				break;
+			}
 			timeSpanTicksAllowFactoriesToMoveOn = minimalTimeSpanTicksToNextSomethingChanging;
 			if (saveTimeCache == updateTargetTicks) infiniteLoopingTimerWhenTargetTimeReached -= 1;
 		}
@@ -104,14 +116,6 @@ public static class Updater
 	/// <returns>该工厂是否导致容器发生变化，为true则意味着更新器应当进行下一轮循环。</returns>
 	private static bool updateFactory([NotNull]FactoryData factoryData, InfiniteTaggedValue<long> timeSpanTicksAllowFactoriesToMoveOn, out InfiniteTaggedValue<long> minimalTimeSpanTicksToNextSomethingChanging)
 	{
-		if (!factoryData.WasStarted) // 如果工厂未开始
-		{
-			// 尝试开始工厂
-			// TODO
-			// 如果工厂无法开始(如无配方队列等)
-			minimalTimeSpanTicksToNextSomethingChanging = 0L; // 设置最小跳过时间
-			return false; // 返回没有更改容器
-		}
 		bool containerChanged = false; // 创建局部变量用来记录是否更改过容器
 		// 工厂运行和收获
 		switch (factoryData.FactoryMode)
@@ -123,7 +127,7 @@ public static class Updater
 					//生产完毕，输出产品到容器
 					if (!SaveDataHelperInHandle.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
 					{
-						Logger.LogError(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_recipe"));
+						Logger.LogError(string.Format(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_recipe"), factoryData.CurrentRecipe));
 						minimalTimeSpanTicksToNextSomethingChanging = 0L;
 						return false;
 					}

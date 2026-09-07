@@ -469,7 +469,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="factoryGuid">要添加配方进队列的工厂实例的GUID。</param>
 	/// <param name="recipeId">要添加的配方ID。</param>
 	/// <param name="blockIfOutOfCapacity">是否容许超出容量，如果为<c>true</c>，则本方法会额外地进行容量判断，并在超额入队时抛弃本次操作。并且额外地会在未能查找到工厂物品ID、未能获取工厂注册表项、对应工厂的配方下单器不是可存储型的情况下直接返回<c>false</c>。</param>
-	/// <returns>成功与否，如果没有找到对应工厂则返回<c>false</c>，若<c>allowOutOfCapacity</c>为<c>true</c>，则会在因超出容量而遭拒绝时返回<c>false</c>。</returns>
+	/// <returns>成功与否，如果没有找到对应工厂或者存在对象未能被查找到的情况则返回<c>false</c>，若<c>allowOutOfCapacity</c>为<c>true</c>，则会在因超出容量而遭拒绝时返回<c>false</c>。</returns>
 	public bool TryEnqueueRecipeForManualFactory(Guid factoryGuid, string recipeId, bool blockIfOutOfCapacity)
 	{
 		// 需要检查上限的差分
@@ -532,6 +532,70 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
+	/// 尝试使持有特定GUID的工厂实例运行其配方下单器，将会影响对应的工厂数据和对应的配方下单器数据。
+	/// </summary>
+	/// <param name="factoryGuid">要运行配方下单器的工厂实例的GUID。</param>
+	/// <param name="cancelIfStarted">是否在对应工厂已开始的情况下取消本次操作。</param>
+	/// <returns>成功与否，如果没有找到对应工厂或者存在对象未能被查找到的情况则返回<c>false</c>。</returns>
+	public bool TryRunRecipeOrderForFactory(Guid factoryGuid, bool cancelIfStarted)
+	{
+		FactoryData factoryData;
+		lock (_lock)
+		{
+			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out factoryData)) return false;
+			if (cancelIfStarted && factoryData.WasStarted) return true;
+		}
+		if (!QueryItemIdForGuid(factoryGuid, out string itemId))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), factoryGuid));
+			return false;
+		}
+		if (!UsingGameResource.FactoryRegistry.TryGetValue(itemId, out FactoryRegistryObject factoryRegistryObject))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_factory_registry_object_in_game_resource_for_item_id"), itemId));
+			return false;
+		}
+		lock (_lock)
+		{
+			if (factoryRegistryObject.RecipeOrder is not { } recipeOrder) return false;
+			string recipeId = recipeOrder.PullRecipe(factoryData.RecipeOrderData.DataListLong, factoryData.RecipeOrderData.DataQueueString);
+			if (recipeId == string.Empty || recipeId == factoryData.CurrentRecipe) return true;
+			factoryData.CurrentRecipe = recipeId;
+			factoryData.RecipeRemainingTicks = 0L;
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 尝试使持有特定GUID的工厂实例运行其配方下单器，将会影响对应的工厂数据和对应的配方下单器数据。相比于单参数重载去掉了搜寻<c>FactoryData</c>的部分，可方便于在已经拥有
+	/// </summary>
+	/// <param name="factoryGuid">要运行配方下单器的工厂实例的GUID。</param>
+	/// <param name="factoryData">要直接利用的对应的实例的工厂数据。</param>
+	/// <returns>成功与否，如果存在对象未能被查找到的情况则返回<c>false</c>。</returns>
+	public bool TryRunRecipeOrderForFactory(Guid factoryGuid, FactoryData factoryData)
+	{
+		if (!QueryItemIdForGuid(factoryGuid, out string itemId))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), factoryGuid));
+			return false;
+		}
+		if (!UsingGameResource.FactoryRegistry.TryGetValue(itemId, out FactoryRegistryObject factoryRegistryObject))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_factory_registry_object_in_game_resource_for_item_id"), itemId));
+			return false;
+		}
+		lock (_lock)
+		{
+			if (factoryRegistryObject.RecipeOrder is not { } recipeOrder) return false;
+			string recipeId = recipeOrder.PullRecipe(factoryData.RecipeOrderData.DataListLong, factoryData.RecipeOrderData.DataQueueString);
+			if (recipeId == string.Empty || recipeId == factoryData.CurrentRecipe) return true;
+			factoryData.CurrentRecipe = recipeId;
+			factoryData.RecipeRemainingTicks = 0L;
+		}
+		return true;
+	}
+	
+	/// <summary>
 	/// 获取所有工厂的GUID集合。
 	/// </summary>
 	/// <returns>一个容纳当前所有工厂GUID的集合。</returns>
@@ -563,6 +627,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	{
 		FactoryData result = new()
 		{
+			RecipeOrderData = new RecipeOrderData(),
 			FactoryMode = factoryRegistryObject.IngredientRequireMode,
 		};
 		return result;

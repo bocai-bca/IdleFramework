@@ -26,7 +26,7 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	/// <summary>
 	/// 该工厂是否已经开始生产，是对<c>CurrentRecipe</c>的检查的封装。
 	/// </summary>
-	public bool WasStarted => CurrentRecipe == string.Empty;
+	public bool WasStarted => CurrentRecipe != string.Empty;
 	
 	/// <summary>
 	/// 配方执行的开始时间

@@ -81,6 +81,25 @@ public partial class MotherNode
 		if (!Updater.WorkingTask.IsCompleted) return; //如果Updater工作线程未完成则离开本帧
 		if (!Updater.WorkingTask.IsCompletedSuccessfully) //如果Updater工作线程完成带异常
 		{
+			if (Updater.WorkingTask.IsFaulted)
+			{
+				try
+				{
+					Updater.WorkingTask.GetAwaiter().GetResult();
+				}
+				catch (Exception e)
+				{
+					Logger.LogError(Localization.Tr("log.error.mother_node.task_faulted_on_updater_async") + e);
+				}
+				CurrentState = State.FreezeForUnhandlableError;
+				return;
+			}
+			if (Updater.WorkingTask.IsCanceled)
+			{
+				Logger.LogError(Localization.Tr("log.error.mother_node.task_canceled_on_updater_async"));
+				CurrentState = State.FreezeForUnhandlableError;
+				return;
+			}
 			AggregateException exception = SaveAccess.WorkingTask.Exception;
 			if (exception == null)
 			{

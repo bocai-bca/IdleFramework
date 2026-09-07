@@ -18,7 +18,7 @@ public partial class RecipeOrderConstant : RecipeOrder
 	/// </summary>
 	[Export]
 	[ExportGroup("Data")]
-	public string RecipeID { get; set; } = "";
+	public string RecipeID { get; set; } = string.Empty;
 	
 	/// <summary>
 	/// 拉取配方，返回固定的配方ID。
