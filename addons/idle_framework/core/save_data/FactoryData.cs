@@ -31,12 +31,27 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	/// <summary>
 	/// 配方执行的开始时间
 	/// </summary>
-	public DateTime StartTime { get; set; }
+	public DateTime RecipeStartTime { get; set; }
 	
 	/// <summary>
 	/// 配方已工作的时间刻数，仅适用于部分工厂模式
 	/// </summary>
-	public long RecipeRemainingTicks { get; set; }
+	public long RecipeWorkedTicks { get; set; }
+	
+	/// <summary>
+	/// 配方总共所需工作的时间刻数。
+	/// </summary>
+	public long RecipeRequiredTicks { get; set; }
+	
+	/// <summary>
+	/// 该工厂正在执行的配方的完成度百分比。
+	/// </summary>
+	public float RecipeWorkingPercent => (float)RecipeWorkedTicks / RecipeRequiredTicks;
+	
+	/// <summary>
+	/// 该工厂正在执行的配方剩余所需的工作时间刻数。
+	/// </summary>
+	public long RecipeRemainingTicks => RecipeRequiredTicks - RecipeWorkedTicks;
 	
 	/// <summary>
 	/// 输入容器的GUID
@@ -55,7 +70,9 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			[nameof(RecipeOrderData)] = RecipeOrderData.ToJson(),
 			[nameof(FactoryMode)] = new JValue(FactoryMode.ToString()),
 			[nameof(CurrentRecipe)] = new JValue(CurrentRecipe),
-			[nameof(StartTime)] = new JValue(StartTime.Ticks),
+			[nameof(RecipeStartTime)] = new JValue(RecipeStartTime.Ticks),
+			[nameof(RecipeWorkedTicks)] = new JValue(RecipeWorkedTicks),
+			[nameof(RecipeRequiredTicks)] = new JValue(RecipeRequiredTicks),
 			[nameof(InputContainerGuid)] = new JValue(InputContainerGuid),
 			[nameof(OutputContainerGuid)] = new JValue(OutputContainerGuid),
 		};
@@ -81,9 +98,17 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		{
 			result.CurrentRecipe = valueCurrentRecipe.Value<string>();
 		}
-		if (jObject.TryGetValue(nameof(StartTime), out JToken valueStartTime) && valueStartTime.Type == JTokenType.Integer)
+		if (jObject.TryGetValue(nameof(RecipeStartTime), out JToken valueStartTime) && valueStartTime.Type == JTokenType.Integer)
 		{
-			result.StartTime = new DateTime(valueStartTime.Value<long>());
+			result.RecipeStartTime = new DateTime(valueStartTime.Value<long>());
+		}
+		if (jObject.TryGetValue(nameof(RecipeWorkedTicks), out JToken valueRecipeWorkedTicks) && valueRecipeWorkedTicks.Type == JTokenType.Integer)
+		{
+			result.RecipeWorkedTicks = valueRecipeWorkedTicks.Value<long>();
+		}
+		if (jObject.TryGetValue(nameof(RecipeRequiredTicks), out JToken valueRecipeRequiredTicks) && valueRecipeRequiredTicks.Type == JTokenType.Integer)
+		{
+			result.RecipeRequiredTicks = valueRecipeRequiredTicks.Value<long>();
 		}
 		if (jObject.TryGetValue(nameof(InputContainerGuid), out JToken valueInputContainerGuid) && valueInputContainerGuid.Type == JTokenType.Guid)
 		{
@@ -100,10 +125,12 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	{
 		FactoryData duplicated = new()
 		{
+			RecipeOrderData = RecipeOrderData.Duplicate(),
 			FactoryMode = FactoryMode,
 			CurrentRecipe = CurrentRecipe,
-			StartTime = StartTime,
-			RecipeRemainingTicks = RecipeRemainingTicks,
+			RecipeStartTime = RecipeStartTime,
+			RecipeWorkedTicks = RecipeWorkedTicks,
+			RecipeRequiredTicks = RecipeRequiredTicks,
 			InputContainerGuid = InputContainerGuid,
 			OutputContainerGuid = OutputContainerGuid,
 		};

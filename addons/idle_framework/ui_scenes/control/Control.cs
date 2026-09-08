@@ -38,6 +38,7 @@ public partial class Control : UIScene, IClassPackedScene
 	public readonly Dictionary<string, SpaceDetailArea> NSpaceDetailAreas = [];
 	public readonly Dictionary<string, SpaceButton> NSpaceButtons = [];
 	public PanelContainer NPopupContainer;
+	public Panel NUpdateStatusButton;
 
 	/// <summary>
 	/// 一个便于子节点访问的单例设计引用。
@@ -62,6 +63,7 @@ public partial class Control : UIScene, IClassPackedScene
 				TabPopupInstance = GetNode<TabPopup>("PopupContainer/TabPopup");
 				TabPopupInstance.Connect(TabPopup.SignalName.AddedTabs, Callable.From((string _) => OnPopupAddedTabs()));
 				TabPopupInstance.Connect(TabPopup.SignalName.TabsAllClosed, Callable.From(OnPopupTabsAllClosed));
+				NUpdateStatusButton = GetNode<Panel>("VBC/BottomBar/HBC/UpdateStatusButton");
 				break;
 			
 		}
@@ -74,6 +76,7 @@ public partial class Control : UIScene, IClassPackedScene
 
 	public override void _Process(double delta)
 	{
+		NUpdateStatusButton.SelfModulate = new Color(NUpdateStatusButton.SelfModulate, (float)Mathf.MoveToward(NUpdateStatusButton.SelfModulate.A, 0.0f, delta));
 	}
 
 	public override void OnGameResourceReady()
@@ -100,6 +103,7 @@ public partial class Control : UIScene, IClassPackedScene
 
 	public override void OnUpdaterDone(SaveDataHelper saveDataHelper)
 	{
+		NUpdateStatusButton.SelfModulate = new Color(NUpdateStatusButton.SelfModulate);
 		foreach ((string spaceId, SpaceDetailArea spaceDetailArea) in NSpaceDetailAreas)
 		{
 			spaceDetailArea.Update(saveDataHelper);

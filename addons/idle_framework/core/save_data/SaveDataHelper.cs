@@ -370,12 +370,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <summary>
 	/// 尝试从给定GUID的容器中消耗物品，并返回是否成功消耗要求的物品，如果给定的容器不满足要求的物品数量则不会消耗物品。
 	/// 方法的时间复杂度近似O(n)，n代表要求消耗的物品类型的总数。
+	/// 如果给定的GUID是<c>Guid.Empty</c>，则直接取消本次操作，并返回<c>false</c>。
 	/// </summary>
 	/// <param name="containerGuid">要消耗物品的容器实例的GUID。</param>
 	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例中存在(库存数量大于0)。</param>
 	/// <returns>是否成功消耗要求的物品数量。</returns>
 	public bool TryConsumeItemsForContainer(Guid containerGuid, Dictionary<string, long> itemCountsForConsume)
 	{
+		if (containerGuid == Guid.Empty) return false;
 		lock (_lock)
 		{
 			if (!UsingSaveData.ContainerDatas.TryGetValue(containerGuid, out ContainerData containerData)) return false;
@@ -394,12 +396,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <summary>
 	/// 尝试向给定GUID的容器中添加物品，并返回是否成功添加给定的物品，如果给定的容器物品数量溢出也将成功添加物品。
 	/// 方法的时间复杂度近似O(n)，n代表要求添加的物品类型的总数。
+	/// 如果给定的GUID是<c>Guid.Empty</c>，则直接取消本次操作，并返回<c>false</c>。
 	/// </summary>
 	/// <param name="containerGuid">要添加物品的容器实例的GUID。</param>
 	/// <param name="itemCountsForAdd">要添加的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会执行操作。</param>
 	/// <returns>是否成功添加给定的物品。在找不到符合给定GUID的容器实例或无法获取该容器实例所属的物品ID或无法在注册表中寻找到物品ID的注册表项时会返回<c>false</c>。</returns>
 	public bool TryAddItemsForContainer(Guid containerGuid, Dictionary<string, long> itemCountsForAdd)
 	{
+		if (containerGuid == Guid.Empty) return false;
 		if (!QueryItemIdForGuid(containerGuid, out string itemId))
 		{
 			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), containerGuid));
@@ -451,7 +455,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// </summary>
 	/// <param name="factoryGuid">要查找的GUID。</param>
 	/// <param name="factoryData">查找到的工厂实例。</param>
-	/// <param name="duplicate">是否要复制获取到的工厂实例。</param>
+	/// <param name="duplicate">是否要复制获取到的工厂实例，如果读写非复制的实例可能导致线程不安全问题，除非清楚在做什么，否则一律使用复制品。</param>
 	/// <returns>成功与否，如果没有找到则返回<c>false</c>。</returns>
 	public bool GetFactoryForGuid(Guid factoryGuid, [MaybeNullWhen(false)] out FactoryData factoryData, bool duplicate = true)
 	{
@@ -524,11 +528,8 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		lock (_lock)
 		{
 			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out FactoryData factoryData)) return false;
-			if (recipeId == factoryData.CurrentRecipe) return true;
-			factoryData.CurrentRecipe = recipeId;
-			factoryData.RecipeRemainingTicks = 0L;
+			return setRecipeForFactoryData(factoryData, recipeId);
 		}
-		return true;
 	}
 
 	/// <summary>
@@ -559,40 +560,8 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		{
 			if (factoryRegistryObject.RecipeOrder is not { } recipeOrder) return false;
 			string recipeId = recipeOrder.PullRecipe(factoryData.RecipeOrderData.DataListLong, factoryData.RecipeOrderData.DataQueueString);
-			if (recipeId == string.Empty || recipeId == factoryData.CurrentRecipe) return true;
-			factoryData.CurrentRecipe = recipeId;
-			factoryData.RecipeRemainingTicks = 0L;
+			return setRecipeForFactoryData(factoryData, recipeId);
 		}
-		return true;
-	}
-
-	/// <summary>
-	/// 尝试使持有特定GUID的工厂实例运行其配方下单器，将会影响对应的工厂数据和对应的配方下单器数据。相比于单参数重载去掉了搜寻<c>FactoryData</c>的部分，可方便于在已经拥有
-	/// </summary>
-	/// <param name="factoryGuid">要运行配方下单器的工厂实例的GUID。</param>
-	/// <param name="factoryData">要直接利用的对应的实例的工厂数据。</param>
-	/// <returns>成功与否，如果存在对象未能被查找到的情况则返回<c>false</c>。</returns>
-	public bool TryRunRecipeOrderForFactory(Guid factoryGuid, FactoryData factoryData)
-	{
-		if (!QueryItemIdForGuid(factoryGuid, out string itemId))
-		{
-			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), factoryGuid));
-			return false;
-		}
-		if (!UsingGameResource.FactoryRegistry.TryGetValue(itemId, out FactoryRegistryObject factoryRegistryObject))
-		{
-			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_factory_registry_object_in_game_resource_for_item_id"), itemId));
-			return false;
-		}
-		lock (_lock)
-		{
-			if (factoryRegistryObject.RecipeOrder is not { } recipeOrder) return false;
-			string recipeId = recipeOrder.PullRecipe(factoryData.RecipeOrderData.DataListLong, factoryData.RecipeOrderData.DataQueueString);
-			if (recipeId == string.Empty || recipeId == factoryData.CurrentRecipe) return true;
-			factoryData.CurrentRecipe = recipeId;
-			factoryData.RecipeRemainingTicks = 0L;
-		}
-		return true;
 	}
 	
 	/// <summary>
@@ -602,6 +571,32 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	public List<Guid> GetAllGuidsForFactories()
 	{
 		lock (_lock) return [..UsingSaveData.FactoryDatas.Keys];
+	}
+
+	/// <summary>
+	/// 内部专用-直接给工厂数据设置配方。
+	/// </summary>
+	/// <param name="factoryData">要设置配方的工厂数据。</param>
+	/// <param name="recipeId">要设置为的配方ID。</param>
+	/// <returns>是否成功设置，如果给定配方符合原本已有的配方也将返回<c>true</c>。</returns>
+	private bool setRecipeForFactoryData(FactoryData factoryData, string recipeId)
+	{
+		// 设置配方
+		if (!UsingGameResource.RecipeRegistry.TryGetValue(recipeId, out RecipeRegistryObject recipeRegistryObject))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_recipe_registry_object_in_game_resource_for_recipe_id"), recipeId));
+			return false;
+		}
+		if (recipeId == string.Empty || recipeId == factoryData.CurrentRecipe)
+		{
+			Logger.LogInfo(Localization.Tr("log.info.save_data_helper.canceled_to_set_recipe_for_factory_data_because_the_new_recipe_is_empty_or_same_as_original"));
+			return true;
+		}
+		factoryData.CurrentRecipe = recipeId;
+		factoryData.RecipeStartTime = DateTime.UtcNow;
+		factoryData.RecipeWorkedTicks = 0L;
+		factoryData.RecipeRequiredTicks = recipeRegistryObject.RequiredSeconds.GetNumber() * TimeSpan.TicksPerSecond;
+		return true;
 	}
 	
 	#endregion

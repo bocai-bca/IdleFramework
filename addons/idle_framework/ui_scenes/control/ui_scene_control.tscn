@@ -7,6 +7,13 @@
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_wvjk3"]
 size = Vector2(128, 128)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dbps7"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c0ktc"]
 bg_color = Color(0, 0, 0, 0.49803922)
 
@@ -94,6 +101,11 @@ layout_mode = 2
 
 [node name="HBC" type="HBoxContainer" parent="VBC/BottomBar" unique_id=2041024412]
 layout_mode = 2
+
+[node name="UpdateStatusButton" type="Panel" parent="VBC/BottomBar/HBC" unique_id=690399988]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dbps7")
 
 [node name="PopupContainer" type="PanelContainer" parent="." unique_id=1100751663]
 visible = false

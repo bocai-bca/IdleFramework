@@ -56,10 +56,11 @@ public static class Updater
 			return WorkResult.SaveIsNull;
 		}
 		uint infiniteLoopingTimerWhenTargetTimeReached = uint.MaxValue; //当存档的数据对应时间已到达更新目标时间但由于某些0耗时循环在发生而不断继续存档更新时，本变量充当计时器来限制这种循环迭代的最大次数，超出次数时将强制跳出循环，以免无法终止。
-		long saveTimeCache = SaveDataHelperInHandle.GetLastUpdateUtcTick(); //存档的数据对应时间的缓存，相当于LastUpdateUtcTick的缓存，只在此处读取一次，后续全部用来参与逻辑运算和写入到存档。
+		InfiniteTaggedValue<long> saveTimeCache = SaveDataHelperInHandle.GetLastUpdateUtcTick(); //存档的数据对应时间的缓存，相当于LastUpdateUtcTick的缓存，只在此处读取一次，后续全部用来参与逻辑运算和写入到存档。
 		InfiniteTaggedValue<long> timeSpanTicksAllowFactoriesToMoveOn = 0L; //在一轮循环中允许每个工厂各自将自身的数据向前推进的时间长度，单位为tick
 		while (true) // 对所有工厂发起遍历
 		{
+			saveTimeCache = InfiniteTaggedValue<long>.MoveToward(saveTimeCache, updateTargetTicks, timeSpanTicksAllowFactoriesToMoveOn); // 向前推进saveTimeCache
 			InfiniteTaggedValue<long> minimalTimeSpanTicksToNextSomethingChanging = long.MaxValue; //到达下一状态所需时间最短的对象的所需时间，将在一轮循环中收集，单位为tick
 			bool wasContainerChanged = false; //记录本轮更新中是否有容器变化，用于控制是否继续循环，还是认为环境热寂而结束循环
 			foreach (string currentSpaceId in SaveDataHelperInHandle.GetAllSpaceIds()) //遍历所有空间ID
@@ -76,31 +77,31 @@ public static class Updater
 					{
 						//这里是遍历每个工厂实例的GUID
 						SaveDataHelperInHandle.TryRunRecipeOrderForFactory(currentFactoryGuid, true); // 如果工厂未开始，尝试开始工厂
-						if (!SaveDataHelperInHandle.GetFactoryForGuid(currentFactoryGuid, out FactoryData currentFactory))
+						if (!SaveDataHelperInHandle.GetFactoryForGuid(currentFactoryGuid, out FactoryData currentFactoryDuplicated))
 						{
 							Logger.LogError(string.Format(Localization.Tr("log.error.updater.unexcepted_to_failed_to_get_factory_for_guid"), currentFactoryGuid));
 							continue;
 						}
-						if (!currentFactory.WasStarted) // 如果工厂还是未开始，意味着工厂无法开始(如无配方队列等)
+						if (!currentFactoryDuplicated.WasStarted) // 如果工厂还是未开始，意味着工厂无法开始(如无配方队列等)
 						{
 							minimalTimeSpanTicksToNextSomethingChanging = 0L; // 设置最小跳过时间
 							wasContainerChanged = false;
 							continue;
 						}
 						//在这里更新这个工厂，使用timeSpanTicksAllowFactoriesToMoveOn让工厂推进，并结合情况修改wasContainerChanged和minimalTimeSpanTickToNextSomethingChanging
-						wasContainerChanged = updateFactory(currentFactory, timeSpanTicksAllowFactoriesToMoveOn, out InfiniteTaggedValue<long> currentMinimalTimeSpanTicksToNextSomethingChanging) || wasContainerChanged;
+						wasContainerChanged = updateFactory(currentFactoryDuplicated, timeSpanTicksAllowFactoriesToMoveOn, out InfiniteTaggedValue<long> currentMinimalTimeSpanTicksToNextSomethingChanging) || wasContainerChanged;
 						minimalTimeSpanTicksToNextSomethingChanging = InfiniteTaggedValue<long>.Min(minimalTimeSpanTicksToNextSomethingChanging, currentMinimalTimeSpanTicksToNextSomethingChanging);
-						SaveDataHelperInHandle.SetInstanceObject(currentFactory, currentFactoryGuid);
+						SaveDataHelperInHandle.SetInstanceObject(currentFactoryDuplicated, currentFactoryGuid);
 					}
 				}
 			}
-			if (!wasContainerChanged) break;
+			timeSpanTicksAllowFactoriesToMoveOn = minimalTimeSpanTicksToNextSomethingChanging;
+			if (wasContainerChanged) continue;
 			if (infiniteLoopingTimerWhenTargetTimeReached == 0)
 			{
 				Logger.LogWarning(Localization.Tr("log.warning.updater.timed_out_on_factory_updating_loop"));
 				break;
 			}
-			timeSpanTicksAllowFactoriesToMoveOn = minimalTimeSpanTicksToNextSomethingChanging;
 			if (saveTimeCache == updateTargetTicks) infiniteLoopingTimerWhenTargetTimeReached -= 1;
 		}
 		SaveDataHelperInHandle.SetLastUpdateUtcTick(updateTargetTicks);
@@ -121,22 +122,25 @@ public static class Updater
 		switch (factoryData.FactoryMode)
 		{
 			case FactoryIngredientRequireMode.CheckAndConsumeAtStart:
-				InfiniteTaggedValue<long> currentRecipeRemainingTime = InfiniteTaggedValue<long>.MoveToward(factoryData.RecipeRemainingTicks, 0L, timeSpanTicksAllowFactoriesToMoveOn);
-				if (currentRecipeRemainingTime <= 0L)
+				InfiniteTaggedValue<long> currentRecipeWorkedTime = InfiniteTaggedValue<long>.MoveToward(factoryData.RecipeWorkedTicks, factoryData.RecipeRequiredTicks, timeSpanTicksAllowFactoriesToMoveOn);
+				if (currentRecipeWorkedTime >= factoryData.RecipeRequiredTicks)
 				{
 					//生产完毕，输出产品到容器
 					if (!SaveDataHelperInHandle.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
 					{
 						Logger.LogError(string.Format(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_recipe"), factoryData.CurrentRecipe));
-						minimalTimeSpanTicksToNextSomethingChanging = 0L;
+						minimalTimeSpanTicksToNextSomethingChanging = new InfiniteTaggedValue<long>(0L, true);
 						return false;
 					}
 					Dictionary<string, long> itemGoingToAdd = [];
 					foreach ((string itemId, NumberProvider numberProvider) in recipeRegistryObject.Results) itemGoingToAdd[itemId] = numberProvider.GetNumber();
 					containerChanged = SaveDataHelperInHandle.TryAddItemsForContainer(factoryData.OutputContainerGuid, itemGoingToAdd);
+					factoryData.CurrentRecipe = string.Empty;
+					factoryData.RecipeWorkedTicks = 0L;
+					factoryData.RecipeRequiredTicks = 0L;
 				}
-				factoryData.RecipeRemainingTicks = currentRecipeRemainingTime.Value;
-				minimalTimeSpanTicksToNextSomethingChanging = currentRecipeRemainingTime.Value;
+				factoryData.RecipeWorkedTicks = currentRecipeWorkedTime.Value;
+				minimalTimeSpanTicksToNextSomethingChanging = factoryData.RecipeRemainingTicks;
 				return containerChanged;
 			// TODO 完成更多工厂模式的更新逻辑
 		}

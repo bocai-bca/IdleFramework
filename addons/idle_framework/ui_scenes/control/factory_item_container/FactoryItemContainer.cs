@@ -111,6 +111,7 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 			NProgressStandbyText.Visible = false;
 			NProgressTimeText.Visible = NProgressProgressBar.Visible = true;
 		}
+		UpdateProgressBar(saveDataHelper, factoryData);
 		UpdateRecipeBar(saveDataHelper, factoryData);
 		UpdateContainerButton(saveDataHelper, NInputContainerButton, factoryData.InputContainerGuid, inputContainerGuidCache);
 		UpdateContainerButton(saveDataHelper, NOutputContainerButton, factoryData.OutputContainerGuid, outputContainerGuidCache);
@@ -131,6 +132,30 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 			buttonNode.Icon = itemIdForGuid != string.Empty && saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemIdForGuid, out ItemRegistryObject itemRegistryObject) ? itemRegistryObject.IconTexture : null;
 			buttonNode.Text = saveDataHelper.GetNameForInstance(containerGuidCurrent);
 		}
+	}
+
+	/// <summary>
+	/// 更新进度栏。
+	/// </summary>
+	/// <param name="saveDataHelper">可使用的存档数据辅助器。</param>
+	/// <param name="factoryData">本实例对应的工厂数据。</param>
+	public void UpdateProgressBar(SaveDataHelper saveDataHelper, FactoryData factoryData)
+	{
+		if (!factoryData.WasStarted)
+		{
+			// 待机
+			NProgressTimeText.Visible = false;
+			NProgressProgressBar.Visible = false;
+			NProgressStandbyText.Visible = true;
+			return;
+		}
+		// 运作中
+		NProgressTimeText.Visible = true;
+		NProgressProgressBar.Visible = true;
+		NProgressStandbyText.Visible = false;
+		NProgressProgressBar.Value = factoryData.RecipeWorkedTicks;
+		NProgressProgressBar.MaxValue = factoryData.RecipeRequiredTicks;
+		NProgressTimeText.Text = (factoryData.RecipeRemainingTicks / TimeSpan.TicksPerSecond).NumberToShortText();
 	}
 
 	/// <summary>

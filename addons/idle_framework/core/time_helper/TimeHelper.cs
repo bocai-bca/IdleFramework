@@ -3,7 +3,8 @@
 namespace IdleFramework.Core;
 
 /// <summary>
-/// 提供时间相关的辅助类，封装所有计算方式为命名清晰的方法，以便降低处理时间相关逻辑时的头脑负担
+/// 提供时间相关的辅助类，封装所有计算方式为命名清晰的方法，以便降低处理时间相关逻辑时的头脑负担。
+/// 对于想要直接获取<c>DateTime</c>的情况，请使用<c>DateTime.UtcNow</c>。
 /// </summary>
 public static class TimeHelper
 {

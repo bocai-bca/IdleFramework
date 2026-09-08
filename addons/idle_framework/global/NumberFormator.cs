@@ -33,4 +33,9 @@ public static class NumberFormator
 		}
 		return result + scaled.ToString("F" + digits) + suffixes[suffixIndex];
 	}
+
+	public static string NumberToTimeText(this long number, string[] suffixes = null)
+	{
+		return null;
+	}
 }
