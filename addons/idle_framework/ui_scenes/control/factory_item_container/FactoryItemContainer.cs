@@ -155,7 +155,7 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		NProgressStandbyText.Visible = false;
 		NProgressProgressBar.Value = factoryData.RecipeWorkedTicks;
 		NProgressProgressBar.MaxValue = factoryData.RecipeRequiredTicks;
-		NProgressTimeText.Text = (factoryData.RecipeRemainingTicks / TimeSpan.TicksPerSecond).NumberToShortText();
+		NProgressTimeText.Text = (factoryData.RecipeRemainingTicks / TimeSpan.TicksPerSecond).TimeToShortText();
 	}
 
 	/// <summary>

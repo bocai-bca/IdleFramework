@@ -183,11 +183,11 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// 此方法暂时不推荐使用，因为可以直接通过不使用锁地访问游戏数据来获得。
 	/// </summary>
 	/// <returns>所有空间数据的ID。</returns>
-	public ICollection<string> GetAllSpaceIds()
+	public List<string> GetAllSpaceIds()
 	{
 		lock (_lock)
 		{
-			return new List<string>(UsingSaveData.SpaceDatas.Keys);
+			return [..UsingSaveData.SpaceDatas.Keys];
 		}
 	}
 	

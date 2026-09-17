@@ -34,8 +34,45 @@ public static class NumberFormator
 		return result + scaled.ToString("F" + digits) + suffixes[suffixIndex];
 	}
 
-	public static string NumberToTimeText(this long number, string[] suffixes = null)
+	/// <summary>
+	/// 将代表秒数的数字转换到短文本。
+	/// </summary>
+	/// <param name="seconds">要转换的秒数。</param>
+	/// <param name="suffixes">尾缀表，如果传入<c>null</c>则使用默认尾缀表。必须拥有四个元素。</param>
+	/// <returns></returns>
+	public static string TimeToShortText(this long seconds, string[] suffixes = null)
 	{
-		return null;
+		string result = seconds < 0L ? "- " : string.Empty;
+		seconds = Math.Abs(seconds);
+		suffixes ??= ["s", "m", "h", "d"];
+		TimeSpan timeSpan = new(seconds * TimeSpan.TicksPerSecond);
+		if (timeSpan.Days >= 1)
+		{
+			result += timeSpan.Days + suffixes[3];
+			if (timeSpan.Hours != 0)
+			{
+				result += " " + timeSpan.Hours + suffixes[2];
+			}
+			return result;
+		}
+		if (timeSpan.Hours >= 1)
+		{
+			result += timeSpan.Hours + suffixes[2];
+			if (timeSpan.Minutes != 0)
+			{
+				result += " " + timeSpan.Minutes + suffixes[1];
+			}
+			return result;
+		}
+		if (timeSpan.Minutes >= 1)
+		{
+			result += timeSpan.Minutes + suffixes[1];
+			if (timeSpan.Seconds != 0)
+			{
+				result += " " + timeSpan.Seconds + suffixes[0];
+			}
+			return result;
+		}
+		return timeSpan.Seconds + suffixes[0];
 	}
 }
