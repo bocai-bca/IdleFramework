@@ -103,6 +103,30 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		}
 		return false;
 	}
+
+	/// <summary>
+	/// 查询是否有空间的空间容器为给定GUID，并返回符合的空间的ID。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="idOfSpaceHoldGuidAsSpaceContainer">持有给定GUID的物品实例为空间容器的空间的ID，未找到时返回<c>null</c>。</param>
+	/// <param name="dataOfSpaceHoldGuidAsSpaceContainer">持有给定GUID的物品实例为空间容器的空间的数据，未找到时返回<c>null</c>。</param>
+	/// <returns>是否成功找到以给定GUID为空间容器GUID的空间。</returns>
+	public bool QueryGuidIsSpaceContainer(Guid guid, out string idOfSpaceHoldGuidAsSpaceContainer, out SpaceData dataOfSpaceHoldGuidAsSpaceContainer)
+	{
+		lock (_lock)
+		{
+			foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
+			{
+				if (spaceData.SpaceContainerGuid != guid) continue;
+				idOfSpaceHoldGuidAsSpaceContainer = spaceId;
+				dataOfSpaceHoldGuidAsSpaceContainer = spaceData;
+				return true;
+			}
+		}
+		idOfSpaceHoldGuidAsSpaceContainer = null;
+		dataOfSpaceHoldGuidAsSpaceContainer = null;
+		return false;
+	}
 	
 	#endregion
 	
@@ -404,19 +428,66 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	public bool TryAddItemsForContainer(Guid containerGuid, Dictionary<string, long> itemCountsForAdd)
 	{
 		if (containerGuid == Guid.Empty) return false;
+		if (QueryGuidIsSpaceContainer(containerGuid, out string spaceId, out SpaceData spaceData))
+		{
+			if (!UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject))
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_space_registry_object_in_game_resource_for_space_id"), spaceId));
+				return false;
+			}
+			lock (_lock)
+			{
+				if (!UsingSaveData.ContainerDatas.TryGetValue(containerGuid, out ContainerData containerData)) return false;
+				foreach ((string addItemId, long addItemCount) in itemCountsForAdd)
+				{
+					long maxStackThisItem = spaceRegistryObject.ItemMaxStacks.GetCountForItem(UsingGameResource.ItemRegistry, addItemId);
+					long maxAddThisItem = maxStackThisItem - containerData.ItemCounts[addItemId];
+					long itemAddCountActually = Math.Min(addItemCount, maxAddThisItem);
+					containerData.ItemCounts[addItemId] += itemAddCountActually;
+					bool hasContainerRegistry = UsingGameResource.ContainerRegistry.TryGetValue(addItemId, out ContainerRegistryObject prefillItemContainerRegistryObject);
+					bool hasFactoryRegistry = UsingGameResource.FactoryRegistry.TryGetValue(addItemId, out FactoryRegistryObject prefillItemFactoryRegistryObject);
+					if (!hasContainerRegistry && !hasFactoryRegistry) continue; //从此往下可确保该物品ID至少有在容器注册表或工厂注册表中被注册成为了一种
+					HashSet<Guid> prefillInstanceGuids = []; //空间容器的预装物品实例GUID表
+					for (long i = 0; i < itemAddCountActually; i++) //遍历物品数量次，创建复数个实例物品实例
+					{
+						Guid currentInstanceGuid = Guid.NewGuid(); //创建GUID，待会儿如果容器和工厂同时有，好让它们拥有同一个GUID(而且这是必须的)
+						SetNameForInstance(currentInstanceGuid, UsingGameResource.GetItemNameTranslated(addItemId) + "#" + currentInstanceGuid.ToString()[^4..]);
+						if (hasContainerRegistry) //检查是否被注册为容器
+						{
+							//创建容器实例并添加的过程
+							SetInstanceObject(InstantiateRegistryObject(prefillItemContainerRegistryObject), currentInstanceGuid);
+						}
+						if (hasFactoryRegistry) //检查是否被注册为工厂
+						{
+							//创建工厂实例并添加的过程
+							FactoryData factoryData = InstantiateRegistryObject(prefillItemFactoryRegistryObject);
+							factoryData.InputContainerGuid = factoryData.OutputContainerGuid = spaceData.SpaceContainerGuid;
+							SetInstanceObject(factoryData, currentInstanceGuid);
+						}
+						prefillInstanceGuids.Add(currentInstanceGuid);
+					}
+					spaceData.InstanceItemGuids[addItemId].UnionWith(prefillInstanceGuids);
+				}
+			}
+			return true;
+		}
 		if (!QueryItemIdForGuid(containerGuid, out string itemId))
 		{
 			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), containerGuid));
 			return false;
 		}
+		if (!UsingGameResource.ContainerRegistry.TryGetValue(itemId, out ContainerRegistryObject containerRegistryObject))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_container_registry_object_in_game_resource_for_item_id"), itemId));
+			return false;
+		}
 		lock (_lock)
 		{
 			if (!UsingSaveData.ContainerDatas.TryGetValue(containerGuid, out ContainerData containerData)) return false;
-			if (!UsingGameResource.ContainerRegistry.TryGetValue(itemId, out ContainerRegistryObject containerRegistryObject)) return false;
 			foreach ((string addItemId, long addItemCount) in itemCountsForAdd)
 			{
 				long maxStackThisItem = containerRegistryObject.ItemMaxStacks.GetCountForItem(UsingGameResource.ItemRegistry, addItemId);
-				long maxAddThisItem = maxStackThisItem - maxStackThisItem;
+				long maxAddThisItem = maxStackThisItem - containerData.ItemCounts[addItemId];
 				containerData.ItemCounts[addItemId] += Math.Min(addItemCount, maxAddThisItem);
 			}
 		}
@@ -667,6 +738,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		{
 			SpaceData newSpaceData = new(); //该空间的空间数据
 			ContainerData newSpaceContainerData = new(); //新空间的空间容器的容器数据
+			newSpaceData.SpaceContainerGuid = SetInstanceObject(newSpaceContainerData);
 			foreach ((string itemId, long itemCount) in spaceRegistryObject.PrefillItems) //设置预装物品
 			{
 				newSpaceContainerData.ItemCounts[itemId] = itemCount; //设置物品数量
@@ -686,13 +758,15 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 					if (hasFactoryRegistry) //检查是否被注册为工厂
 					{
 						//创建工厂实例并添加的过程
-						SetInstanceObject(InstantiateRegistryObject(prefillItemFactoryRegistryObject), currentInstanceGuid);
+						FactoryData factoryData = InstantiateRegistryObject(prefillItemFactoryRegistryObject);
+						factoryData.InputContainerGuid = factoryData.OutputContainerGuid = newSpaceData.SpaceContainerGuid;
+						SetInstanceObject(factoryData, currentInstanceGuid);
 					}
 					prefillInstanceGuids.Add(currentInstanceGuid);
 				}
 				newSpaceData.InstanceItemGuids[itemId] = prefillInstanceGuids;
 			}
-			SetNameForInstance(newSpaceData.SpaceContainerGuid = SetInstanceObject(newSpaceContainerData), Localization.Tr("space_container")); //给空间容器实例设置名字
+			SetNameForInstance(newSpaceData.SpaceContainerGuid, Localization.Tr("space_container")); //给空间容器实例设置名字
 			AddSpaceData(spaceId, newSpaceData);
 		}
 	}

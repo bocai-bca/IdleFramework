@@ -113,11 +113,11 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		}
 		UpdateProgressBar(saveDataHelper, factoryData);
 		UpdateRecipeBar(saveDataHelper, factoryData);
-		UpdateContainerButton(saveDataHelper, NInputContainerButton, factoryData.InputContainerGuid, inputContainerGuidCache);
-		UpdateContainerButton(saveDataHelper, NOutputContainerButton, factoryData.OutputContainerGuid, outputContainerGuidCache);
+		UpdateContainerButton(saveDataHelper, NInputContainerButton, factoryData.InputContainerGuid, ref inputContainerGuidCache);
+		UpdateContainerButton(saveDataHelper, NOutputContainerButton, factoryData.OutputContainerGuid, ref outputContainerGuidCache);
 	}
 
-	public static void UpdateContainerButton(SaveDataHelper saveDataHelper, Button buttonNode, Guid containerGuidCurrent, Guid containerGuidCache)
+	public static void UpdateContainerButton(SaveDataHelper saveDataHelper, Button buttonNode, Guid containerGuidCurrent, ref Guid containerGuidCache)
 	{
 		if (!saveDataHelper.IsContainerMixinExistsForGuid(containerGuidCurrent))
 		{
@@ -127,10 +127,17 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		else
 		{
 			if (containerGuidCurrent == containerGuidCache) return;
-			containerGuidCurrent = containerGuidCache;
-			string itemIdForGuid = saveDataHelper.QueryItemIdForGuid(containerGuidCurrent);
-			buttonNode.Icon = itemIdForGuid != string.Empty && saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemIdForGuid, out ItemRegistryObject itemRegistryObject) ? itemRegistryObject.IconTexture : null;
+			containerGuidCache = containerGuidCurrent;
 			buttonNode.Text = saveDataHelper.GetNameForInstance(containerGuidCurrent);
+			string itemIdForGuid = saveDataHelper.QueryItemIdForGuid(containerGuidCurrent);
+			if (saveDataHelper.QueryGuidIsSpaceContainer(containerGuidCurrent, out string spaceId, out SpaceData spaceData))
+			{
+				buttonNode.Icon = saveDataHelper.UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject) ? spaceRegistryObject.IconTexture : null;
+			}
+			else
+			{
+				buttonNode.Icon = itemIdForGuid != string.Empty && saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemIdForGuid, out ItemRegistryObject itemRegistryObject) ? itemRegistryObject.IconTexture : null;
+			}
 		}
 	}
 
