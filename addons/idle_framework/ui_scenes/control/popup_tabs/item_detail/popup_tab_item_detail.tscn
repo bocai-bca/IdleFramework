@@ -45,15 +45,75 @@ label_settings = SubResource("LabelSettings_gigt3")
 vertical_alignment = 1
 clip_text = true
 
-[node name="SC" type="ScrollContainer" parent="MC/VBC" unique_id=2035400453]
+[node name="TC" type="TabContainer" parent="MC/VBC" unique_id=140556123]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="Info" type="ScrollContainer" parent="MC/VBC/TC" unique_id=2035400453]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+metadata/_tab_index = 0
 
-[node name="ItemDescription" type="Label" parent="MC/VBC/SC" unique_id=1455292643]
+[node name="ItemDescription" type="Label" parent="MC/VBC/TC/Info" unique_id=1455292643]
 layout_mode = 2
 size_flags_vertical = 3
 text = "The description of this item."
+
+[node name="Transfer" type="ScrollContainer" parent="MC/VBC/TC" unique_id=1207781863]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Discard" type="ScrollContainer" parent="MC/VBC/TC" unique_id=1008640622]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="MC" type="MarginContainer" parent="MC/VBC/TC/Discard" unique_id=600746046]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+
+[node name="VBC" type="VBoxContainer" parent="MC/VBC/TC/Discard/MC" unique_id=573914004]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ContainerSelection" type="HBoxContainer" parent="MC/VBC/TC/Discard/MC/VBC" unique_id=1216586730]
+layout_mode = 2
+
+[node name="Text" type="Label" parent="MC/VBC/TC/Discard/MC/VBC/ContainerSelection" unique_id=610796324]
+layout_mode = 2
+text = "Container: "
+
+[node name="OptionButton" type="OptionButton" parent="MC/VBC/TC/Discard/MC/VBC/ContainerSelection" unique_id=565188054]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AmountSelection" type="HBoxContainer" parent="MC/VBC/TC/Discard/MC/VBC" unique_id=709035986]
+layout_mode = 2
+
+[node name="Text" type="Label" parent="MC/VBC/TC/Discard/MC/VBC/AmountSelection" unique_id=266338997]
+layout_mode = 2
+text = "Amount: "
+
+[node name="HS" type="HSlider" parent="MC/VBC/TC/Discard/MC/VBC/AmountSelection" unique_id=439015864]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+
+[node name="SB" type="SpinBox" parent="MC/VBC/TC/Discard/MC/VBC/AmountSelection" unique_id=71512806]
+layout_mode = 2
+
+[node name="DiscardButton" type="Button" parent="MC/VBC/TC/Discard/MC/VBC" unique_id=634848702]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Discard"
 
 [node name="BottonBar" type="HBoxContainer" parent="MC/VBC" unique_id=447577095]
 layout_mode = 2

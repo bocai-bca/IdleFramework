@@ -441,6 +441,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 				foreach ((string addItemId, long addItemCount) in itemCountsForAdd)
 				{
 					long maxStackThisItem = spaceRegistryObject.ItemMaxStacks.GetCountForItem(UsingGameResource.ItemRegistry, addItemId);
+					containerData.ItemCounts.TryAdd(addItemId, 0);
 					long maxAddThisItem = maxStackThisItem - containerData.ItemCounts[addItemId];
 					long itemAddCountActually = Math.Min(addItemCount, maxAddThisItem);
 					containerData.ItemCounts[addItemId] += itemAddCountActually;
@@ -568,9 +569,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			lock (_lock)
 			{
 				if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out FactoryData factoryData)) return false;
-				if (factoryData.RecipeOrderData.DataQueueString.Count >= recipeOrderStorable.StoreSize.GetNumber())
+				long storeSize = 0;
+				if (recipeOrderStorable.StoreSize is not null)
 				{
-					Logger.LogFaster(Localization.Tr("log.info.save_data_helper.target_recipe_order_storable_is_full"));
+					storeSize = recipeOrderStorable.StoreSize.GetNumber();
+				}
+				if (factoryData.RecipeOrderData.DataQueueString.Count >= storeSize)
+				{
+					Logger.LogInfo(Localization.Tr("log.info.save_data_helper.target_recipe_order_storable_is_full"));
 					return false;
 				}
 				factoryData.RecipeOrderData.DataQueueString.Enqueue(recipeId);
@@ -631,7 +637,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		{
 			if (factoryRegistryObject.RecipeOrder is not { } recipeOrder) return false;
 			string recipeId = recipeOrder.PullRecipe(factoryData.RecipeOrderData.DataListLong, factoryData.RecipeOrderData.DataQueueString);
-			return setRecipeForFactoryData(factoryData, recipeId);
+			return string.IsNullOrEmpty(recipeId) || setRecipeForFactoryData(factoryData, recipeId);
 		}
 	}
 	
@@ -653,15 +659,15 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	private bool setRecipeForFactoryData(FactoryData factoryData, string recipeId)
 	{
 		// 设置配方
-		if (!UsingGameResource.RecipeRegistry.TryGetValue(recipeId, out RecipeRegistryObject recipeRegistryObject))
-		{
-			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_recipe_registry_object_in_game_resource_for_recipe_id"), recipeId));
-			return false;
-		}
 		if (recipeId == string.Empty || recipeId == factoryData.CurrentRecipe)
 		{
 			Logger.LogInfo(Localization.Tr("log.info.save_data_helper.canceled_to_set_recipe_for_factory_data_because_the_new_recipe_is_empty_or_same_as_original"));
 			return true;
+		}
+		if (!UsingGameResource.RecipeRegistry.TryGetValue(recipeId, out RecipeRegistryObject recipeRegistryObject))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_recipe_registry_object_in_game_resource_for_recipe_id"), recipeId));
+			return false;
 		}
 		factoryData.CurrentRecipe = recipeId;
 		factoryData.RecipeStartTime = DateTime.UtcNow;

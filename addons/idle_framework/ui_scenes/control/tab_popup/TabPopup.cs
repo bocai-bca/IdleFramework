@@ -33,6 +33,9 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 			case NotificationChildOrderChanged:
 				if (GetChildCount() == 0) EmitSignal(SignalName.TabsAllClosed);
 				break;
+			case NotificationDraw:
+				if (GetParent() is PanelContainer parent) CustomMinimumSize = parent.Size * 0.75f;
+				break;
 		}
 	}
 

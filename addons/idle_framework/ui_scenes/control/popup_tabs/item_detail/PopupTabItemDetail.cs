@@ -16,6 +16,10 @@ public partial class PopupTabItemDetail : PopupTabBase, IClassPackedScene
 	public TextureRect NItemIcon;
 	public Label NItemName;
 	public Label NItemDescription;
+	public TabContainer NTabContainer;
+	public Label NDiscardContainerSelectionText;
+	public Label NDiscardAmountSelectionText;
+	public Button NDiscardButton;
 	public Button NPinButton;
 	public Button NCloseButton;
 
@@ -26,7 +30,17 @@ public partial class PopupTabItemDetail : PopupTabBase, IClassPackedScene
 			case NotificationSceneInstantiated:
 				NItemIcon = GetNode<TextureRect>("MC/VBC/HBC/ItemIcon");
 				NItemName = GetNode<Label>("MC/VBC/HBC/ItemName");
-				NItemDescription = GetNode<Label>("MC/VBC/SC/ItemDescription");
+				NItemDescription = GetNode<Label>("MC/VBC/TC/Info/ItemDescription");
+				NTabContainer = GetNode<TabContainer>("MC/VBC/TC");
+				NTabContainer.SetTabTitle(0, Localization.Tr("ui_scene_control.popup_tab_item_detail.info"));
+				NTabContainer.SetTabTitle(1, Localization.Tr("ui_scene_control.popup_tab_item_detail.transfer"));
+				NTabContainer.SetTabTitle(2, Localization.Tr("ui_scene_control.popup_tab_item_detail.discard"));
+				NDiscardContainerSelectionText = GetNode<Label>("MC/VBC/TC/Discard/MC/VBC/ContainerSelection/Text");
+				NDiscardContainerSelectionText.Text = Localization.Tr("ui_scene_control.popup_tab_item_detail.container");
+				NDiscardAmountSelectionText = GetNode<Label>("MC/VBC/TC/Discard/MC/VBC/AmountSelection/Text");
+				NDiscardAmountSelectionText.Text = Localization.Tr("ui_scene_control.popup_tab_item_detail.amount");
+				NDiscardButton = GetNode<Button>("MC/VBC/TC/Discard/MC/VBC/DiscardButton");
+				NDiscardButton.Text = Localization.Tr("ui_scene_control.popup_tab_item_detail.discard");
 				NPinButton = GetNode<Button>("MC/VBC/BottonBar/PinButton");
 				NPinButton.Text = Localization.Tr("ui_scene_control.pin");
 				NCloseButton = GetNode<Button>("MC/VBC/BottonBar/CloseButton");

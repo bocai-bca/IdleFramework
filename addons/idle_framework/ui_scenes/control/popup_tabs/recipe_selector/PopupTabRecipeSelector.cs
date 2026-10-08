@@ -21,7 +21,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public Button NSelectButton;
 	public Button NCloseButton;
 	public VBoxContainer NRecipeButtonsContainer;
-	public Dictionary<string, Button> NRecipeButtons = [];
+	public readonly Dictionary<string, Button> NRecipeButtons = [];
 
 	/// <summary>
 	/// 对对应工厂GUID的保存，用于读写数据。需要由创建本类实例的对象负责赋值，否则实例将无法正常运作
@@ -38,13 +38,14 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		switch ((long)what)
 		{
 			case NotificationSceneInstantiated:
-				NRecipeIcon = GetNode<TextureRect>("HSC/MC/VBC/HBC/RecipeIcon");
-				NRecipeName = GetNode<Label>("HSC/MC/VBC/HBC/RecipeName");
-				NRecipeDescription = GetNode<Label>("HSC/MC/VBC/SC/RecipeDescription");
-				NRecipeButtonsContainer = GetNode<VBoxContainer>("HSC/SC/RecipeButtonsContainer");
-				NSelectButton = GetNode<Button>("HSC/MC/VBC/BottonBar/SelectButton");
+				NRecipeIcon = GetNode<TextureRect>("MC/HSC/MC/VBC/HBC/RecipeIcon");
+				NRecipeName = GetNode<Label>("MC/HSC/MC/VBC/HBC/RecipeName");
+				NRecipeDescription = GetNode<Label>("MC/HSC/MC/VBC/SC/RecipeDescription");
+				NRecipeButtonsContainer = GetNode<VBoxContainer>("MC/HSC/SC/RecipeButtonsContainer");
+				NSelectButton = GetNode<Button>("MC/HSC/MC/VBC/BottonBar/SelectButton");
 				NSelectButton.Text = Localization.Tr("ui_scene_control.select_recipe");
-				NCloseButton = GetNode<Button>("HSC/MC/VBC/BottonBar/CloseButton");
+				NSelectButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnSelectButtonPressed));
+				NCloseButton = GetNode<Button>("MC/HSC/MC/VBC/BottonBar/CloseButton");
 				NCloseButton.Text = Localization.Tr("ui_scene_control.close");
 				NCloseButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCloseButtonPressed));
 				break;
@@ -76,6 +77,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		foreach (string recipeId in recipeOrderManualSelect.RecipeIDs)
 		{
 			Button recipeButton = new();
+			recipeButton.ExpandIcon = true;
 			string buttonRecipeId = recipeId;
 			recipeButton.Connect(BaseButton.SignalName.Pressed, Callable.From(() => OnRecipeButtonPressed(buttonRecipeId)));
 			if (SaveAccess.LoadedDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(recipeId, out RecipeRegistryObject recipeRegistryObject))
@@ -85,6 +87,11 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 			}
 			NRecipeButtonsContainer.AddChild(recipeButton);
 			NRecipeButtons[recipeId] = recipeButton;
+		}
+		foreach (string recipeId in NRecipeButtons.Keys)
+		{
+			OnRecipeButtonPressed(recipeId);
+			break;
 		}
 	}
 	

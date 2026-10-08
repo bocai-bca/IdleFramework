@@ -14,19 +14,27 @@ offset_right = 640.0
 offset_bottom = 480.0
 script = ExtResource("1_tnnei")
 
-[node name="HSC" type="HSplitContainer" parent="." unique_id=72038331]
+[node name="MC" type="MarginContainer" parent="." unique_id=47229393]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="HSC" type="HSplitContainer" parent="MC" unique_id=72038331]
 layout_mode = 2
 
-[node name="SC" type="ScrollContainer" parent="HSC" unique_id=1461950940]
+[node name="SC" type="ScrollContainer" parent="MC/HSC" unique_id=1461950940]
 layout_mode = 2
 size_flags_horizontal = 3
+vertical_scroll_mode = 2
 
-[node name="RecipeButtonsContainer" type="VBoxContainer" parent="HSC/SC" unique_id=1985500049]
+[node name="RecipeButtonsContainer" type="VBoxContainer" parent="MC/HSC/SC" unique_id=1985500049]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MC" type="MarginContainer" parent="HSC" unique_id=1039052757]
+[node name="MC" type="MarginContainer" parent="MC/HSC" unique_id=1039052757]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 16
@@ -34,22 +42,22 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="VBC" type="VBoxContainer" parent="HSC/MC" unique_id=1724017384]
+[node name="VBC" type="VBoxContainer" parent="MC/HSC/MC" unique_id=1724017384]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="HBC" type="HBoxContainer" parent="HSC/MC/VBC" unique_id=300190168]
+[node name="HBC" type="HBoxContainer" parent="MC/HSC/MC/VBC" unique_id=300190168]
 layout_mode = 2
 alignment = 1
 
-[node name="RecipeIcon" type="TextureRect" parent="HSC/MC/VBC/HBC" unique_id=1283800367]
+[node name="RecipeIcon" type="TextureRect" parent="MC/HSC/MC/VBC/HBC" unique_id=1283800367]
 layout_mode = 2
 texture = SubResource("PlaceholderTexture2D_vew30")
 expand_mode = 2
 stretch_mode = 5
 
-[node name="RecipeName" type="Label" parent="HSC/MC/VBC/HBC" unique_id=66138337]
+[node name="RecipeName" type="Label" parent="MC/HSC/MC/VBC/HBC" unique_id=66138337]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 3.0
@@ -58,26 +66,26 @@ label_settings = SubResource("LabelSettings_tnnei")
 vertical_alignment = 1
 clip_text = true
 
-[node name="SC" type="ScrollContainer" parent="HSC/MC/VBC" unique_id=1722610616]
+[node name="SC" type="ScrollContainer" parent="MC/HSC/MC/VBC" unique_id=1722610616]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="RecipeDescription" type="Label" parent="HSC/MC/VBC/SC" unique_id=1802372554]
+[node name="RecipeDescription" type="Label" parent="MC/HSC/MC/VBC/SC" unique_id=1802372554]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "The description of this recipe."
 clip_text = true
 
-[node name="BottonBar" type="HBoxContainer" parent="HSC/MC/VBC" unique_id=965230306]
+[node name="BottonBar" type="HBoxContainer" parent="MC/HSC/MC/VBC" unique_id=965230306]
 layout_mode = 2
 alignment = 2
 
-[node name="SelectButton" type="Button" parent="HSC/MC/VBC/BottonBar" unique_id=1188042591]
+[node name="SelectButton" type="Button" parent="MC/HSC/MC/VBC/BottonBar" unique_id=1188042591]
 layout_mode = 2
 text = "Select"
 
-[node name="CloseButton" type="Button" parent="HSC/MC/VBC/BottonBar" unique_id=1183434327]
+[node name="CloseButton" type="Button" parent="MC/HSC/MC/VBC/BottonBar" unique_id=1183434327]
 layout_mode = 2
 text = "Close"
