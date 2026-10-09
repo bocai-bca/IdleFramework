@@ -322,14 +322,28 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// 如果查找到的容器编组存在嵌套，则会递归进去进一步搜索物品。
 	/// </summary>
 	/// <param name="containerMixinGuid">要遍历的容器实例或容器编组的GUID。</param>
-	/// <param name="itemCounts">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例或容器编组中存在(库存数量大于0)。</param>
+	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例或容器编组中存在(库存数量大于0)。</param>
 	/// <returns>是否成功消耗要求的物品数量。</returns>
-	public bool TryConsumeItemCountsForContainerMixin(Guid containerMixinGuid, Dictionary<string, long> itemCounts)
+	public bool TryConsumeItemCountsForContainerMixin(Guid containerMixinGuid, Dictionary<string, long> itemCountsForConsume)
 	{
-		//注意要避免在lock中使用辅助器方法。
-		//检查物品是否满足
+		bool gotContainerData;
+		bool gotContainerGroup;
+		ContainerData containerData;
+		ContainerGroup containerGroup;
+		lock (_lock)
+		{
+			gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out containerData);
+			if (gotContainerData) containerData = containerData.Duplicate();
+			gotContainerGroup = UsingSaveData.ContainerGroups.TryGetValue(containerMixinGuid, out containerGroup);
+			if (gotContainerGroup) containerGroup = containerGroup.Duplicate();
+		}
+		if (gotContainerData) // 分支一：如果找到了容器实例
+		{
+			lock (_lock) return tryConsumeItemsForContainer(containerData, itemCountsForConsume);
+		}
+		if (!gotContainerGroup) return false; // 如果没有找到容器实例或容器编组，在这里返回为失败状态
+		// 分支二：如果找到了容器编组
 		
-		//尝试消耗物品
 		return true;
 	}
 	
@@ -418,6 +432,28 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
+	/// 尝试从给定的容器数据中消耗物品，并返回是否成功消耗要求的物品，如果给定的容器数据不满足要求的物品数量则不会消耗物品。
+	/// 方法的时间复杂度近似O(n)，n代表要求消耗的物品类型的总数。
+	/// 本方法不会对传入的容器数据做非<c>null</c>检测，请提前做好检测。
+	/// </summary>
+	/// <param name="containerData">要消耗物品的容器实例。</param>
+	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例中存在(库存数量大于0)。</param>
+	/// <returns>是否成功消耗要求的物品数量。</returns>
+	/// <remarks>本方法非线程安全设计，如果给定容器数据直接来自存档数据，请在外层做好互斥锁锁定。</remarks>
+	private static bool tryConsumeItemsForContainer([DisallowNull] ContainerData containerData, Dictionary<string, long> itemCountsForConsume)
+	{
+		//检查物品是否满足
+		foreach ((string requiredItemId, long requiredItemCount) in itemCountsForConsume)
+		{
+			if (!containerData.ItemCounts.TryGetValue(requiredItemId, out long haveItemCount)) return false;
+			if (haveItemCount < requiredItemCount) return false;
+		}
+		//消耗物品
+		foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts) containerData.ItemCounts[requiredItemId] -= Math.Clamp(requiredItemCount, 0L, long.MaxValue);
+		return true;
+	}
+
+	/// <summary>
 	/// 尝试向给定GUID的容器中添加物品，并返回是否成功添加给定的物品，如果给定的容器物品数量溢出也将成功添加物品。
 	/// 方法的时间复杂度近似O(n)，n代表要求添加的物品类型的总数。
 	/// 如果给定的GUID是<c>Guid.Empty</c>，则直接取消本次操作，并返回<c>false</c>。
@@ -467,6 +503,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 						}
 						prefillInstanceGuids.Add(currentInstanceGuid);
 					}
+					spaceData.InstanceItemGuids.TryAdd(addItemId, []);
 					spaceData.InstanceItemGuids[addItemId].UnionWith(prefillInstanceGuids);
 				}
 			}
@@ -514,6 +551,17 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			containerGroup = duplicate ? containerGroup.Duplicate() : containerGroup;
 		}
 		return true;
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="containerGroup"></param>
+	/// <param name="itemCountsForConsume"></param>
+	/// <returns></returns>
+	public bool TryConsumeItemsForContainerGroup(ContainerGroup containerGroup, Dictionary<string, long> itemCountsForConsume)
+	{
+		//TODO
 	}
 	
 	#endregion

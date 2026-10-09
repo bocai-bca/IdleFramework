@@ -18,6 +18,8 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public TextureRect NRecipeIcon;
 	public Label NRecipeName;
 	public Label NRecipeDescription;
+	public Label NIngredientText;
+	public VBoxContainer NIngredientsContainer;
 	public Button NSelectButton;
 	public Button NCloseButton;
 	public VBoxContainer NRecipeButtonsContainer;
@@ -40,10 +42,13 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 			case NotificationSceneInstantiated:
 				NRecipeIcon = GetNode<TextureRect>("MC/HSC/MC/VBC/HBC/RecipeIcon");
 				NRecipeName = GetNode<Label>("MC/HSC/MC/VBC/HBC/RecipeName");
-				NRecipeDescription = GetNode<Label>("MC/HSC/MC/VBC/SC/RecipeDescription");
+				NRecipeDescription = GetNode<Label>("MC/HSC/MC/VBC/Description/RecipeDescription");
 				NRecipeButtonsContainer = GetNode<VBoxContainer>("MC/HSC/SC/RecipeButtonsContainer");
+				NIngredientText = GetNode<Label>("MC/HSC/MC/VBC/RecipeDetail/IngredientsText");
+				NIngredientText.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.ingredients");
+				NIngredientsContainer = GetNode<VBoxContainer>("MC/HSC/MC/VBC/RecipeDetail/SC/VBC");
 				NSelectButton = GetNode<Button>("MC/HSC/MC/VBC/BottonBar/SelectButton");
-				NSelectButton.Text = Localization.Tr("ui_scene_control.select_recipe");
+				NSelectButton.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.craft");
 				NSelectButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnSelectButtonPressed));
 				NCloseButton = GetNode<Button>("MC/HSC/MC/VBC/BottonBar/CloseButton");
 				NCloseButton.Text = Localization.Tr("ui_scene_control.close");

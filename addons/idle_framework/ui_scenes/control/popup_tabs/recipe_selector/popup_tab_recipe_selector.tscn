@@ -66,17 +66,35 @@ label_settings = SubResource("LabelSettings_tnnei")
 vertical_alignment = 1
 clip_text = true
 
-[node name="SC" type="ScrollContainer" parent="MC/HSC/MC/VBC" unique_id=1722610616]
+[node name="Description" type="ScrollContainer" parent="MC/HSC/MC/VBC" unique_id=1722610616]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="RecipeDescription" type="Label" parent="MC/HSC/MC/VBC/SC" unique_id=1802372554]
+[node name="RecipeDescription" type="Label" parent="MC/HSC/MC/VBC/Description" unique_id=1802372554]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "The description of this recipe."
 clip_text = true
+
+[node name="RecipeDetail" type="VBoxContainer" parent="MC/HSC/MC/VBC" unique_id=902255630]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="IngredientsText" type="Label" parent="MC/HSC/MC/VBC/RecipeDetail" unique_id=1202170318]
+layout_mode = 2
+text = "Ingredients"
+
+[node name="SC" type="ScrollContainer" parent="MC/HSC/MC/VBC/RecipeDetail" unique_id=1112565705]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBC" type="VBoxContainer" parent="MC/HSC/MC/VBC/RecipeDetail/SC" unique_id=343499140]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
 [node name="BottonBar" type="HBoxContainer" parent="MC/HSC/MC/VBC" unique_id=965230306]
 layout_mode = 2
