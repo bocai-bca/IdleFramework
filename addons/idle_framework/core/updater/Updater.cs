@@ -82,7 +82,7 @@ public static class Updater
 			InfiniteTaggedValue<long> minimalTimeSpanTicksForContainerChange = new(long.MaxValue, true); //在本循环周期中遍历所有工厂收集得来的能够致使容器发生变化的最短时间长度，用于确定下一循环周期的向前推进的时间。设置该值时应当遵循思路：假定其他地方不会发生任何变化。
 			bool containerChanged = false; //记录本循环周期中是否有容器发生变化，用于决定下一循环周期是否是0推进。
 			// 每个循环周期中对所有工厂的遍历
-			List<string> allSpaceIds = SaveDataHelperInHandle.GetAllSpaceIds();
+			HashSet<string> allSpaceIds = SaveDataHelperInHandle.GetAllSpaceIds();
 			foreach (string currentSpaceId in allSpaceIds) //遍历所有空间ID
 			{
 				if (!SaveDataHelperInHandle.GetAllInstanceGuidsOfItemsInSpace(currentSpaceId, out Dictionary<string, HashSet<Guid>> itemsInstanceGuids)) //获取该空间中的所有物品实例的GUID

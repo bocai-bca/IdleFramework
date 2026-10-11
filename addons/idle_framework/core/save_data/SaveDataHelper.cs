@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 
 namespace IdleFramework.Core;
@@ -207,12 +208,9 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// 此方法暂时不推荐使用，因为可以直接通过不使用锁地访问游戏数据来获得。
 	/// </summary>
 	/// <returns>所有空间数据的ID。</returns>
-	public List<string> GetAllSpaceIds()
+	public HashSet<string> GetAllSpaceIds()
 	{
-		lock (_lock)
-		{
-			return [..UsingSaveData.SpaceDatas.Keys];
-		}
+		lock (_lock) return [..UsingSaveData.SpaceDatas.Keys];
 	}
 	
 	/// <summary>
@@ -346,6 +344,40 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		
 		return true;
 	}
+
+	/// <summary>
+	/// 从给定GUID的容器编组数据中获取其所涵盖的所有容器数据的GUID，这些容器数据在该容器编组的树形结构中符合叶子节点特质。
+	/// </summary>
+	/// <param name="containerGroupGuid">要获取内容的容器编组数据的GUID。</param>
+	/// <param name="leafContainerGuids">一个记录该容器编组所涵盖的所有容器数据的GUID的列表。</param>
+	/// <param name="visitedGroups">已遍历的容器编组表，用于避免循环嵌套。对于一般的外部使用，可以无视此参数，此参数为<c>null</c>时会自动创建新的集。</param>
+	/// <returns>成功与否，若未找到对应容器编组则返回<c>false</c>。</returns>
+	public bool GetAllLeafContainersInContainerGroup(Guid containerGroupGuid, out HashSet<Guid> leafContainerGuids, HashSet<Guid> visitedGroups = null)
+	{
+		visitedGroups ??= [];
+		leafContainerGuids = [];
+		if (!GetContainerGroupForGuid(containerGroupGuid, out ContainerGroup containerGroup)) return false;
+		foreach (Guid guid in containerGroup.Guids)
+		{
+			if (leafContainerGuids.Contains(guid)) continue;
+			bool isContainer;
+			bool isContainerGroup;
+			lock (_lock)
+			{
+				isContainer = UsingSaveData.ContainerDatas.ContainsKey(guid);
+				isContainerGroup = UsingSaveData.ContainerGroups.ContainsKey(guid);
+			}
+			if (isContainer)
+			{
+				leafContainerGuids.Add(guid);
+				continue;
+			}
+			if (!isContainerGroup) continue;
+			if (!visitedGroups.Add(guid)) continue;
+			if (GetAllLeafContainersInContainerGroup(guid, out HashSet<Guid> innerLeafContainerGuids, visitedGroups)) leafContainerGuids.UnionWith(innerLeafContainerGuids);
+		}
+		return true;
+	}
 	
 	#endregion
 	
@@ -365,6 +397,20 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			if (!UsingSaveData.ContainerDatas.TryGetValue(guid, out containerData)) return false;
 			containerData = duplicate ? containerData.Duplicate() : containerData;
 		}
+		return true;
+	}
+	
+	/// <summary>
+	/// GetContainerForGuid()的同步版本，不含锁。请在真正了解在做什么的时候使用。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="containerData">查找到的容器实例。</param>
+	/// <param name="duplicate">是否要复制获取到的容器实例。</param>
+	/// <returns>成功与否，如果没有找到则返回<c>false</c>。</returns>
+	public bool GetContainerForGuidSync(Guid guid, [MaybeNullWhen(false)] out ContainerData containerData, bool duplicate = true)
+	{
+		if (!UsingSaveData.ContainerDatas.TryGetValue(guid, out containerData)) return false;
+		containerData = duplicate ? containerData.Duplicate() : containerData;
 		return true;
 	}
 
@@ -554,14 +600,44 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
-	/// 
+	/// 尝试从给定GUID的容器编组中消耗物品，并返回是否成功消耗要求的物品，如果给定的容器编组不满足要求的物品数量则不会消耗物品。
+	/// 方法的时间复杂度为O(n)，n代表给定GUID可探索到的容器的总数。
+	/// 如果查找到的容器编组存在嵌套，则会递归进去进一步搜索物品。
 	/// </summary>
-	/// <param name="containerGroup"></param>
-	/// <param name="itemCountsForConsume"></param>
-	/// <returns></returns>
-	public bool TryConsumeItemsForContainerGroup(ContainerGroup containerGroup, Dictionary<string, long> itemCountsForConsume)
+	/// <param name="containerGroupGuid">要遍历的容器编组的GUID。</param>
+	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例或容器编组中存在(库存数量大于0)。</param>
+	/// <returns>是否成功消耗要求的物品数量。</returns>
+	public bool TryConsumeItemsForContainerGroup(Guid containerGroupGuid, Dictionary<string, long> itemCountsForConsume)
 	{
-		//TODO
+		if (!GetAllLeafContainersInContainerGroup(containerGroupGuid, out HashSet<Guid> leafContainerGuids)) return false;
+		// 检查物品是否满足
+		Dictionary<string, long> itemCountsGot = [];
+		HashSet<ContainerData> leafContainers = [];
+		lock (_lock)
+		{
+			foreach (Guid leafContainerGuid in leafContainerGuids)
+			{
+				if (!GetContainerForGuidSync(leafContainerGuid, out ContainerData leafContainer, false)) continue;
+				leafContainers.Add(leafContainer);
+				foreach (string consumeItemId in itemCountsForConsume.Keys)
+				{
+					itemCountsGot.TryAdd(consumeItemId, 0L);
+					itemCountsGot[consumeItemId] += leafContainer.ItemCounts[consumeItemId];
+				}
+			}
+			if (itemCountsForConsume.Keys.Any(consumeItemId => itemCountsGot[consumeItemId] < itemCountsForConsume[consumeItemId])) return false;
+			// 消耗物品
+			foreach (ContainerData leafContainer in leafContainers)
+			{
+				foreach (string consumeItemId in itemCountsForConsume.Keys)
+				{
+					long maxConsumeOnThis = Math.Max(itemCountsGot[consumeItemId], leafContainer.ItemCounts[consumeItemId]);
+					leafContainer.ItemCounts[consumeItemId] -= maxConsumeOnThis;
+					itemCountsGot[consumeItemId] -= maxConsumeOnThis;
+				}
+			}
+		}
+		return true;
 	}
 	
 	#endregion
