@@ -1,4 +1,6 @@
 #if IDLE_FRAMEWORK_UISCENE_ALL || IDLE_FRAMEWORK_UISCENE_CONTROL
+using System;
+using System.Diagnostics.CodeAnalysis;
 using Godot;
 using IdleFramework.Global;
 
@@ -49,6 +51,7 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 	public bool TryAddTab(string tabName, PopupTabBase tabNode)
 	{
 		if (TryGetTab(tabName, out _)) return false;
+		tabNode.TabName = tabName;
 		AddChild(tabNode);
 		int index = GetChildCount() - 1;
 		GetTabBar().SetTabTitle(index, tabNode.GetTitleName());
@@ -63,9 +66,11 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 	/// <param name="tabName">要添加的标签页名称。</param>
 	/// <param name="tabNode">要添加的标签页节点。</param>
 	/// <returns>是否成功添加。如果已有同名标签页，则会添加失败。即使成功打开已存在的同名标签页，本返回值仍为<c>false</c>。</returns>
+	[Obsolete("TryOpenTabOrPullToAddIfUnexist() is better.")]
 	public bool TryAddTabAndOpen(string tabName, PopupTabBase tabNode)
 	{
 		if (TryOpenTab(tabName)) return false;
+		tabNode.TabName = tabName;
 		AddChild(tabNode);
 		int index = GetChildCount() - 1;
 		GetTabBar().SetTabTitle(index, tabNode.GetTitleName());
@@ -73,6 +78,28 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 		tabNode.Connect(PopupTabBase.SignalName.Close, Callable.From(() => CloseTab(tabNode)));
 		EmitSignal(SignalName.AddedTabs, tabName);
 		return true;
+	}
+
+	/// <summary>
+	/// 尝试打开标签页，并返回是否成功打开。如果没有找到同名标签页，将从给定的标签页创建函数获取一个标签页实例，届时也会返回<c>false</c>。若成功添加会同时为节点连接关闭信号。
+	/// 相比于<c>TryAddTabAndOpen()</c>，可以在如果已有同名标签页的情况下避免重复创建无用标签页而节省性能。
+	/// </summary>
+	/// <param name="tabName">要打开的标签页名称。</param>
+	/// <param name="tabNodeCreator">标签页创建函数，如果未找到已有标签页则会调用本函数，如果本函数提供<c>null</c>则将放弃添加新标签页。</param>
+	/// <returns>是否成功找到并返回给定名称的标签页，若一开始没有找到，即使后续通过创建函数创建新标签页并添加再打开，也仍然返回<c>false</c>。</returns>
+	public bool TryOpenTabOrPullToAddIfUnexist(string tabName, [DisallowNull]Func<PopupTabBase> tabNodeCreator)
+	{
+		if (TryOpenTab(tabName)) return true;
+		PopupTabBase newTabNode = tabNodeCreator();
+		if (newTabNode is null) return false;
+		newTabNode.TabName = tabName;
+		AddChild(newTabNode);
+		int index = GetChildCount() - 1;
+		GetTabBar().SetTabTitle(index, newTabNode.GetTitleName());
+		CurrentTab = index;
+		newTabNode.Connect(PopupTabBase.SignalName.Close, Callable.From(() => CloseTab(newTabNode)));
+		EmitSignal(SignalName.AddedTabs, tabName);
+		return false;
 	}
 	
 	/// <summary>

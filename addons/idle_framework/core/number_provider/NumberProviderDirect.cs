@@ -24,4 +24,6 @@ public partial class NumberProviderDirect : NumberProvider
 	{
 		return Number;
 	}
+
+	public override string NumberPreviewText => Number.ToString();
 }

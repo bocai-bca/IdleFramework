@@ -1,6 +1,7 @@
 #if IDLE_FRAMEWORK_UISCENE_ALL || IDLE_FRAMEWORK_UISCENE_CONTROL
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using IdleFramework.Core;
 using IdleFramework.Global;
@@ -18,8 +19,9 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public TextureRect NRecipeIcon;
 	public Label NRecipeName;
 	public Label NRecipeDescription;
-	public Label NIngredientText;
-	public VBoxContainer NIngredientsContainer;
+	public TabBar NDetailTabBar;
+	public VBoxContainer NDetailItemsContainer;
+	public readonly List<ItemIconNameCount> NDetailItems = [];
 	public Button NSelectButton;
 	public Button NCloseButton;
 	public VBoxContainer NRecipeButtonsContainer;
@@ -34,6 +36,11 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	/// 当前已选中的配方ID
 	/// </summary>
 	public string selectedRecipeId;
+
+	/// <summary>
+	/// 缓存当前选中的配方的注册表项。
+	/// </summary>
+	public RecipeRegistryObject recipeRegistryObjectCache;
 	
 	public override void _Notification(int what)
 	{
@@ -44,9 +51,11 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				NRecipeName = GetNode<Label>("MC/HSC/MC/VBC/HBC/RecipeName");
 				NRecipeDescription = GetNode<Label>("MC/HSC/MC/VBC/Description/RecipeDescription");
 				NRecipeButtonsContainer = GetNode<VBoxContainer>("MC/HSC/SC/RecipeButtonsContainer");
-				NIngredientText = GetNode<Label>("MC/HSC/MC/VBC/RecipeDetail/IngredientsText");
-				NIngredientText.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.ingredients");
-				NIngredientsContainer = GetNode<VBoxContainer>("MC/HSC/MC/VBC/RecipeDetail/SC/VBC");
+				NDetailTabBar = GetNode<TabBar>("MC/HSC/MC/VBC/RecipeDetail/TabBar");
+				NDetailTabBar.SetTabTitle(0, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.ingredients"));
+				NDetailTabBar.SetTabTitle(1, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.results"));
+				NDetailTabBar.Connect(TabBar.SignalName.TabChanged, Callable.From<int>(OnDetailTabBarTabChanged));
+				NDetailItemsContainer = GetNode<VBoxContainer>("MC/HSC/MC/VBC/RecipeDetail/SC/VBC");
 				NSelectButton = GetNode<Button>("MC/HSC/MC/VBC/BottonBar/SelectButton");
 				NSelectButton.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.craft");
 				NSelectButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnSelectButtonPressed));
@@ -105,6 +114,101 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		return string.Format(Localization.Tr("ui_scene_control.popup_tab_title.recipe_selector"), SaveAccess.LoadedDataHelper.GetNameForInstance(factoryGuidCache, "ui_scene_control.lost_instance"));
 	}
 
+	/// <summary>
+	/// 将配方详细信息显示为原料。
+	/// </summary>
+	/// <param name="recipeRegistryObject">要切换到的配方的注册表项。</param>
+	public void SetDetailIngredients(RecipeRegistryObject recipeRegistryObject)
+	{
+		// 创建物品对象达到原料总数
+		while (NDetailItems.Count < recipeRegistryObject.Ingredients.Count)
+		{
+			ItemIconNameCount newDetailItem = ItemIconNameCount.Create();
+			NDetailItems.Add(newDetailItem);
+			NDetailItemsContainer.AddChild(newDetailItem);
+		}
+		// 遍历原料
+		int index = 0;
+		foreach ((string itemId, NumberProvider countNumberProvider) in recipeRegistryObject.Ingredients
+			.OrderByDescending(ingredient => ingredient.Value)
+			.ThenBy(ingredient => ingredient.Key))
+		{
+			ItemIconNameCount detailItem = NDetailItems[index];
+			detailItem.Visible = true;
+			detailItem.itemId = itemId;
+			if (SaveAccess.LoadedDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject))
+			{
+				// 能找到物品
+				detailItem.NItemButton.Text = Localization.Tr(itemRegistryObject.NameKey);
+				detailItem.NItemButton.Icon = itemRegistryObject.IconTexture;
+			}
+			else
+			{
+				// 不能找到物品
+				detailItem.NItemButton.Text = itemId;
+				detailItem.NItemButton.Icon = new PlaceholderTexture2D();
+			}
+			detailItem.NCount.Text = countNumberProvider.NumberPreviewText;
+			index++;
+		}
+		// 遍历后续的多余物品对象，使它们不可见
+		for (; index < NDetailItems.Count; index++) NDetailItems[index].Visible = false;
+	}
+
+	/// <summary>
+	/// 将配方详细信息显示为产物。
+	/// </summary>
+	/// <param name="recipeRegistryObject">要切换到的配方的注册表项。</param>
+	public void SetDetailResults(RecipeRegistryObject recipeRegistryObject)
+	{
+		// 创建物品对象达到产物总数
+		while (NDetailItems.Count < recipeRegistryObject.Results.Count)
+		{
+			ItemIconNameCount newDetailItem = ItemIconNameCount.Create();
+			NDetailItems.Add(newDetailItem);
+			NDetailItemsContainer.AddChild(newDetailItem);
+		}
+		// 遍历产物
+		int index = 0;
+		foreach ((string itemId, NumberProvider countNumberProvider) in recipeRegistryObject.Results
+			.OrderByDescending(result => result.Value)
+			.ThenBy(result => result.Key))
+		{
+			ItemIconNameCount detailItem = NDetailItems[index];
+			detailItem.Visible = true;
+			detailItem.itemId = itemId;
+			if (SaveAccess.LoadedDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject))
+			{
+				// 能找到物品
+				detailItem.NItemButton.Text = Localization.Tr(itemRegistryObject.NameKey);
+				detailItem.NItemButton.Icon = itemRegistryObject.IconTexture;
+			}
+			else
+			{
+				// 不能找到物品
+				detailItem.NItemButton.Text = itemId;
+				detailItem.NItemButton.Icon = new PlaceholderTexture2D();
+			}
+			detailItem.NCount.Text = countNumberProvider.NumberPreviewText;
+			index++;
+		}
+		// 遍历后续的多余物品对象，使它们不可见
+		for (; index < NDetailItems.Count; index++) NDetailItems[index].Visible = false;
+	}
+
+	public void OnDetailTabBarTabChanged(int index)
+	{
+		switch (index)
+		{
+			case 0:
+				SetDetailIngredients(recipeRegistryObjectCache);
+				break;
+			case 1:
+				SetDetailResults(recipeRegistryObjectCache);
+				break;
+		}
+	}
+	
 	public void OnRecipeButtonPressed(string recipeId)
 	{
 		selectedRecipeId = recipeId;
@@ -112,6 +216,8 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		NRecipeIcon.Texture = recipeRegistryObject.IconTexture;
 		NRecipeName.Text = Localization.Tr(recipeRegistryObject.NameKey);
 		NRecipeDescription.Text = Localization.Tr(recipeRegistryObject.LoreKey);
+		recipeRegistryObjectCache = recipeRegistryObject;
+		OnDetailTabBarTabChanged(NDetailTabBar.CurrentTab);
 	}
 
 	public void OnSelectButtonPressed()

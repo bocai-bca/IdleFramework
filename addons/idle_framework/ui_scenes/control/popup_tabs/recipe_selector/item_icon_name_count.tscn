@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://b3gnn3p1v7oqu"]
+
+[ext_resource type="Script" uid="uid://b0df6jit62ioq" path="res://addons/idle_framework/ui_scenes/control/popup_tabs/recipe_selector/ItemIconNameCount.cs" id="1_88gv2"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_dbps7"]
+
+[node name="ItemIconNameCount" type="HBoxContainer" unique_id=1701164901]
+offset_right = 512.0
+offset_bottom = 31.0
+size_flags_horizontal = 3
+script = ExtResource("1_88gv2")
+
+[node name="ItemButton" type="Button" parent="." unique_id=16790084]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Name"
+icon = SubResource("PlaceholderTexture2D_dbps7")
+alignment = 0
+expand_icon = true
+
+[node name="Count" type="Label" parent="." unique_id=1221362734]
+layout_mode = 2
+text = "1"
+horizontal_alignment = 2

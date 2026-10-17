@@ -194,9 +194,12 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	/// </summary>
 	public void OnRecipeButtonPresses()
 	{
-		PopupTabRecipeSelector popupTabRecipeSelector = PopupTabRecipeSelector.Create();
-		popupTabRecipeSelector.SetContentForFactory(FactoryGuid);
-		Control.TabPopupInstance.TryAddTabAndOpen("RecipeSelector." + FactoryGuid, popupTabRecipeSelector);
+		Control.TabPopupInstance.TryOpenTabOrPullToAddIfUnexist("RecipeSelector." + FactoryGuid, () =>
+		{
+			PopupTabRecipeSelector popupTabRecipeSelector = PopupTabRecipeSelector.Create();
+			popupTabRecipeSelector.SetContentForFactory(FactoryGuid);
+			return popupTabRecipeSelector;
+		});
 	}
 }
 #endif

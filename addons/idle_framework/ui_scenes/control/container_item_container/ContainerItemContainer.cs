@@ -90,9 +90,12 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 	/// <param name="buttonItemId">按钮物品ID。</param>
 	public static void OnButtonPressed(string buttonItemId)
 	{
-		PopupTabItemDetail popupTabItemDetail = PopupTabItemDetail.Create();
-		popupTabItemDetail.SetContentForItemId(buttonItemId);
-		Control.TabPopupInstance.TryAddTabAndOpen("ItemDetail." + buttonItemId, popupTabItemDetail);
+		Control.TabPopupInstance.TryOpenTabOrPullToAddIfUnexist("ItemDetail." + buttonItemId, () =>
+		{
+			PopupTabItemDetail popupTabItemDetail = PopupTabItemDetail.Create();
+			popupTabItemDetail.SetContentForItemId(buttonItemId);
+			return popupTabItemDetail;
+		});
 	}
 }
 #endif

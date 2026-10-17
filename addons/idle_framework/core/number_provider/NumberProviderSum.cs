@@ -25,7 +25,7 @@ public partial class NumberProviderSum : NumberProvider
 		if (recursionLock)
 		{
 			Logger.LogError("log.error.number_provider_sum.unexcepted_call_blocked_by_recursion_lock");
-			return 0;
+			return 0L;
 		}
 		recursionLock = true;
 		long result;
@@ -33,14 +33,35 @@ public partial class NumberProviderSum : NumberProvider
 		{
 			result = SumList.Sum(provider => provider.GetNumber());
 		}
+		catch (OverflowException)
+		{
+			Logger.LogWarning("log.error.number_provider_sum.overflow");
+			recursionLock = false;
+			return long.MaxValue;
+		}
 		catch (Exception e)
 		{
 			Logger.LogError("log.error.number_provider_sum.catched_exception_on_calling_number_providers_in_sum_list" + e);
 			recursionLock = false;
-			throw;
+			return 0L;
 		}
 		recursionLock = false;
 		return result;
+	}
+
+	public override string NumberPreviewText
+	{
+		get
+		{
+			if (SumList.Count == 0) return "0";
+			string result = "";
+			for (int i = 0; i < SumList.Count; i++)
+			{
+				result += SumList[i].NumberPreviewText;
+				if (i != SumList.Count - 1) result += "+";
+			}
+			return result;
+		}
 	}
 
 	private bool recursionLock;

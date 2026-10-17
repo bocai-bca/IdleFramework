@@ -31,4 +31,6 @@ public partial class NumberProviderRange : NumberProvider
 	{
 		return Random.Shared.NextInt64(MinNumber, MaxNumber);
 	}
+
+	public override string NumberPreviewText => MinNumber + "~" + MaxNumber;
 }
