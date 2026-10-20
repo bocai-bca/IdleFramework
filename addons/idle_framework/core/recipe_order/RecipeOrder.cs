@@ -17,8 +17,8 @@ public abstract partial class RecipeOrder : Resource
 	/// <summary>
 	/// 拉取配方订单的抽象方法，需要在子类中实现。
 	/// </summary>
-	/// <param name="argumentsLong">长整型类型的参数表。</param>
-	/// <param name="queueString">字符串类型的队列表。</param>
+	/// <param name="argumentsLong">长整型类型的参数表，对应<c>RecipeOrderData.DataListLong</c>。</param>
+	/// <param name="queueString">字符串类型的队列表，对应<c>RecipeOrderData.DataQueueString</c>。</param>
 	/// <returns>该配方下单器本次获取提供的配方ID</returns>
 	public abstract string PullRecipe(List<long> argumentsLong, Queue<string> queueString);
 }

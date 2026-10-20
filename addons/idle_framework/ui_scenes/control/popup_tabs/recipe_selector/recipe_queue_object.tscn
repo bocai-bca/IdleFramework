@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://c6lgo55pgcq7w"]
+
+[ext_resource type="Script" uid="uid://bwylnwibmdtb7" path="res://addons/idle_framework/ui_scenes/control/popup_tabs/recipe_selector/RecipeQueueObject.cs" id="1_dasjp"]
+
+[sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_c0ktc"]
+
+[node name="RecipeQueueObject" type="HBoxContainer" unique_id=1701164901]
+custom_minimum_size = Vector2(0, 31)
+offset_right = 512.0
+offset_bottom = 31.0
+size_flags_horizontal = 3
+script = ExtResource("1_dasjp")
+
+[node name="Icon" type="TextureRect" parent="." unique_id=1176933942]
+layout_mode = 2
+texture = SubResource("PlaceholderTexture2D_c0ktc")
+expand_mode = 2
+
+[node name="Name" type="Label" parent="." unique_id=1221362734]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "RecipeName"
+
+[node name="CancelButton" type="Button" parent="." unique_id=16790084]
+layout_mode = 2
+text = "Cancel"
+alignment = 0

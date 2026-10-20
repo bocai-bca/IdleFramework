@@ -10,12 +10,12 @@ namespace IdleFramework.Core;
 public class RecipeOrderData: ISaveDataComponent<RecipeOrderData>
 {
 	/// <summary>
-	/// 整型参数表
+	/// 整型参数表，数据作用由配方下单器自己决定，用法不设限
 	/// </summary>
 	public List<long> DataListLong { get; init; } = [];
 	
 	/// <summary>
-	/// 字符串队列表
+	/// 字符串队列表，数据作用由配方下单器自己决定，用法不设限
 	/// </summary>
 	public Queue<string> DataQueueString { get; init; } = [];
 	

@@ -717,6 +717,31 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	}
 
 	/// <summary>
+	/// 尝试从给定GUID的工厂实例的手动配方下单器的配方队列中移除特定索引位置的配方任务。
+	/// </summary>
+	/// <param name="factoryGuid">要从队列移除配方的工厂实例的GUID。</param>
+	/// <param name="indexOfRecipe">要移除的配方的索引，从<c>0</c>开始代表排在最后的配方，随数字增加而向前移动。例如队列状态为[A, B, C]，A将会是接下来执行的配方，此时索引<c>0</c>代表C、索引2代表A。</param>
+	/// <returns>成功与否，如果没有找到对应工厂或者存在对象未能被查找到的情况则返回<c>false</c>。若给定的索引超出队列长度，则也返回<c>false</c>。</returns>
+	/// <remarks>注意，本方法不会验证给定工厂是否属于手动配方下单器，而是直接对其配方下单器数据进行操作。</remarks>
+	public bool TryRemoveRecipeFromQueueForManualFactory(Guid factoryGuid, int indexOfRecipe)
+	{
+		lock (_lock)
+		{
+			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out FactoryData factoryData)) return false;
+			if (indexOfRecipe >= factoryData.RecipeOrderData.DataQueueString.Count) return false;
+			string[] array = factoryData.RecipeOrderData.DataQueueString.ToArray();
+			indexOfRecipe = array.Length - indexOfRecipe - 1;
+			factoryData.RecipeOrderData.DataQueueString.Clear();
+			for (int i = 0; i < array.Length; i++)
+			{
+				if (i == indexOfRecipe) continue;
+				factoryData.RecipeOrderData.DataQueueString.Enqueue(array[i]);
+			}
+		}
+		return true;
+	}
+
+	/// <summary>
 	/// 尝试为持有特定GUID的工厂实例设置配方ID，对应工厂将被强制设置为相应ID，因此配方是否可用于对应工厂需要由调用方自行作出判断。
 	/// 不会与配方下单器及其实例数据交互。
 	/// 如果要设置的配方ID与原本该工厂的配方ID一致，则不会更新该工厂的数据，同时也返回<c>true</c>。

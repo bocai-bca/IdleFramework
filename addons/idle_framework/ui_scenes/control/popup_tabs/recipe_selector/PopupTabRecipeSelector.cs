@@ -15,17 +15,20 @@ namespace IdleFramework.UIScenes.Control;
 public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 {
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/popup_tabs/recipe_selector/popup_tab_recipe_selector.tscn");
-	
+
+	public TabContainer NMainTC;
 	public TextureRect NRecipeIcon;
 	public Label NRecipeName;
 	public Label NRecipeDescription;
 	public TabBar NDetailTabBar;
 	public VBoxContainer NDetailItemsContainer;
 	public readonly List<ItemIconNameCount> NDetailItems = [];
-	public Button NSelectButton;
-	public Button NCloseButton;
+	public Button NAddButton;
+	public Button NCloseButtonInSelectionPage;
 	public VBoxContainer NRecipeButtonsContainer;
 	public readonly Dictionary<string, Button> NRecipeButtons = [];
+	public Label NCurrentProcessingText;
+	public Button NCloseButtonInQueuePage;
 
 	/// <summary>
 	/// 对对应工厂GUID的保存，用于读写数据。需要由创建本类实例的对象负责赋值，否则实例将无法正常运作
@@ -47,21 +50,29 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		switch ((long)what)
 		{
 			case NotificationSceneInstantiated:
-				NRecipeIcon = GetNode<TextureRect>("MC/HSC/MC/VBC/HBC/RecipeIcon");
-				NRecipeName = GetNode<Label>("MC/HSC/MC/VBC/HBC/RecipeName");
-				NRecipeDescription = GetNode<Label>("MC/HSC/MC/VBC/Description/RecipeDescription");
-				NRecipeButtonsContainer = GetNode<VBoxContainer>("MC/HSC/SC/RecipeButtonsContainer");
-				NDetailTabBar = GetNode<TabBar>("MC/HSC/MC/VBC/RecipeDetail/TabBar");
+				NMainTC = GetNode<TabContainer>("MC/TC");
+				NMainTC.SetTabTitle(0, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.tab_title.select_recipe"));
+				NMainTC.SetTabTitle(1, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.tab_title.queue"));
+				NRecipeIcon = GetNode<TextureRect>("MC/TC/SelectRecipe/MC/VBC/HBC/RecipeIcon");
+				NRecipeName = GetNode<Label>("MC/TC/SelectRecipe/MC/VBC/HBC/RecipeName");
+				NRecipeDescription = GetNode<Label>("MC/TC/SelectRecipe/MC/VBC/Description/RecipeDescription");
+				NRecipeButtonsContainer = GetNode<VBoxContainer>("MC/TC/SelectRecipe//SC/RecipeButtonsContainer");
+				NDetailTabBar = GetNode<TabBar>("MC/TC/SelectRecipe//MC/VBC/RecipeDetail/TabBar");
 				NDetailTabBar.SetTabTitle(0, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.ingredients"));
 				NDetailTabBar.SetTabTitle(1, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.results"));
 				NDetailTabBar.Connect(TabBar.SignalName.TabChanged, Callable.From<int>(OnDetailTabBarTabChanged));
-				NDetailItemsContainer = GetNode<VBoxContainer>("MC/HSC/MC/VBC/RecipeDetail/SC/VBC");
-				NSelectButton = GetNode<Button>("MC/HSC/MC/VBC/BottonBar/SelectButton");
-				NSelectButton.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.craft");
-				NSelectButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnSelectButtonPressed));
-				NCloseButton = GetNode<Button>("MC/HSC/MC/VBC/BottonBar/CloseButton");
-				NCloseButton.Text = Localization.Tr("ui_scene_control.close");
-				NCloseButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCloseButtonPressed));
+				NDetailItemsContainer = GetNode<VBoxContainer>("MC/TC/SelectRecipe//MC/VBC/RecipeDetail/SC/VBC");
+				NAddButton = GetNode<Button>("MC/TC/SelectRecipe/MC/VBC/BottonBar/AddButton");
+				NAddButton.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.add_to_queue");
+				NAddButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnAddToQueueButtonPressed));
+				NCloseButtonInSelectionPage = GetNode<Button>("MC/TC/SelectRecipe//MC/VBC/BottonBar/CloseButton");
+				NCloseButtonInSelectionPage.Text = Localization.Tr("ui_scene_control.close");
+				NCloseButtonInSelectionPage.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCloseButtonPressed));
+				NCloseButtonInQueuePage = GetNode<Button>("MC/TC/Queue/BottonBar/CloseButton");
+				NCloseButtonInQueuePage.Text = Localization.Tr("ui_scene_control.close");
+				NCloseButtonInQueuePage.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCloseButtonPressed));
+				NCurrentProcessingText = GetNode<Label>("MC/TC/Queue/CurrentText");
+				NCurrentProcessingText.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.current_processing");
 				break;
 		}
 	}
@@ -220,10 +231,9 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		OnDetailTabBarTabChanged(NDetailTabBar.CurrentTab);
 	}
 
-	public void OnSelectButtonPressed()
+	public void OnAddToQueueButtonPressed()
 	{
 		SaveAccess.LoadedDataHelper.TryEnqueueRecipeForManualFactory(factoryGuidCache, selectedRecipeId, true);
-		OnCloseButtonPressed();
 	}
 	
 	public void OnCloseButtonPressed()

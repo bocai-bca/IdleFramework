@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cj7frsv5tqva3"]
 
 [ext_resource type="Script" uid="uid://i2rxwbcxhlm" path="res://addons/idle_framework/ui_scenes/control/popup_tabs/recipe_selector/PopupTabRecipeSelector.cs" id="1_tnnei"]
+[ext_resource type="PackedScene" uid="uid://c6lgo55pgcq7w" path="res://addons/idle_framework/ui_scenes/control/popup_tabs/recipe_selector/recipe_queue_object.tscn" id="2_ad3u7"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_vew30"]
 size = Vector2(128, 128)
@@ -21,20 +22,25 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="HSC" type="HSplitContainer" parent="MC" unique_id=72038331]
+[node name="TC" type="TabContainer" parent="MC" unique_id=2050247112]
 layout_mode = 2
+current_tab = 0
 
-[node name="SC" type="ScrollContainer" parent="MC/HSC" unique_id=1461950940]
+[node name="SelectRecipe" type="HSplitContainer" parent="MC/TC" unique_id=72038331]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="SC" type="ScrollContainer" parent="MC/TC/SelectRecipe" unique_id=1461950940]
 layout_mode = 2
 size_flags_horizontal = 3
 vertical_scroll_mode = 2
 
-[node name="RecipeButtonsContainer" type="VBoxContainer" parent="MC/HSC/SC" unique_id=1985500049]
+[node name="RecipeButtonsContainer" type="VBoxContainer" parent="MC/TC/SelectRecipe/SC" unique_id=1985500049]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MC" type="MarginContainer" parent="MC/HSC" unique_id=1039052757]
+[node name="MC" type="MarginContainer" parent="MC/TC/SelectRecipe" unique_id=1039052757]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 16
@@ -42,22 +48,22 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="VBC" type="VBoxContainer" parent="MC/HSC/MC" unique_id=1724017384]
+[node name="VBC" type="VBoxContainer" parent="MC/TC/SelectRecipe/MC" unique_id=1724017384]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="HBC" type="HBoxContainer" parent="MC/HSC/MC/VBC" unique_id=300190168]
+[node name="HBC" type="HBoxContainer" parent="MC/TC/SelectRecipe/MC/VBC" unique_id=300190168]
 layout_mode = 2
 alignment = 1
 
-[node name="RecipeIcon" type="TextureRect" parent="MC/HSC/MC/VBC/HBC" unique_id=1283800367]
+[node name="RecipeIcon" type="TextureRect" parent="MC/TC/SelectRecipe/MC/VBC/HBC" unique_id=1283800367]
 layout_mode = 2
 texture = SubResource("PlaceholderTexture2D_vew30")
 expand_mode = 2
 stretch_mode = 5
 
-[node name="RecipeName" type="Label" parent="MC/HSC/MC/VBC/HBC" unique_id=66138337]
+[node name="RecipeName" type="Label" parent="MC/TC/SelectRecipe/MC/VBC/HBC" unique_id=66138337]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 3.0
@@ -66,47 +72,88 @@ label_settings = SubResource("LabelSettings_tnnei")
 vertical_alignment = 1
 clip_text = true
 
-[node name="Description" type="ScrollContainer" parent="MC/HSC/MC/VBC" unique_id=1722610616]
+[node name="Description" type="ScrollContainer" parent="MC/TC/SelectRecipe/MC/VBC" unique_id=1722610616]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="RecipeDescription" type="Label" parent="MC/HSC/MC/VBC/Description" unique_id=1802372554]
+[node name="RecipeDescription" type="Label" parent="MC/TC/SelectRecipe/MC/VBC/Description" unique_id=1802372554]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "The description of this recipe."
 clip_text = true
 
-[node name="RecipeDetail" type="VBoxContainer" parent="MC/HSC/MC/VBC" unique_id=902255630]
+[node name="RecipeDetail" type="VBoxContainer" parent="MC/TC/SelectRecipe/MC/VBC" unique_id=902255630]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="TabBar" type="TabBar" parent="MC/HSC/MC/VBC/RecipeDetail" unique_id=1460485340]
+[node name="TabBar" type="TabBar" parent="MC/TC/SelectRecipe/MC/VBC/RecipeDetail" unique_id=1460485340]
 layout_mode = 2
 current_tab = 0
 tab_count = 2
 tab_0/title = "Ingredients"
 tab_1/title = "Results"
 
-[node name="SC" type="ScrollContainer" parent="MC/HSC/MC/VBC/RecipeDetail" unique_id=1112565705]
+[node name="SC" type="ScrollContainer" parent="MC/TC/SelectRecipe/MC/VBC/RecipeDetail" unique_id=1112565705]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VBC" type="VBoxContainer" parent="MC/HSC/MC/VBC/RecipeDetail/SC" unique_id=343499140]
+[node name="VBC" type="VBoxContainer" parent="MC/TC/SelectRecipe/MC/VBC/RecipeDetail/SC" unique_id=343499140]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="BottonBar" type="HBoxContainer" parent="MC/HSC/MC/VBC" unique_id=965230306]
+[node name="BottonBar" type="HBoxContainer" parent="MC/TC/SelectRecipe/MC/VBC" unique_id=965230306]
 layout_mode = 2
 alignment = 2
 
-[node name="SelectButton" type="Button" parent="MC/HSC/MC/VBC/BottonBar" unique_id=1188042591]
+[node name="AddButton" type="Button" parent="MC/TC/SelectRecipe/MC/VBC/BottonBar" unique_id=1188042591]
 layout_mode = 2
-text = "Select"
+text = "Add to queue"
 
-[node name="CloseButton" type="Button" parent="MC/HSC/MC/VBC/BottonBar" unique_id=1183434327]
+[node name="CloseButton" type="Button" parent="MC/TC/SelectRecipe/MC/VBC/BottonBar" unique_id=1183434327]
+layout_mode = 2
+text = "Close"
+
+[node name="Queue" type="VBoxContainer" parent="MC/TC" unique_id=1656381593]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="CurrentText" type="Label" parent="MC/TC/Queue" unique_id=590080287]
+layout_mode = 2
+text = "Current processing"
+
+[node name="RecipeQueueObject" parent="MC/TC/Queue" unique_id=1701164901 instance=ExtResource("2_ad3u7")]
+layout_mode = 2
+
+[node name="HBC" type="HBoxContainer" parent="MC/TC/Queue" unique_id=1178281380]
+layout_mode = 2
+
+[node name="QueueSizeText" type="Label" parent="MC/TC/Queue/HBC" unique_id=118339075]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "QueueSize: 0/10"
+
+[node name="CancelAllButton" type="Button" parent="MC/TC/Queue/HBC" unique_id=350529851]
+layout_mode = 2
+text = "Cancel all"
+
+[node name="RecipeQueue" type="ScrollContainer" parent="MC/TC/Queue" unique_id=811951961]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBC" type="VBoxContainer" parent="MC/TC/Queue/RecipeQueue" unique_id=273671462]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BottonBar" type="HBoxContainer" parent="MC/TC/Queue" unique_id=855923690]
+layout_mode = 2
+alignment = 2
+
+[node name="CloseButton" type="Button" parent="MC/TC/Queue/BottonBar" unique_id=863186823]
 layout_mode = 2
 text = "Close"
