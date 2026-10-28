@@ -48,9 +48,9 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 				NEditButton.Text = Localization.Tr("ui_scene_control.edit_button");
 				AddTitleBarControl(NEditButton);
 				NInputContainerButton = GetNode<Button>("VBC/HBC/InputContainerButton");
-				NInputContainerButton.TooltipText = Localization.Tr("ui_scene_control.click_to_set_container");
+				NInputContainerButton.TooltipText = Localization.Tr("ui_scene_control.factory_item_container.click_to_set_container");
 				NOutputContainerButton = GetNode<Button>("VBC/HBC/OutputContainerButton");
-				NOutputContainerButton.TooltipText = Localization.Tr("ui_scene_control.click_to_set_container");
+				NOutputContainerButton.TooltipText = Localization.Tr("ui_scene_control.factory_item_container.click_to_set_container");
 				NRecipeButton = GetNode<Button>("VBC/RecipeBar/RecipeButton");
 				NRecipeButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnRecipeButtonPresses));
 				break;
@@ -148,7 +148,7 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	/// <param name="factoryData">本实例对应的工厂数据。</param>
 	public void UpdateProgressBar(SaveDataHelper saveDataHelper, FactoryData factoryData)
 	{
-		if (!factoryData.WasStarted)
+		if (!factoryData.WasWorking)
 		{
 			// 待机
 			NProgressTimeText.Visible = false;
@@ -162,7 +162,25 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		NProgressStandbyText.Visible = false;
 		NProgressProgressBar.Value = factoryData.RecipeWorkedTicks;
 		NProgressProgressBar.MaxValue = factoryData.RecipeRequiredTicks;
-		NProgressTimeText.Text = (factoryData.RecipeRemainingTicks / TimeSpan.TicksPerSecond).TimeToShortText();
+		switch (factoryData.FactoryMode)
+		{
+			case FactoryIngredientRequireMode.CheckAndConsumeAtStart:
+				NProgressTimeText.Text = factoryData.IngredientsConsumed ? (factoryData.RecipeRemainingTicks / TimeSpan.TicksPerSecond).TimeToShortText() : Localization.Tr("ui_scene_control.factory_item_container.ingredients_required");
+				break;
+			case FactoryIngredientRequireMode.CheckAtStartAndConsumeAtEnd:
+				break;
+			case FactoryIngredientRequireMode.CheckToPauseOnProcessAndConsumeAtEnd:
+				break;
+			case FactoryIngredientRequireMode.CheckToRestartOnProcessAndConsumeAtEnd:
+				break;
+			case FactoryIngredientRequireMode.CheckAndConsumeAtEndAsWait:
+				break;
+			case FactoryIngredientRequireMode.CheckAndConsumeAtEndAsRestart:
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+		
 	}
 
 	/// <summary>

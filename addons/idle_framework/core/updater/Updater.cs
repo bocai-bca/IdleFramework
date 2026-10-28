@@ -103,7 +103,7 @@ public static class Updater
 							Logger.LogError(string.Format(Localization.Tr("log.error.updater.unexcepted_to_failed_to_get_factory_for_guid"), currentFactoryGuid));
 							continue;
 						}
-						if (!currentFactoryDuplicated.WasStarted) //如果工厂还是未开始，意味着工厂无法开始(如无配方队列等)
+						if (!currentFactoryDuplicated.WasWorking) //如果工厂还是未开始，意味着工厂无法开始(如无配方队列等)
 						{
 							continue;
 						}
@@ -140,24 +140,38 @@ public static class Updater
 	/// <returns>该工厂是否导致容器发生变化，为true则意味着更新器应当进行下一轮循环。</returns>
 	private static bool updateFactory([NotNull]FactoryData factoryData, InfiniteTaggedValue<long> timeSpanTicksAllowFactoriesToMoveOn, out InfiniteTaggedValue<long> minimalTimeSpanTicksToNextSomethingChanging)
 	{
+		if (!SaveDataHelperInHandle.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_recipe"), factoryData.CurrentRecipe));
+			minimalTimeSpanTicksToNextSomethingChanging = new InfiniteTaggedValue<long>(long.MaxValue, true);
+			return false;
+		}
 		bool containerChanged = false; // 创建局部变量用来记录是否更改过容器
 		// 工厂运行和收获
 		switch (factoryData.FactoryMode)
 		{
 			case FactoryIngredientRequireMode.CheckAndConsumeAtStart:
+				if (!factoryData.IngredientsConsumed)
+				{
+					Dictionary<string, long> itemGoingToConsume = [];
+					foreach ((string itemId, NumberProvider numberProvider) in recipeRegistryObject.Ingredients) itemGoingToConsume.TryAdd(itemId, numberProvider.GetNumber());
+					if (SaveDataHelperInHandle.TryConsumeItemsForContainerMixin(factoryData.InputContainerGuid, itemGoingToConsume))
+					{
+						factoryData.IngredientsConsumed = true;
+					}
+					else
+					{
+						minimalTimeSpanTicksToNextSomethingChanging = new InfiniteTaggedValue<long>(long.MaxValue, true);
+						return false;
+					}
+				}
 				InfiniteTaggedValue<long> currentRecipeWorkedTime = InfiniteTaggedValue<long>.MoveToward(factoryData.RecipeWorkedTicks, factoryData.RecipeRequiredTicks, timeSpanTicksAllowFactoriesToMoveOn);
 				if (currentRecipeWorkedTime >= factoryData.RecipeRequiredTicks)
 				{
 					//生产完毕，输出产品到容器
-					if (!SaveDataHelperInHandle.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
-					{
-						Logger.LogError(string.Format(Localization.Tr("log.error.updater.a_factory_data_taking_an_unknown_recipe"), factoryData.CurrentRecipe));
-						minimalTimeSpanTicksToNextSomethingChanging = new InfiniteTaggedValue<long>(long.MaxValue, true);
-						return false;
-					}
 					Dictionary<string, long> itemGoingToAdd = [];
 					foreach ((string itemId, NumberProvider numberProvider) in recipeRegistryObject.Results) itemGoingToAdd[itemId] = numberProvider.GetNumber();
-					containerChanged = SaveDataHelperInHandle.TryAddItemsForContainer(factoryData.OutputContainerGuid, itemGoingToAdd);
+					containerChanged = SaveDataHelperInHandle.TryAddItemsForContainerMixin(factoryData.OutputContainerGuid, itemGoingToAdd);
 					factoryData.CurrentRecipe = string.Empty;
 					factoryData.RecipeWorkedTicks = 0L;
 					factoryData.RecipeRequiredTicks = 0L;

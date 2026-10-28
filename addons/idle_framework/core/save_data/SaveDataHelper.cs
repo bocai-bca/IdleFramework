@@ -322,27 +322,47 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="containerMixinGuid">要遍历的容器实例或容器编组的GUID。</param>
 	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例或容器编组中存在(库存数量大于0)。</param>
 	/// <returns>是否成功消耗要求的物品数量。</returns>
-	public bool TryConsumeItemCountsForContainerMixin(Guid containerMixinGuid, Dictionary<string, long> itemCountsForConsume)
+	public bool TryConsumeItemsForContainerMixin(Guid containerMixinGuid, Dictionary<string, long> itemCountsForConsume)
 	{
-		bool gotContainerData;
-		bool gotContainerGroup;
-		ContainerData containerData;
-		ContainerGroup containerGroup;
 		lock (_lock)
 		{
-			gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out containerData);
+			bool gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out ContainerData containerData);
 			if (gotContainerData) containerData = containerData.Duplicate();
-			gotContainerGroup = UsingSaveData.ContainerGroups.TryGetValue(containerMixinGuid, out containerGroup);
+			bool gotContainerGroup = UsingSaveData.ContainerGroups.TryGetValue(containerMixinGuid, out ContainerGroup containerGroup);
 			if (gotContainerGroup) containerGroup = containerGroup.Duplicate();
+			if (gotContainerData) // 分支一：如果找到了容器实例
+			{
+				return tryConsumeItemsForContainer(containerData, itemCountsForConsume);
+			}
+			if (!gotContainerGroup) return false; // 如果没有找到容器实例或容器编组，在这里返回为失败状态
+			// 分支二：如果找到了容器编组
+			return tryConsumeItemsForContainerGroup(containerGroup, itemCountsForConsume);
 		}
-		if (gotContainerData) // 分支一：如果找到了容器实例
+	}
+
+	/// <summary>
+	/// 尝试向给定GUID的容器或容器编组中添加物品，并返回是否成功添加给定的物品，如果给定的容器物品数量溢出也将成功添加物品。
+	/// 方法的时间复杂度为O(n)，n代表给定GUID可探索到的容器或容器编组的总数。
+	/// 如果查找到的容器编组存在嵌套，则会递归进去进一步搜索物品。
+	/// </summary>
+	/// <param name="containerMixinGuid">要遍历的容器实例或容器编组的GUID。</param>
+	/// <param name="itemCountsForAdd">要添加的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例或容器编组中存在(库存数量大于0)。</param>
+	/// <returns>是否成功添加给定的物品。存在找不到东西的情形时会返回<c>false</c>。</returns>
+	public bool TryAddItemsForContainerMixin(Guid containerMixinGuid, Dictionary<string, long> itemCountsForAdd)
+	{
+		lock (_lock)
 		{
-			lock (_lock) return tryConsumeItemsForContainer(containerData, itemCountsForConsume);
+			bool gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out _);
+			bool gotContainerGroup = UsingSaveData.ContainerGroups.TryGetValue(containerMixinGuid, out ContainerGroup containerGroup);
+			if (gotContainerGroup) containerGroup = containerGroup.Duplicate();
+			if (gotContainerData) // 分支一：如果找到了容器实例
+			{
+				return TryAddItemsForContainerSync(containerMixinGuid, itemCountsForAdd, out _);
+			}
+			if (!gotContainerGroup) return false; // 如果没有找到容器实例或容器编组，在这里返回为失败状态
+			// 分支二：如果找到了容器编组
+			return TryAddItemsForContainerGroupSync(containerGroup, itemCountsForAdd, out _);
 		}
-		if (!gotContainerGroup) return false; // 如果没有找到容器实例或容器编组，在这里返回为失败状态
-		// 分支二：如果找到了容器编组
-		
-		return true;
 	}
 
 	/// <summary>
@@ -357,6 +377,39 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		visitedGroups ??= [];
 		leafContainerGuids = [];
 		if (!GetContainerGroupForGuid(containerGroupGuid, out ContainerGroup containerGroup)) return false;
+		foreach (Guid guid in containerGroup.Guids)
+		{
+			if (leafContainerGuids.Contains(guid)) continue;
+			bool isContainer;
+			bool isContainerGroup;
+			lock (_lock)
+			{
+				isContainer = UsingSaveData.ContainerDatas.ContainsKey(guid);
+				isContainerGroup = UsingSaveData.ContainerGroups.ContainsKey(guid);
+			}
+			if (isContainer)
+			{
+				leafContainerGuids.Add(guid);
+				continue;
+			}
+			if (!isContainerGroup) continue;
+			if (!visitedGroups.Add(guid)) continue;
+			if (GetAllLeafContainersInContainerGroup(guid, out HashSet<Guid> innerLeafContainerGuids, visitedGroups)) leafContainerGuids.UnionWith(innerLeafContainerGuids);
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 从给定的容器编组数据中获取其所涵盖的所有容器数据的GUID，这些容器数据在该容器编组的树形结构中符合叶子节点特质。
+	/// </summary>
+	/// <param name="containerGroup">要获取内容的容器编组数据。</param>
+	/// <param name="leafContainerGuids">一个记录该容器编组所涵盖的所有容器数据的GUID的列表。</param>
+	/// <param name="visitedGroups">已遍历的容器编组表，用于避免循环嵌套。对于一般的外部使用，可以无视此参数，此参数为<c>null</c>时会自动创建新的集。</param>
+	/// <returns>成功与否，若未找到对应容器编组则返回<c>false</c>。</returns>
+	public bool GetAllLeafContainersInContainerGroup([DisallowNull]ContainerGroup containerGroup, out HashSet<Guid> leafContainerGuids, HashSet<Guid> visitedGroups = null)
+	{
+		visitedGroups ??= [];
+		leafContainerGuids = [];
 		foreach (Guid guid in containerGroup.Guids)
 		{
 			if (leafContainerGuids.Contains(guid)) continue;
@@ -506,9 +559,11 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// </summary>
 	/// <param name="containerGuid">要添加物品的容器实例的GUID。</param>
 	/// <param name="itemCountsForAdd">要添加的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会执行操作。</param>
+	/// <param name="itemCountsOverflow">因容器容量已满而未能添加的溢出物品。</param>
 	/// <returns>是否成功添加给定的物品。在找不到符合给定GUID的容器实例或无法获取该容器实例所属的物品ID或无法在注册表中寻找到物品ID的注册表项时会返回<c>false</c>。</returns>
-	public bool TryAddItemsForContainer(Guid containerGuid, Dictionary<string, long> itemCountsForAdd)
+	public bool TryAddItemsForContainer(Guid containerGuid, Dictionary<string, long> itemCountsForAdd, out Dictionary<string, long> itemCountsOverflow)
 	{
+		itemCountsOverflow = [];
 		if (containerGuid == Guid.Empty) return false;
 		if (QueryGuidIsSpaceContainer(containerGuid, out string spaceId, out SpaceData spaceData))
 		{
@@ -526,6 +581,13 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 					containerData.ItemCounts.TryAdd(addItemId, 0);
 					long maxAddThisItem = maxStackThisItem - containerData.ItemCounts[addItemId];
 					long itemAddCountActually = Math.Min(addItemCount, maxAddThisItem);
+					// 溢出数量记录
+					if (itemAddCountActually != addItemCount)
+					{
+						itemCountsOverflow.TryAdd(addItemId, 0L);
+						itemCountsOverflow[addItemId] += addItemCount - itemAddCountActually;
+					}
+					//
 					containerData.ItemCounts[addItemId] += itemAddCountActually;
 					bool hasContainerRegistry = UsingGameResource.ContainerRegistry.TryGetValue(addItemId, out ContainerRegistryObject prefillItemContainerRegistryObject);
 					bool hasFactoryRegistry = UsingGameResource.FactoryRegistry.TryGetValue(addItemId, out FactoryRegistryObject prefillItemFactoryRegistryObject);
@@ -552,6 +614,92 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 					spaceData.InstanceItemGuids.TryAdd(addItemId, []);
 					spaceData.InstanceItemGuids[addItemId].UnionWith(prefillInstanceGuids);
 				}
+			}
+			return true;
+		}
+		if (!QueryItemIdForGuid(containerGuid, out string itemId))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), containerGuid));
+			return false;
+		}
+		if (!UsingGameResource.ContainerRegistry.TryGetValue(itemId, out ContainerRegistryObject containerRegistryObject))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_container_registry_object_in_game_resource_for_item_id"), itemId));
+			return false;
+		}
+		lock (_lock)
+		{
+			if (!UsingSaveData.ContainerDatas.TryGetValue(containerGuid, out ContainerData containerData)) return false;
+			foreach ((string addItemId, long addItemCount) in itemCountsForAdd)
+			{
+				long maxStackThisItem = containerRegistryObject.ItemMaxStacks.GetCountForItem(UsingGameResource.ItemRegistry, addItemId);
+				long maxAddThisItem = maxStackThisItem - containerData.ItemCounts[addItemId];
+				containerData.ItemCounts[addItemId] += Math.Min(addItemCount, maxAddThisItem);
+			}
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 尝试向给定GUID的容器中添加物品，并返回是否成功添加给定的物品，如果给定的容器物品数量溢出也将成功添加物品。
+	/// 方法的时间复杂度近似O(n)，n代表要求添加的物品类型的总数。
+	/// 如果给定的GUID是<c>Guid.Empty</c>，则直接取消本次操作，并返回<c>false</c>。
+	/// </summary>
+	/// <param name="containerGuid">要添加物品的容器实例的GUID。</param>
+	/// <param name="itemCountsForAdd">要添加的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会执行操作。</param>
+	/// <param name="itemCountsOverflow">因容器容量已满而未能添加的溢出物品。</param>
+	/// <returns>是否成功添加给定的物品。在找不到符合给定GUID的容器实例或无法获取该容器实例所属的物品ID或无法在注册表中寻找到物品ID的注册表项时会返回<c>false</c>。</returns>
+	/// <remarks><c>TryAddItemsForContainer()</c>的同步版本，请确保在其外部上互斥锁。</remarks>
+	public bool TryAddItemsForContainerSync(Guid containerGuid, Dictionary<string, long> itemCountsForAdd, out Dictionary<string, long> itemCountsOverflow)
+	{
+		itemCountsOverflow = [];
+		if (containerGuid == Guid.Empty) return false;
+		if (QueryGuidIsSpaceContainer(containerGuid, out string spaceId, out SpaceData spaceData))
+		{
+			if (!UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject))
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_space_registry_object_in_game_resource_for_space_id"), spaceId));
+				return false;
+			}
+			if (!UsingSaveData.ContainerDatas.TryGetValue(containerGuid, out ContainerData containerData)) return false;
+			foreach ((string addItemId, long addItemCount) in itemCountsForAdd)
+			{
+				long maxStackThisItem = spaceRegistryObject.ItemMaxStacks.GetCountForItem(UsingGameResource.ItemRegistry, addItemId);
+				containerData.ItemCounts.TryAdd(addItemId, 0);
+				long maxAddThisItem = maxStackThisItem - containerData.ItemCounts[addItemId];
+				long itemAddCountActually = Math.Min(addItemCount, maxAddThisItem);
+				// 溢出数量记录
+				if (itemAddCountActually != addItemCount)
+				{
+					itemCountsOverflow.TryAdd(addItemId, 0L);
+					itemCountsOverflow[addItemId] += addItemCount - itemAddCountActually;
+				}
+				//
+				containerData.ItemCounts[addItemId] += itemAddCountActually;
+				bool hasContainerRegistry = UsingGameResource.ContainerRegistry.TryGetValue(addItemId, out ContainerRegistryObject prefillItemContainerRegistryObject);
+				bool hasFactoryRegistry = UsingGameResource.FactoryRegistry.TryGetValue(addItemId, out FactoryRegistryObject prefillItemFactoryRegistryObject);
+				if (!hasContainerRegistry && !hasFactoryRegistry) continue; //从此往下可确保该物品ID至少有在容器注册表或工厂注册表中被注册成为了一种
+				HashSet<Guid> prefillInstanceGuids = []; //空间容器的预装物品实例GUID表
+				for (long i = 0; i < itemAddCountActually; i++) //遍历物品数量次，创建复数个实例物品实例
+				{
+					Guid currentInstanceGuid = Guid.NewGuid(); //创建GUID，待会儿如果容器和工厂同时有，好让它们拥有同一个GUID(而且这是必须的)
+					SetNameForInstance(currentInstanceGuid, UsingGameResource.GetItemNameTranslated(addItemId) + "#" + currentInstanceGuid.ToString()[^4..]);
+					if (hasContainerRegistry) //检查是否被注册为容器
+					{
+						//创建容器实例并添加的过程
+						SetInstanceObject(InstantiateRegistryObject(prefillItemContainerRegistryObject), currentInstanceGuid);
+					}
+					if (hasFactoryRegistry) //检查是否被注册为工厂
+					{
+						//创建工厂实例并添加的过程
+						FactoryData factoryData = InstantiateRegistryObject(prefillItemFactoryRegistryObject);
+						factoryData.InputContainerGuid = factoryData.OutputContainerGuid = spaceData.SpaceContainerGuid;
+						SetInstanceObject(factoryData, currentInstanceGuid);
+					}
+					prefillInstanceGuids.Add(currentInstanceGuid);
+				}
+				spaceData.InstanceItemGuids.TryAdd(addItemId, []);
+				spaceData.InstanceItemGuids[addItemId].UnionWith(prefillInstanceGuids);
 			}
 			return true;
 		}
@@ -638,6 +786,70 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			}
 		}
 		return true;
+	}
+
+	/// <summary>
+	/// 尝试从给定的容器编组数据中消耗物品，并返回是否成功消耗要求的物品，如果给定的容器编组数据不满足要求的物品数量则不会消耗物品。
+	/// 方法的时间复杂度近似O(n)，n代表要求消耗的物品类型的总数。
+	/// 本方法不会对传入的容器编组数据做非<c>null</c>检测，请提前做好检测。
+	/// </summary>
+	/// <param name="containerGroup">要消耗物品的容器编组实例。</param>
+	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例中存在(库存数量大于0)。</param>
+	/// <returns>是否成功消耗要求的物品数量。</returns>
+	/// <remarks>本方法非线程安全设计，如果给定容器数据直接来自存档数据，请在外层做好互斥锁锁定。</remarks>
+	public bool tryConsumeItemsForContainerGroup([DisallowNull] ContainerGroup containerGroup, Dictionary<string, long> itemCountsForConsume)
+	{
+		// 检查物品是否满足
+		Dictionary<string, long> itemCountsGot = [];
+		HashSet<ContainerData> leafContainers = [];
+		foreach (Guid leafContainerGuid in containerGroup.Guids)
+		{
+			if (!GetContainerForGuidSync(leafContainerGuid, out ContainerData leafContainer, false)) continue;
+			leafContainers.Add(leafContainer);
+			foreach (string consumeItemId in itemCountsForConsume.Keys)
+			{
+				itemCountsGot.TryAdd(consumeItemId, 0L);
+				itemCountsGot[consumeItemId] += leafContainer.ItemCounts[consumeItemId];
+			}
+		}
+		if (itemCountsForConsume.Keys.Any(consumeItemId => itemCountsGot[consumeItemId] < itemCountsForConsume[consumeItemId])) return false;
+		// 消耗物品
+		foreach (ContainerData leafContainer in leafContainers)
+		{
+			foreach (string consumeItemId in itemCountsForConsume.Keys)
+			{
+				long maxConsumeOnThis = Math.Max(itemCountsGot[consumeItemId], leafContainer.ItemCounts[consumeItemId]);
+				leafContainer.ItemCounts[consumeItemId] -= maxConsumeOnThis;
+				itemCountsGot[consumeItemId] -= maxConsumeOnThis;
+			}
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 尝试向给定的容器编组实例中添加物品，并返回是否成功添加给定的物品，如果给定的容器实例物品数量溢出也将成功添加物品。
+	/// 方法的时间复杂度近似O(n)，n代表要求添加的物品类型的总数。
+	/// </summary>
+	/// <param name="containerGroup">要添加物品的容器编组实例。</param>
+	/// <param name="itemCountsForAdd">要添加的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会执行操作。</param>
+	/// <param name="itemCountsOverflow">因容器容量已满而未能添加的溢出物品。</param>
+	/// <returns>是否成功添加给定的物品。在找不到符合给定GUID的容器实例或无法获取该容器实例所属的物品ID或无法在注册表中寻找到物品ID的注册表项时会返回<c>false</c>。</returns>
+	/// <remarks>本方法非线程安全设计，如果给定容器编组数据直接来自存档数据，请在外层做好互斥锁锁定。</remarks>
+	public bool TryAddItemsForContainerGroupSync([DisallowNull] ContainerGroup containerGroup, Dictionary<string, long> itemCountsForAdd, out Dictionary<string, long> itemCountsOverflow)
+	{
+		itemCountsOverflow = [];
+		if (!GetAllLeafContainersInContainerGroup(containerGroup, out HashSet<Guid> leafContainerGuids)) return false;
+		bool success = true;
+		foreach (Guid leafContainerGuid in leafContainerGuids)
+		{
+			success = TryAddItemsForContainerSync(leafContainerGuid, itemCountsForAdd, out Dictionary<string, long> thisItemCountsOverflow) && success;
+			foreach ((string overflowItemId, long overflowItemCount) in thisItemCountsOverflow)
+			{
+				itemCountsOverflow.TryAdd(overflowItemId, 0L);
+				itemCountsOverflow[overflowItemId] += overflowItemCount;
+			}
+		}
+		return success;
 	}
 	
 	#endregion
@@ -770,7 +982,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		lock (_lock)
 		{
 			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out factoryData)) return false;
-			if (cancelIfStarted && factoryData.WasStarted) return true;
+			if (cancelIfStarted && factoryData.WasWorking) return true;
 		}
 		if (!QueryItemIdForGuid(factoryGuid, out string itemId))
 		{
