@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot;
+using IdleFramework.Core;
 using IdleFramework.Global;
 
 namespace IdleFramework.UIScenes.Control;
@@ -39,6 +40,11 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 				if (GetParent() is PanelContainer parent) CustomMinimumSize = parent.Size * 0.75f;
 				break;
 		}
+	}
+
+	public void Update(SaveDataHelper saveDataHelper)
+	{
+		foreach (Node child in GetChildren()) if (child is PopupTabBase childPopupTab) childPopupTab.Update(saveDataHelper);
 	}
 
 	/// <summary>

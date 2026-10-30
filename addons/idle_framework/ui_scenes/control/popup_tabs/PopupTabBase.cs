@@ -1,5 +1,6 @@
 ﻿#if IDLE_FRAMEWORK_UISCENE_ALL || IDLE_FRAMEWORK_UISCENE_CONTROL
 using Godot;
+using IdleFramework.Core;
 
 namespace IdleFramework.UIScenes.Control;
 
@@ -25,5 +26,11 @@ public abstract partial class PopupTabBase: PanelContainer
 	/// </summary>
 	/// <returns>本节点的标题名。</returns>
 	public abstract string GetTitleName();
+
+	/// <summary>
+	/// 更新。
+	/// </summary>
+	/// <param name="saveDataHelper">更新使用的存档辅助器，应与当前UI场景使用的存档辅助器相同。</param>
+	public abstract void Update(SaveDataHelper saveDataHelper);
 }
 #endif

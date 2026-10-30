@@ -24,9 +24,10 @@ theme_override_constants/margin_bottom = 16
 
 [node name="TC" type="TabContainer" parent="MC" unique_id=2050247112]
 layout_mode = 2
-current_tab = 0
+current_tab = 1
 
 [node name="SelectRecipe" type="HSplitContainer" parent="MC/TC" unique_id=72038331]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 0
 
@@ -118,7 +119,6 @@ layout_mode = 2
 text = "Close"
 
 [node name="Queue" type="VBoxContainer" parent="MC/TC" unique_id=1656381593]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 

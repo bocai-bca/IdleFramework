@@ -80,6 +80,7 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			[nameof(RecipeRequiredTicks)] = new JValue(RecipeRequiredTicks),
 			[nameof(InputContainerGuid)] = new JValue(InputContainerGuid),
 			[nameof(OutputContainerGuid)] = new JValue(OutputContainerGuid),
+			[nameof(IngredientsConsumed)] = new JValue(IngredientsConsumed),
 		};
 		return result;
 	}
@@ -123,6 +124,10 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 		{
 			result.OutputContainerGuid = valueOutputContainerGuid.Value<Guid>();
 		}
+		if (jObject.TryGetValue(nameof(IngredientsConsumed), out JToken valueIngredientsConsumed) && valueIngredientsConsumed.Type == JTokenType.Boolean)
+		{
+			result.IngredientsConsumed = valueIngredientsConsumed.Value<bool>();
+		}
 		return result;
 	}
 
@@ -138,6 +143,7 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 			RecipeRequiredTicks = RecipeRequiredTicks,
 			InputContainerGuid = InputContainerGuid,
 			OutputContainerGuid = OutputContainerGuid,
+			IngredientsConsumed = IngredientsConsumed,
 		};
 		return duplicated;
 	}

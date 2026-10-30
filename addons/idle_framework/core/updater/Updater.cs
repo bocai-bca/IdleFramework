@@ -108,7 +108,7 @@ public static class Updater
 							continue;
 						}
 						//在这里更新这个工厂，使用timeSpanTicksAllowFactoriesToMoveOn让工厂推进，并结合情况修改wasContainerChanged和minimalTimeSpanTickToNextSomethingChanging
-						containerChanged |= updateFactory(currentFactoryDuplicated, timeSpanTicksForMoveInRound, out InfiniteTaggedValue<long> currentMinimalTimeSpanTicksToNextSomethingChanging);
+						containerChanged = updateFactory(currentFactoryDuplicated, timeSpanTicksForMoveInRound, out InfiniteTaggedValue<long> currentMinimalTimeSpanTicksToNextSomethingChanging) || containerChanged;
 						minimalTimeSpanTicksForContainerChange = InfiniteTaggedValue<long>.Min(minimalTimeSpanTicksForContainerChange, currentMinimalTimeSpanTicksToNextSomethingChanging);
 						SaveDataHelperInHandle.SetInstanceObject(currentFactoryDuplicated, currentFactoryGuid);
 					}

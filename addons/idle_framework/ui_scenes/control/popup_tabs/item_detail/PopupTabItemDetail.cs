@@ -63,6 +63,11 @@ public partial class PopupTabItemDetail : PopupTabBase, IClassPackedScene
 		return string.Format(Localization.Tr("ui_scene_control.popup_tab_title.item_detail"), NItemName.Text);
 	}
 
+	public override void Update(SaveDataHelper saveDataHelper)
+	{
+		throw new System.NotImplementedException();
+	}
+
 	public void OnCloseButtonPressed()
 	{
 		EmitSignal(PopupTabBase.SignalName.Close);

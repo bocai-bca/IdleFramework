@@ -1034,6 +1034,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		factoryData.RecipeStartTime = DateTime.UtcNow;
 		factoryData.RecipeWorkedTicks = 0L;
 		factoryData.RecipeRequiredTicks = recipeRegistryObject.RequiredSeconds.GetNumber() * TimeSpan.TicksPerSecond;
+		factoryData.IngredientsConsumed = false;
 		return true;
 	}
 	

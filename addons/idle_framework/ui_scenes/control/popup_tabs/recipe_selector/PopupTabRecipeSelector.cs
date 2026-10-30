@@ -125,6 +125,11 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		return string.Format(Localization.Tr("ui_scene_control.popup_tab_title.recipe_selector"), SaveAccess.LoadedDataHelper.GetNameForInstance(factoryGuidCache, "ui_scene_control.lost_instance"));
 	}
 
+	public override void Update(SaveDataHelper saveDataHelper)
+	{
+		throw new NotImplementedException();
+	}
+
 	/// <summary>
 	/// 将配方详细信息显示为原料。
 	/// </summary>

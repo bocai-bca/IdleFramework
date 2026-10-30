@@ -108,6 +108,7 @@ public partial class Control : UIScene, IClassPackedScene
 		{
 			spaceDetailArea.Update(saveDataHelper);
 		}
+		TabPopupInstance.Update(saveDataHelper);
 	}
 
 	public void OnSpaceButtonPressed(string pressedSpaceId)
