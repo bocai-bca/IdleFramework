@@ -25,6 +25,8 @@ ui_scene_control.popup_tab_recipe_selector.add_to_queue,,"Add to queue","添加�
 ui_scene_control.popup_tab_recipe_selector.ingredients,,"Ingredients","原料"
 ui_scene_control.popup_tab_recipe_selector.results,,"Results","产物"
 ui_scene_control.popup_tab_recipe_selector.current_processing,,"Current processing","正在处理"
+ui_scene_control.popup_tab_recipe_selector.cancel_all,,"Cancel all","取消全部"
+ui_scene_control.recipe_queue_object.cancel,,"Cancel","取消"
 log.info.ui_scene_control_space_detail_area.adding_container_item_container_instance,,"UIScene.Control.SpaceDetailArea: Adding ContainerItemContainer instance.","UIScene.Control.SpaceDetailArea: 正在添加ContainerItemContainer实例。"
 log.info.ui_scene_control_space_detail_area.adding_factory_item_container_instance,,"UIScene.Control.SpaceDetailArea: Adding FactoryItemContainer instance.","UIScene.Control.SpaceDetailArea: 正在添加FactoryItemContainer实例。"
 log.error.ui_scene_control_space_detail_area.failed_to_get_all_instance_guids_for_space_id_owned,,"UIScene.Control.SpaceDetailArea: Failed to get all instance GUIDs for Space ID owned by self.","UIScene.Control.SpaceDetailArea: 未能通过自身持有的空间ID获取所有实例GUID。"

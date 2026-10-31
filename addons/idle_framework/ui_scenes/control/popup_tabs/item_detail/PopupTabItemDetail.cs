@@ -65,7 +65,7 @@ public partial class PopupTabItemDetail : PopupTabBase, IClassPackedScene
 
 	public override void Update(SaveDataHelper saveDataHelper)
 	{
-		throw new System.NotImplementedException();
+		
 	}
 
 	public void OnCloseButtonPressed()

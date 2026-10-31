@@ -24,6 +24,7 @@ public partial class RecipeQueueObject : HBoxContainer, IClassPackedScene
 				NIcon = GetNode<TextureRect>("Icon");
 				NCancelButton = GetNode<Button>("CancelButton");
 				NCancelButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnButtonPressed));
+				NCancelButton.Text = Localization.Tr("ui_scene_control.recipe_queue_object.cancel");
 				NName = GetNode<Label>("Name");
 				break;
 		}

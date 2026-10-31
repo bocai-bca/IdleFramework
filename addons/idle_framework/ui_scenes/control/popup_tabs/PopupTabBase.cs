@@ -31,6 +31,8 @@ public abstract partial class PopupTabBase: PanelContainer
 	/// 更新。
 	/// </summary>
 	/// <param name="saveDataHelper">更新使用的存档辅助器，应与当前UI场景使用的存档辅助器相同。</param>
-	public abstract void Update(SaveDataHelper saveDataHelper);
+	public virtual void Update(SaveDataHelper saveDataHelper)
+	{
+	}
 }
 #endif

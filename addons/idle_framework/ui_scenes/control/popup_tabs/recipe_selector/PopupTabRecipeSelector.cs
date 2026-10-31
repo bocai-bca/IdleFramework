@@ -29,6 +29,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public readonly Dictionary<string, Button> NRecipeButtons = [];
 	public Label NCurrentProcessingText;
 	public Button NCloseButtonInQueuePage;
+	public Button NCancelAllButtonInQueuePage;
 
 	/// <summary>
 	/// 对对应工厂GUID的保存，用于读写数据。需要由创建本类实例的对象负责赋值，否则实例将无法正常运作
@@ -73,6 +74,9 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				NCloseButtonInQueuePage.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCloseButtonPressed));
 				NCurrentProcessingText = GetNode<Label>("MC/TC/Queue/CurrentText");
 				NCurrentProcessingText.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.current_processing");
+				NCancelAllButtonInQueuePage = GetNode<Button>("MC/TC/Queue/HBC/CancelAllButton");
+				NCancelAllButtonInQueuePage.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCancelAllButtonPressed));
+				NCancelAllButtonInQueuePage.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.cancel_all");
 				break;
 		}
 	}
@@ -127,7 +131,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 
 	public override void Update(SaveDataHelper saveDataHelper)
 	{
-		throw new NotImplementedException();
+		
 	}
 
 	/// <summary>
@@ -239,6 +243,11 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public void OnAddToQueueButtonPressed()
 	{
 		SaveAccess.LoadedDataHelper.TryEnqueueRecipeForManualFactory(factoryGuidCache, selectedRecipeId, true);
+	}
+
+	public void OnCancelAllButtonPressed()
+	{
+		
 	}
 	
 	public void OnCloseButtonPressed()
