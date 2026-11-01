@@ -26,7 +26,7 @@ public partial class TabPopup : TabContainer, IClassPackedScene
 	/// </summary>
 	[Signal]
 	public delegate void TabsAllClosedEventHandler();
-
+	
 	public override void _Notification(int what)
 	{
 		switch ((long)what)

@@ -57,7 +57,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// GUID到原始物品ID的缓存表。
 	/// 此表不应在单个运行时生命周期中重置，因为GUID在理论上不应被重用，当一个GUID已确认被用于什么物品时，它没道理在后续变更为其他物品的实例对象的GUID。
 	/// </summary>
-	public Dictionary<Guid, string> GuidToItemIdCache { get; } = [];
+	public Dictionary<Guid, string> GuidToItemIdCache { get; } = []; // TODO 这个表不会清除，也就是说在单个程序实例运行期间，它只会不断变大而不减少，可能影响性能
 
 	/// <summary>
 	/// (注意，本方法是间接含锁的)
@@ -526,6 +526,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			}
 			//消耗物品
 			foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts) containerData.ItemCounts[requiredItemId] -= Math.Clamp(requiredItemCount, 0L, long.MaxValue);
+			// TODO 不会清除实例物品
 		}
 		return true;
 	}
@@ -549,6 +550,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		}
 		//消耗物品
 		foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts) containerData.ItemCounts[requiredItemId] -= Math.Clamp(requiredItemCount, 0L, long.MaxValue);
+		// TODO 不会清除实例物品
 		return true;
 	}
 
@@ -782,6 +784,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 					long maxConsumeOnThis = Math.Max(itemCountsGot[consumeItemId], leafContainer.ItemCounts[consumeItemId]);
 					leafContainer.ItemCounts[consumeItemId] -= maxConsumeOnThis;
 					itemCountsGot[consumeItemId] -= maxConsumeOnThis;
+					// TODO 不会清除实例物品
 				}
 			}
 		}
@@ -821,6 +824,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 				long maxConsumeOnThis = Math.Max(itemCountsGot[consumeItemId], leafContainer.ItemCounts[consumeItemId]);
 				leafContainer.ItemCounts[consumeItemId] -= maxConsumeOnThis;
 				itemCountsGot[consumeItemId] -= maxConsumeOnThis;
+				// TODO 不会清除实例物品
 			}
 		}
 		return true;
@@ -881,7 +885,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="factoryGuid">要添加配方进队列的工厂实例的GUID。</param>
 	/// <param name="recipeId">要添加的配方ID。</param>
 	/// <param name="blockIfOutOfCapacity">是否容许超出容量，如果为<c>true</c>，则本方法会额外地进行容量判断，并在超额入队时抛弃本次操作。并且额外地会在未能查找到工厂物品ID、未能获取工厂注册表项、对应工厂的配方下单器不是可存储型的情况下直接返回<c>false</c>。</param>
-	/// <returns>成功与否，如果没有找到对应工厂或者存在对象未能被查找到的情况则返回<c>false</c>，若<c>allowOutOfCapacity</c>为<c>true</c>，则会在因超出容量而遭拒绝时返回<c>false</c>。</returns>
+	/// <returns>成功与否，如果没有找到对应工厂或者存在对象未能被查找到的情况则返回<c>false</c>，若<c>blockIfOutOfCapacity</c>为<c>true</c>，则会在因超出容量而遭拒绝时返回<c>false</c>。</returns>
 	public bool TryEnqueueRecipeForManualFactory(Guid factoryGuid, string recipeId, bool blockIfOutOfCapacity)
 	{
 		// 需要检查上限的差分

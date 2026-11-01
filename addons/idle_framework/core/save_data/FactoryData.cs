@@ -89,12 +89,13 @@ public class FactoryData : ISaveDataComponent<FactoryData>
 	{
 		if (jObject == null) return null;
 		FactoryData result = new();
-		if (jObject.TryGetValue(nameof(RecipeOrderData), out JToken valueRecipeOrderData) && valueRecipeOrderData.Type == JTokenType.Object)
+		if (jObject.TryGetValue(nameof(RecipeOrderData), out JToken valueRecipeOrderData) && valueRecipeOrderData.Type == JTokenType.Object && valueRecipeOrderData is JObject valueRecipeOrderDataJObject)
 		{
-			if (valueRecipeOrderData is JObject valueRecipeOrderDataJObject)
-			{
-				result.RecipeOrderData = RecipeOrderData.FromJson(valueRecipeOrderDataJObject);
-			}
+			result.RecipeOrderData = RecipeOrderData.FromJson(valueRecipeOrderDataJObject);
+		}
+		else
+		{
+			result.RecipeOrderData = new RecipeOrderData();
 		}
 		if (jObject.TryGetValue(nameof(FactoryMode), out JToken valueMode) && valueMode.Type == JTokenType.String)
 		{

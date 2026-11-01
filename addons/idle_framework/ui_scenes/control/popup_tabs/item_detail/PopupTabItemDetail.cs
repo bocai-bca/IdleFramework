@@ -8,6 +8,7 @@ namespace IdleFramework.UIScenes.Control;
 /// <summary>
 /// [IdleFramework内置UI场景-控件主题]物品详细信息弹窗标签页，用于显示一个物品的详细信息，如名称、图标、描述，并提供一个置顶按钮供玩家将该物品置顶。
 /// </summary>
+/// <remarks>此类标签页名称的规范模板为：<c>ItemDetail.{itemId}</c>。</remarks>
 [GlobalClass]
 public partial class PopupTabItemDetail : PopupTabBase, IClassPackedScene
 {

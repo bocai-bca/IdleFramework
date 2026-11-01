@@ -27,6 +27,7 @@ public partial class RecipeOrderListLoop : RecipeOrder
 	/// <returns>本下单器实例提供的配方</returns>
 	public override string PullRecipe(List<long> argumentsLong, Queue<string> queueString)
 	{
+		if (argumentsLong.Count == 0) argumentsLong.Add(0L);
 		int indexCounter = (int)argumentsLong[0];
 		string result = RecipeIDs[indexCounter];
 		argumentsLong[0] = (indexCounter + 1) % RecipeIDs.Count;

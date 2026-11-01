@@ -11,6 +11,7 @@ namespace IdleFramework.UIScenes.Control;
 /// <summary>
 /// [IdleFramework内置UI场景-控件主题]配方选择弹窗标签页，用于显示一个工厂的可选配方并供玩家浏览和选择要制作的物品。
 /// </summary>
+/// <remarks>此类标签页名称的规范模板为：<c>RecipeSelector.{factoryGuid}</c>。</remarks>
 [GlobalClass]
 public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 {
@@ -30,12 +31,21 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public Label NCurrentProcessingText;
 	public Button NCloseButtonInQueuePage;
 	public Button NCancelAllButtonInQueuePage;
+	public RecipeQueueObject NCurrentProcessingRecipeQueueObject;
+	public Label NQueueSizeText;
+	public VBoxContainer NRecipeQueueObjectsContainer;
+	public readonly List<RecipeQueueObject> NRecipeQueueObjects = [];
 
 	/// <summary>
 	/// 对对应工厂GUID的保存，用于读写数据。需要由创建本类实例的对象负责赋值，否则实例将无法正常运作
 	/// </summary>
 	public Guid factoryGuidCache = Guid.Empty;
 
+	/// <summary>
+	/// 缓存对应工厂配方注册表项。
+	/// </summary>
+	public FactoryRegistryObject factoryRegistryObjectCache;
+	
 	/// <summary>
 	/// 当前已选中的配方ID
 	/// </summary>
@@ -77,6 +87,10 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				NCancelAllButtonInQueuePage = GetNode<Button>("MC/TC/Queue/HBC/CancelAllButton");
 				NCancelAllButtonInQueuePage.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCancelAllButtonPressed));
 				NCancelAllButtonInQueuePage.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.cancel_all");
+				NCurrentProcessingRecipeQueueObject = GetNode<RecipeQueueObject>("MC/TC/Queue/RecipeQueueObject");
+				NQueueSizeText = GetNode<Label>("MC/TC/Queue/HBC/QueueSizeText");
+				NQueueSizeText.Text = string.Format(Localization.Tr("ui_scene_control.popup_tab_recipe_selector.queue_size_text"), "-", "-");
+				NRecipeQueueObjectsContainer = GetNode<VBoxContainer>("MC/TC/Queue/RecipeQueue/VBC");
 				break;
 		}
 	}
@@ -98,6 +112,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.failed_to_get_factory_registry_object_for_factory_id"), factoryItemId));
 			return;
 		}
+		factoryRegistryObjectCache = factoryRegistryObject;
 		if (factoryRegistryObject.RecipeOrder is not RecipeOrderManualSelect recipeOrderManualSelect)
 		{
 			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.the_recipe_order_of_target_factory_registry_object_is_not_recipe_order_manual_select"), factoryItemId));
@@ -131,7 +146,56 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 
 	public override void Update(SaveDataHelper saveDataHelper)
 	{
-		
+		if (!saveDataHelper.GetFactoryForGuid(factoryGuidCache, out FactoryData factoryData))
+		{
+			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.failed_to_get_factory_data_from_guid"), factoryGuidCache.ToString()));
+			return;
+		}
+		if (factoryData.WasWorking)
+		{
+			if (saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(factoryData.CurrentRecipe, out RecipeRegistryObject recipeRegistryObject))
+			{
+				NCurrentProcessingRecipeQueueObject.SetRecipe(factoryData.CurrentRecipe, recipeRegistryObject);
+			}
+			else
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.failed_to_get_recipe_registry_object_for_recipe_id"), factoryData.CurrentRecipe));
+				NCurrentProcessingRecipeQueueObject.SetRecipeLost();
+			}
+		}
+		else
+		{
+			NCurrentProcessingRecipeQueueObject.SetRecipe("", null);
+		}
+		int i = factoryData.RecipeOrderData.DataQueueString.Count;
+		while (NRecipeQueueObjects.Count < i)
+		{
+			RecipeQueueObject recipeQueueObject = RecipeQueueObject.Create();
+			NRecipeQueueObjects.Add(recipeQueueObject);
+			NRecipeQueueObjectsContainer.AddChild(recipeQueueObject);
+		}
+		if (factoryRegistryObjectCache.RecipeOrder is RecipeOrderStorable recipeOrderStorable)
+		{
+			NQueueSizeText.Text = string.Format(
+				Localization.Tr("ui_scene_control.popup_tab_recipe_selector.queue_size_text"),
+				i,
+				recipeOrderStorable.StoreSize == null ? "0" : recipeOrderStorable.StoreSize.NumberPreviewText
+				);
+		}
+		i = 0;
+		foreach (string queueRecipeId in factoryData.RecipeOrderData.DataQueueString)
+		{
+			if (saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(queueRecipeId, out RecipeRegistryObject recipeRegistryObject))
+			{
+				NRecipeQueueObjects[i].SetRecipe(queueRecipeId, recipeRegistryObject);
+			}
+			else
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.failed_to_get_recipe_registry_object_for_recipe_id"), factoryData.CurrentRecipe));
+				NRecipeQueueObjects[i].SetRecipeLost();
+			}
+			i++;
+		}
 	}
 
 	/// <summary>

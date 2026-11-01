@@ -7,6 +7,9 @@ namespace IdleFramework.Core;
 /// <summary>
 /// 配方下单器数据，于存档数据中包含在一个工厂数据中作为一个配方下单器实例的数据存储
 /// </summary>
+/// <remarks>
+/// 在现有内核中，辅助器使用了DataQueueString存放待执行的配方队列，DataListLong未使用。
+/// </remarks>
 public class RecipeOrderData: ISaveDataComponent<RecipeOrderData>
 {
 	/// <summary>
