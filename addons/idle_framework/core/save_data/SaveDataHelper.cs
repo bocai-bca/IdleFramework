@@ -109,23 +109,71 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// 查询是否有空间的空间容器为给定GUID，并返回符合的空间的ID。
 	/// </summary>
 	/// <param name="guid">要查找的GUID。</param>
-	/// <param name="idOfSpaceHoldGuidAsSpaceContainer">持有给定GUID的物品实例为空间容器的空间的ID，未找到时返回<c>null</c>。</param>
-	/// <param name="dataOfSpaceHoldGuidAsSpaceContainer">持有给定GUID的物品实例为空间容器的空间的数据，未找到时返回<c>null</c>。</param>
-	/// <returns>是否成功找到以给定GUID为空间容器GUID的空间。</returns>
-	public bool QueryGuidIsSpaceContainer(Guid guid, out string idOfSpaceHoldGuidAsSpaceContainer, out SpaceData dataOfSpaceHoldGuidAsSpaceContainer)
+	/// <param name="idOfSpaceWhichHoldGuidAsSpaceContainer">持有给定GUID的物品实例为空间容器的空间的ID，未找到时返回<c>null</c>。</param>
+	/// <param name="dataOfSpaceWhichHoldGuidAsSpaceContainer">持有给定GUID的物品实例为空间容器的空间的数据，未找到时返回<c>null</c>。</param>
+	/// <returns>是否成功找到以给定GUID的容器数据为空间容器GUID的空间。</returns>
+	public bool QueryGuidIsSpaceContainer(Guid guid, out string idOfSpaceWhichHoldGuidAsSpaceContainer, out SpaceData dataOfSpaceWhichHoldGuidAsSpaceContainer)
 	{
 		lock (_lock)
 		{
 			foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
 			{
 				if (spaceData.SpaceContainerGuid != guid) continue;
-				idOfSpaceHoldGuidAsSpaceContainer = spaceId;
-				dataOfSpaceHoldGuidAsSpaceContainer = spaceData;
+				idOfSpaceWhichHoldGuidAsSpaceContainer = spaceId;
+				dataOfSpaceWhichHoldGuidAsSpaceContainer = spaceData;
 				return true;
 			}
 		}
-		idOfSpaceHoldGuidAsSpaceContainer = null;
-		dataOfSpaceHoldGuidAsSpaceContainer = null;
+		idOfSpaceWhichHoldGuidAsSpaceContainer = null;
+		dataOfSpaceWhichHoldGuidAsSpaceContainer = null;
+		return false;
+	}
+	
+	/// <summary>
+	/// <c>QueryGuidIsSpaceContainer()</c>的同步版本。查询是否有空间的空间容器为给定GUID，并返回符合的空间的ID。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="idOfSpaceWhichHoldGuidAsSpaceContainer">持有给定GUID的物品实例为空间容器的空间的ID，未找到时返回<c>null</c>。</param>
+	/// <param name="dataOfSpaceWhichHoldGuidAsSpaceContainer">持有给定GUID的物品实例为空间容器的空间的数据，未找到时返回<c>null</c>。</param>
+	/// <returns>是否成功找到以给定GUID的容器数据为空间容器GUID的空间。</returns>
+	public bool QueryGuidIsSpaceContainerSync(Guid guid, out string idOfSpaceWhichHoldGuidAsSpaceContainer, out SpaceData dataOfSpaceWhichHoldGuidAsSpaceContainer)
+	{
+		foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
+		{
+			if (spaceData.SpaceContainerGuid != guid) continue;
+			idOfSpaceWhichHoldGuidAsSpaceContainer = spaceId;
+			dataOfSpaceWhichHoldGuidAsSpaceContainer = spaceData;
+			return true;
+		}
+		idOfSpaceWhichHoldGuidAsSpaceContainer = null;
+		dataOfSpaceWhichHoldGuidAsSpaceContainer = null;
+		return false;
+	}
+
+	/// <summary>
+	/// 同步查询特定容器数据是否是空间容器，并返回对应的空间的ID。
+	/// 请注意本方法基于给定容器数据的引用，本方法不认可空间容器的复制品容器数据，这种情形时本方法不奏效。
+	/// </summary>
+	/// <param name="containerData">要查询的容器数据。</param>
+	/// <param name="idOfSpaceWhichHoldContainerDataSpecified">持有给定容器数据为空间容器的空间的ID，未找到时返回<c>null</c>。</param>
+	/// <param name="dataOfSpaceWhichHoldContainerDataSpecified">持有给定容器数据为空间容器的空间的数据，未找到时返回<c>null</c>。</param>
+	/// <returns>是否成功找到以给定容器数据为空间容器GUID的空间。</returns>
+	public bool QueryContainerDataIsSpaceContainerSync(ContainerData containerData, out string idOfSpaceWhichHoldContainerDataSpecified, out SpaceData dataOfSpaceWhichHoldContainerDataSpecified)
+	{
+		foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
+		{
+			if (!UsingSaveData.ContainerDatas.TryGetValue(spaceData.SpaceContainerGuid, out ContainerData containerDataGot))
+			{
+				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.cannot_find_space_container_for_space_with_the_uuid"), spaceId, spaceData.SpaceContainerGuid));
+				continue;
+			}
+			if (!ReferenceEquals(containerDataGot, containerData)) continue;
+			idOfSpaceWhichHoldContainerDataSpecified = spaceId;
+			dataOfSpaceWhichHoldContainerDataSpecified = spaceData;
+			return true;
+		}
+		idOfSpaceWhichHoldContainerDataSpecified = null;
+		dataOfSpaceWhichHoldContainerDataSpecified = null;
 		return false;
 	}
 	
@@ -525,8 +573,17 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 				if (haveItemCount < requiredItemCount) return false;
 			}
 			//消耗物品
-			foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts) containerData.ItemCounts[requiredItemId] -= Math.Clamp(requiredItemCount, 0L, long.MaxValue);
-			// TODO 不会清除实例物品
+			foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts)
+			{
+				long removeItemCount = Math.Clamp(requiredItemCount, 0L, long.MaxValue);
+				containerData.ItemCounts[requiredItemId] -= removeItemCount;
+				//清除物品实例
+				if (!QueryGuidIsSpaceContainerSync(containerGuid, out _, out SpaceData spaceData)) continue;
+				if (!spaceData.InstanceItemGuids.TryGetValue(requiredItemId, out HashSet<Guid> guids)) continue;
+				List<Guid> guidsList = guids.ToList();
+				for (int i = 0; i < removeItemCount || guidsList.Count <= 0; i++) guidsList.RemoveAt(guidsList.Count - 1);
+				guids.IntersectWith(guidsList.ToHashSet());
+			}
 		}
 		return true;
 	}
@@ -540,7 +597,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例中存在(库存数量大于0)。</param>
 	/// <returns>是否成功消耗要求的物品数量。</returns>
 	/// <remarks>本方法非线程安全设计，如果给定容器数据直接来自存档数据，请在外层做好互斥锁锁定。</remarks>
-	private static bool tryConsumeItemsForContainer([DisallowNull] ContainerData containerData, Dictionary<string, long> itemCountsForConsume)
+	private bool tryConsumeItemsForContainer([DisallowNull] ContainerData containerData, Dictionary<string, long> itemCountsForConsume)
 	{
 		//检查物品是否满足
 		foreach ((string requiredItemId, long requiredItemCount) in itemCountsForConsume)
@@ -549,8 +606,17 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			if (haveItemCount < requiredItemCount) return false;
 		}
 		//消耗物品
-		foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts) containerData.ItemCounts[requiredItemId] -= Math.Clamp(requiredItemCount, 0L, long.MaxValue);
-		// TODO 不会清除实例物品
+		foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts)
+		{
+			long removeItemCount = Math.Clamp(requiredItemCount, 0L, long.MaxValue);
+			containerData.ItemCounts[requiredItemId] -= removeItemCount;
+			//清除物品实例
+			if (!QueryContainerDataIsSpaceContainerSync(containerData, out _, out SpaceData spaceData)) continue;
+			if (!spaceData.InstanceItemGuids.TryGetValue(requiredItemId, out HashSet<Guid> guids)) continue;
+			List<Guid> guidsList = guids.ToList();
+			for (int i = 0; i < removeItemCount || guidsList.Count <= 0; i++) guidsList.RemoveAt(guidsList.Count - 1);
+			guids.IntersectWith(guidsList.ToHashSet());
+		}
 		return true;
 	}
 
@@ -784,7 +850,12 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 					long maxConsumeOnThis = Math.Max(itemCountsGot[consumeItemId], leafContainer.ItemCounts[consumeItemId]);
 					leafContainer.ItemCounts[consumeItemId] -= maxConsumeOnThis;
 					itemCountsGot[consumeItemId] -= maxConsumeOnThis;
-					// TODO 不会清除实例物品
+					//清除物品实例
+					if (!QueryContainerDataIsSpaceContainerSync(leafContainer, out _, out SpaceData spaceData)) continue;
+					if (!spaceData.InstanceItemGuids.TryGetValue(consumeItemId, out HashSet<Guid> guids)) continue;
+					List<Guid> guidsList = guids.ToList();
+					for (int i = 0; i < maxConsumeOnThis || guidsList.Count <= 0; i++) guidsList.RemoveAt(guidsList.Count - 1);
+					guids.IntersectWith(guidsList.ToHashSet());
 				}
 			}
 		}
@@ -824,7 +895,12 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 				long maxConsumeOnThis = Math.Max(itemCountsGot[consumeItemId], leafContainer.ItemCounts[consumeItemId]);
 				leafContainer.ItemCounts[consumeItemId] -= maxConsumeOnThis;
 				itemCountsGot[consumeItemId] -= maxConsumeOnThis;
-				// TODO 不会清除实例物品
+				//清除物品实例
+				if (!QueryContainerDataIsSpaceContainerSync(leafContainer, out _, out SpaceData spaceData)) continue;
+				if (!spaceData.InstanceItemGuids.TryGetValue(consumeItemId, out HashSet<Guid> guids)) continue;
+				List<Guid> guidsList = guids.ToList();
+				for (int i = 0; i < maxConsumeOnThis || guidsList.Count <= 0; i++) guidsList.RemoveAt(guidsList.Count - 1);
+				guids.IntersectWith(guidsList.ToHashSet());
 			}
 		}
 		return true;
