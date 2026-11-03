@@ -104,6 +104,30 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		}
 		return false;
 	}
+	
+	/// <summary>
+	/// <c>QueryItemIdForGuid()</c>的同步版本。
+	/// 通过GUID寻找拥有该GUID的实例对象所属于的物品ID。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="itemId">该GUID的所有者所属于的物品ID，如果未找到则为空字符串。</param>
+	/// <returns>是否成功找到给定GUID的物品ID。</returns>
+	public bool QueryItemIdForGuidSync(Guid guid, out string itemId)
+	{
+		if (GuidToItemIdCache.TryGetValue(guid, out itemId)) return true;
+		foreach (string spaceId in UsingGameResource.SpaceRegistry.Keys)
+		{
+			if (!GetAllInstanceGuidsOfItemsInSpaceSync(spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)) continue;
+			foreach ((string instanceItemId, HashSet<Guid> hashSet) in instanceItemGuids)
+			{
+				if (!hashSet.Contains(guid)) continue;
+				GuidToItemIdCache.Add(guid, instanceItemId);
+				itemId = instanceItemId;
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/// <summary>
 	/// 查询是否有空间的空间容器为给定GUID，并返回符合的空间的ID。
@@ -301,6 +325,24 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		return true;
 	}
 	
+	/// <summary>
+	/// <c>GetAllInstanceGuidsOfItemsInSpace()</c>的同步版本。
+	/// 获取给定ID的空间的所有物品实例的GUID。本方法相当于获取<c>SpaceData.InstanceItemGuids</c>字典的复制品。
+	/// </summary>
+	/// <param name="spaceId">想要获取其空间容器的空间的ID。</param>
+	/// <param name="instanceItemGuids">获取到的所有物品实例的GUID，键为物品ID，值为GUID列表，如果未找到则返回空字典。</param>
+	/// <returns>成功与否，一般不太可能为<c>false</c>因为空间数据会在存档数据初始化时实例化所有空间注册表项。</returns>
+	public bool GetAllInstanceGuidsOfItemsInSpaceSync(string spaceId, out Dictionary<string, HashSet<Guid>> instanceItemGuids)
+	{
+		instanceItemGuids = [];
+		if (!UsingSaveData.SpaceDatas.TryGetValue(spaceId, out SpaceData spaceData)) return false;
+		foreach ((string itemId, HashSet<Guid> instanceGuid) in spaceData.InstanceItemGuids)
+		{
+			instanceItemGuids[itemId] = new HashSet<Guid>(instanceGuid);
+		}
+		return true;
+	}
+	
 	#endregion
 	
 	#region 容器访问 Container Accessing
@@ -411,6 +453,29 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			// 分支二：如果找到了容器编组
 			return TryAddItemsForContainerGroupSync(containerGroup, itemCountsForAdd, out _);
 		}
+	}
+	
+	/// <summary>
+	/// <c>TryAddItemsForContainerMixin()</c>的同步版本。
+	/// 尝试向给定GUID的容器或容器编组中添加物品，并返回是否成功添加给定的物品，如果给定的容器物品数量溢出也将成功添加物品。
+	/// 方法的时间复杂度为O(n)，n代表给定GUID可探索到的容器或容器编组的总数。
+	/// 如果查找到的容器编组存在嵌套，则会递归进去进一步搜索物品。
+	/// </summary>
+	/// <param name="containerMixinGuid">要遍历的容器实例或容器编组的GUID。</param>
+	/// <param name="itemCountsForAdd">要添加的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例或容器编组中存在(库存数量大于0)。</param>
+	/// <returns>是否成功添加给定的物品。存在找不到东西的情形时会返回<c>false</c>。</returns>
+	public bool TryAddItemsForContainerMixinSync(Guid containerMixinGuid, Dictionary<string, long> itemCountsForAdd)
+	{
+		bool gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out _);
+		bool gotContainerGroup = UsingSaveData.ContainerGroups.TryGetValue(containerMixinGuid, out ContainerGroup containerGroup);
+		if (gotContainerGroup) containerGroup = containerGroup.Duplicate();
+		if (gotContainerData) // 分支一：如果找到了容器实例
+		{
+			return TryAddItemsForContainerSync(containerMixinGuid, itemCountsForAdd, out _);
+		}
+		if (!gotContainerGroup) return false; // 如果没有找到容器实例或容器编组，在这里返回为失败状态
+		// 分支二：如果找到了容器编组
+		return TryAddItemsForContainerGroupSync(containerGroup, itemCountsForAdd, out _);
 	}
 
 	/// <summary>
@@ -1090,8 +1155,41 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	{
 		lock (_lock) return [..UsingSaveData.FactoryDatas.Keys];
 	}
-	
-	
+
+	/// <summary>
+	/// 尝试取消持有特定GUID的工厂当前正在执行的订单，不会返还物品(因为不好做，配方的输入物品可能可变，如果要返还的话还得存储扣了多少)。
+	/// </summary>
+	/// <param name="factoryGuid">要取消订单的工厂的GUID。</param>
+	/// <param name="index">要取消的订单的索引，为0时代表当前正执行的订单，为1时代表接下来一个订单，以此类推。</param>
+	/// <returns>成功与否，如果没有找到对应工厂或者存在对象未能被查找到的情况则返回<c>false</c>，但即使给定索引的订单不存在也会返回<c>true</c>。</returns>
+	public bool TryCancelOrderForFactory(Guid factoryGuid, int index)
+	{
+		lock (_lock)
+		{
+			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out FactoryData factoryData)) return false;
+			if (index == 0)
+			{
+				factoryData.IngredientsConsumed = false;
+				factoryData.CurrentRecipe = string.Empty;
+				factoryData.RecipeWorkedTicks = 0L;
+				factoryData.RecipeRequiredTicks = 0L;
+				return true;
+			}
+			Queue<string> queue = factoryData.RecipeOrderData.DataQueueString;
+			if (index >= queue.Count) return true;
+			int loopCount = queue.Count;
+			for (int i = 0; i < loopCount; i++)
+			{
+				if (i == index)
+				{
+					queue.Dequeue();
+					continue;
+				}
+				queue.Enqueue(queue.Dequeue());
+			}
+			return true;
+		}
+	}
 
 	/// <summary>
 	/// 内部专用-直接给工厂数据设置配方。
