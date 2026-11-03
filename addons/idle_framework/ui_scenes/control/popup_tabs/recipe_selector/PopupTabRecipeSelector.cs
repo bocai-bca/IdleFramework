@@ -255,7 +255,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		// 遍历产物
 		int index = 0;
 		foreach ((string itemId, NumberProvider countNumberProvider) in recipeRegistryObject.Results
-			.OrderByDescending(result => result.Value)
+			.OrderByDescending(result => result.Value.NumberPreviewAdv)
 			.ThenBy(result => result.Key))
 		{
 			ItemIconNameCount detailItem = NDetailItems[index];

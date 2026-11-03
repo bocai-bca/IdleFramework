@@ -1090,6 +1090,8 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	{
 		lock (_lock) return [..UsingSaveData.FactoryDatas.Keys];
 	}
+	
+	
 
 	/// <summary>
 	/// 内部专用-直接给工厂数据设置配方。

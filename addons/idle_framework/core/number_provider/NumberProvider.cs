@@ -15,6 +15,13 @@ public abstract partial class NumberProvider : Resource
 	public abstract long GetNumber();
 
 	/// <summary>
+	/// 该数值提供器的返回值的预期平均数值，需要保证可在任意线程调用，返回值不会变化。
+	/// 数值提供器之间可能存在嵌套，此数值也有嵌套获取的可能。
+	/// </summary>
+	/// <returns></returns>
+	public abstract long NumberPreviewAdv { get; }
+
+	/// <summary>
 	/// 该数值提供器的返回值的预览文本，需要保证可在任意线程调用，返回值不会变化、文本简短、不依赖环境的地区语言。
 	/// 数值提供器之间可能存在嵌套，此文本也有嵌套获取的可能。
 	/// </summary>

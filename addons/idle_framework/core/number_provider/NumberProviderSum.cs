@@ -49,6 +49,8 @@ public partial class NumberProviderSum : NumberProvider
 		return result;
 	}
 
+	public override long NumberPreviewAdv => SumList.Count == 0 ? 0L : SumList.Sum(t => t.NumberPreviewAdv);
+
 	public override string NumberPreviewText
 	{
 		get
