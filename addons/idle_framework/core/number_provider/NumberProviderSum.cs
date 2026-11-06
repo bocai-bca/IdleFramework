@@ -24,7 +24,7 @@ public partial class NumberProviderSum : NumberProvider
 	{
 		if (recursionLock)
 		{
-			Logger.LogError("log.error.number_provider_sum.unexcepted_call_blocked_by_recursion_lock");
+			Logger.LogError(Localization.Tr("log.error.number_provider_sum.unexcepted_call_blocked_by_recursion_lock"));
 			return 0L;
 		}
 		recursionLock = true;
@@ -35,13 +35,13 @@ public partial class NumberProviderSum : NumberProvider
 		}
 		catch (OverflowException)
 		{
-			Logger.LogWarning("log.error.number_provider_sum.overflow");
+			Logger.LogWarning(Localization.Tr("log.error.number_provider_sum.overflow"));
 			recursionLock = false;
 			return long.MaxValue;
 		}
 		catch (Exception e)
 		{
-			Logger.LogError("log.error.number_provider_sum.catched_exception_on_calling_number_providers_in_sum_list" + e);
+			Logger.LogError(string.Format(Localization.Tr("log.error.number_provider_sum.catched_exception_on_calling_number_providers_in_sum_list"), e));
 			recursionLock = false;
 			return 0L;
 		}
@@ -56,12 +56,30 @@ public partial class NumberProviderSum : NumberProvider
 		get
 		{
 			if (SumList.Count == 0) return "0";
-			string result = "";
-			for (int i = 0; i < SumList.Count; i++)
+			if (recursionLock)
 			{
-				result += SumList[i].NumberPreviewText;
-				if (i != SumList.Count - 1) result += "+";
+				Logger.LogError(Localization.Tr("log.error.number_provider_sum.unexcepted_call_blocked_by_recursion_lock"));
+				return "0";
 			}
+			recursionLock = true;
+			string result = "";
+			try
+			{
+				for (int i = 0; i < SumList.Count; i++)
+				{
+					string subText = SumList[i].NumberPreviewText;
+					if (subText.Contains('~') || subText.Contains('+')) subText = "(" + subText + ")";
+					result += subText;
+					if (i != SumList.Count - 1) result += "+";
+				}
+			}
+			catch (Exception e)
+			{
+				Logger.LogError(Localization.Tr("log.error.number_provider_sum.catched_exception_on_calling_number_providers_in_sum_list" + e));
+				recursionLock = false;
+				return "0";
+			}
+			recursionLock = false;
 			return result;
 		}
 	}

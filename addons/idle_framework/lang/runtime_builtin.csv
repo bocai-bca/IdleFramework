@@ -58,3 +58,8 @@ log.error.updater.unexcepted_to_failed_to_get_all_instance_guids_for_items_in_sp
 log.error.updater.unexcepted_to_failed_to_get_factory_for_guid,,"Updater: Unexcepted to failed to get FactoryData for GUID: """{0}""".","Updater: 超出预期地未能获取GUID为"""{0}"""的FactoryData。"
 log.error.updater.a_factory_data_taking_an_unknown_factory_mode,,"Updater: A FactoryData taking an unknown Factory Mode.","Updater: 一个FactoryData持有着一个未知的工厂模式。"
 log.error.updater.a_factory_data_taking_an_unknown_recipe,,"Updater: A FactoryData taking an unknown Recipe: {0}.","Updater: 一个FactoryData持有着一个未知的配方: {0}。"
+log.error.loot_table_pool_roll.unexcepted_call_blocked_by_recursion_lock,,"LootTablePoolRoll: An unexpected GetLoot() call has blocked by recursion lock, please check the GameResource to make sure LootTables aren't looping references.","LootTablePoolRoll: 一个非预期的GetLoot()调用已被递归锁阻拦，请检查游戏资源以确保掉落表没有发生循环引用。"
+log.error.loot_table_pool_roll.catched_exception_on_calling_loot_tables_in_pool,,"LootTablePoolRoll: Catched exception on calling LootTables in pool: {0}","LootTablePoolRoll: 调用抽取池中的掉落表时捕获到异常: {0}"
+log.error.loot_table_pool_roll.a_pool_entry_is_null,,"LootTablePoolRoll: A pool entry with index {0} is null.","LootTablePoolRoll: 一个索引为{0}的抽取池项为null。"
+log.error.loot_table_pool_roll.the_weight_of_a_pool_entry_is_null,,"LootTablePoolRoll: The weight of a pool entry with index {0} is null.","LootTablePoolRoll: 一个索引为{0}的抽取池项的权重为null。"
+log.error.loot_table_pool_roll.the_loot_table_of_a_pool_entry_is_null,,"LootTablePoolRoll: The LootTable of a pool entry with index {0} is null.","LootTablePoolRoll: 一个索引为{0}的抽取池项的掉落表为null。"

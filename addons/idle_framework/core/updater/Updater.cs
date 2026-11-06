@@ -170,7 +170,7 @@ public static class Updater
 				{
 					//生产完毕，输出产品到容器
 					Dictionary<string, long> itemGoingToAdd = [];
-					foreach ((string itemId, NumberProvider numberProvider) in recipeRegistryObject.Results) itemGoingToAdd[itemId] = numberProvider.GetNumber();
+					foreach ((string itemId, long count) in recipeRegistryObject.Result.GetLoot()) itemGoingToAdd[itemId] = count;
 					containerChanged = SaveDataHelperInHandle.TryAddItemsForContainerMixin(factoryData.OutputContainerGuid, itemGoingToAdd);
 					factoryData.CurrentRecipe = string.Empty;
 					factoryData.RecipeWorkedTicks = 0L;

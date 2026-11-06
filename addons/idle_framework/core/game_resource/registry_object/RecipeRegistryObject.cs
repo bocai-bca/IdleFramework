@@ -32,7 +32,7 @@ public partial class RecipeRegistryObject : Resource
 	/// 如果原材料物品的数值提供器返回结果是会变化的，生产器会在配方订单创建时确定需求数量，在满足该需求数量的情况下才进行生产计时，在计时完毕后再次访问数值提供器取得需求数量，并扣除此时得到的需求数量个原料，而如果原料库存量未能满足此时的需求数量，该次生产将被重置到初始状态。
 	/// </summary>
 	[Export, ExportGroup("Data")]
-	public Dictionary<string, NumberProvider> Ingredients = new();
+	public Dictionary<string, NumberProvider> Ingredients = [];
 	
 	/// <summary>
 	/// 配方制作所需时间，单位为秒。
@@ -45,8 +45,7 @@ public partial class RecipeRegistryObject : Resource
 	/// <summary>
 	/// 产品表。
 	/// 如果产品配方物品的数值提供器返回的结果是可变的，没啥大碍，可变数值提供器就是为这种位置量身打造的。
-	/// 键为物品ID，值为需要的物品数量
 	/// </summary>
 	[Export]
-	public Dictionary<string, NumberProvider> Results = new();
+	public LootTable Result;
 }

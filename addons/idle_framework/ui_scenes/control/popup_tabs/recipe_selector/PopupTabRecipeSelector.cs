@@ -239,14 +239,14 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		for (; index < NDetailItems.Count; index++) NDetailItems[index].Visible = false;
 	}
 
-	/// <summary>
-	/// 将配方详细信息显示为产物。
-	/// </summary>
-	/// <param name="recipeRegistryObject">要切换到的配方的注册表项。</param>
-	public void SetDetailResults(RecipeRegistryObject recipeRegistryObject)
+	// <summary>
+	// 将配方详细信息显示为产物。
+	// </summary>
+	// <param name="recipeRegistryObject">要切换到的配方的注册表项。</param>
+	/*public void SetDetailResults(RecipeRegistryObject recipeRegistryObject)
 	{
 		// 创建物品对象达到产物总数
-		while (NDetailItems.Count < recipeRegistryObject.Results.Count)
+		while (NDetailItems.Count < recipeRegistryObject.Result.Count)
 		{
 			ItemIconNameCount newDetailItem = ItemIconNameCount.Create();
 			NDetailItems.Add(newDetailItem);
@@ -254,7 +254,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		}
 		// 遍历产物
 		int index = 0;
-		foreach ((string itemId, NumberProvider countNumberProvider) in recipeRegistryObject.Results
+		foreach ((string itemId, NumberProvider countNumberProvider) in recipeRegistryObject.Result.
 			.OrderByDescending(result => result.Value.NumberPreviewAdv)
 			.ThenBy(result => result.Key))
 		{
@@ -278,7 +278,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		}
 		// 遍历后续的多余物品对象，使它们不可见
 		for (; index < NDetailItems.Count; index++) NDetailItems[index].Visible = false;
-	}
+	}*/
 
 	public void OnDetailTabBarTabChanged(int index)
 	{
@@ -288,7 +288,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				SetDetailIngredients(recipeRegistryObjectCache);
 				break;
 			case 1:
-				SetDetailResults(recipeRegistryObjectCache);
+				//SetDetailResults(recipeRegistryObjectCache);
 				break;
 		}
 	}
