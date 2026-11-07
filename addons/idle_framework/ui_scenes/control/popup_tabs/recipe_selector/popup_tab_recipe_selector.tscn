@@ -58,6 +58,7 @@ layout_mode = 2
 alignment = 1
 
 [node name="RecipeIcon" type="TextureRect" parent="MC/TC/SelectRecipe/MC/VBC/HBC" unique_id=1283800367]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 texture = SubResource("PlaceholderTexture2D_vew30")
 expand_mode = 2
@@ -66,6 +67,7 @@ stretch_mode = 5
 [node name="RecipeName" type="Label" parent="MC/TC/SelectRecipe/MC/VBC/HBC" unique_id=66138337]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 8
 size_flags_stretch_ratio = 3.0
 text = "RecipeName"
 label_settings = SubResource("LabelSettings_tnnei")
@@ -94,7 +96,13 @@ layout_mode = 2
 current_tab = 0
 tab_count = 2
 tab_0/title = "Ingredients"
-tab_1/title = "Results"
+tab_1/title = "Required time"
+
+[node name="RequiredTimeText" type="Label" parent="MC/TC/SelectRecipe/MC/VBC/RecipeDetail" unique_id=1155551684]
+visible = false
+layout_mode = 2
+text = "(Seconds)
+1"
 
 [node name="SC" type="ScrollContainer" parent="MC/TC/SelectRecipe/MC/VBC/RecipeDetail" unique_id=1112565705]
 layout_mode = 2

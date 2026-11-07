@@ -31,6 +31,7 @@ layout_mode = 2
 alignment = 1
 
 [node name="ItemIcon" type="TextureRect" parent="MC/VBC/HBC" unique_id=258987878]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 texture = SubResource("PlaceholderTexture2D_c0ktc")
 expand_mode = 2
@@ -39,6 +40,7 @@ stretch_mode = 5
 [node name="ItemName" type="Label" parent="MC/VBC/HBC" unique_id=1699887686]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 8
 size_flags_stretch_ratio = 3.0
 text = "ItemName"
 label_settings = SubResource("LabelSettings_gigt3")

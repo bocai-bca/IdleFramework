@@ -25,6 +25,6 @@ public partial class NumberProviderDirect : NumberProvider
 		return Number;
 	}
 
-	public override long NumberPreviewAdv => Number;
+	public override long NumberPreviewAvg => Number;
 	public override string NumberPreviewText => Number.ToString();
 }

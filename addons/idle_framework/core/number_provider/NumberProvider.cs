@@ -19,7 +19,7 @@ public abstract partial class NumberProvider : Resource
 	/// 数值提供器之间可能存在嵌套，此数值也有嵌套获取的可能。
 	/// </summary>
 	/// <returns></returns>
-	public abstract long NumberPreviewAdv { get; }
+	public abstract long NumberPreviewAvg { get; }
 
 	/// <summary>
 	/// 该数值提供器的返回值的预览文本，需要保证可在任意线程调用，返回值不会变化、文本简短、不依赖环境的地区语言。

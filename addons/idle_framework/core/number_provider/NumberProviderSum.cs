@@ -49,7 +49,7 @@ public partial class NumberProviderSum : NumberProvider
 		return result;
 	}
 
-	public override long NumberPreviewAdv => SumList.Count == 0 ? 0L : SumList.Sum(t => t.NumberPreviewAdv);
+	public override long NumberPreviewAvg => SumList.Count == 0 ? 0L : SumList.Sum(t => t.NumberPreviewAvg);
 
 	public override string NumberPreviewText
 	{

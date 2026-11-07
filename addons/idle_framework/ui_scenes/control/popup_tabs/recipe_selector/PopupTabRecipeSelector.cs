@@ -22,6 +22,8 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public Label NRecipeName;
 	public Label NRecipeDescription;
 	public TabBar NDetailTabBar;
+	public Label NRequiredTimeText;
+	public ScrollContainer NDetailItemsScrollContainer;
 	public VBoxContainer NDetailItemsContainer;
 	public readonly List<ItemIconNameCount> NDetailItems = [];
 	public Button NAddButton;
@@ -70,8 +72,10 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				NRecipeButtonsContainer = GetNode<VBoxContainer>("MC/TC/SelectRecipe//SC/RecipeButtonsContainer");
 				NDetailTabBar = GetNode<TabBar>("MC/TC/SelectRecipe//MC/VBC/RecipeDetail/TabBar");
 				NDetailTabBar.SetTabTitle(0, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.ingredients"));
-				NDetailTabBar.SetTabTitle(1, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.results"));
+				NDetailTabBar.SetTabTitle(1, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.required_time"));
 				NDetailTabBar.Connect(TabBar.SignalName.TabChanged, Callable.From<int>(OnDetailTabBarTabChanged));
+				NRequiredTimeText = GetNode<Label>("MC/TC/SelectRecipe/MC/VBC/RecipeDetail/RequiredTimeText");
+				NDetailItemsScrollContainer = GetNode<ScrollContainer>("MC/TC/SelectRecipe/MC/VBC/RecipeDetail/SC");
 				NDetailItemsContainer = GetNode<VBoxContainer>("MC/TC/SelectRecipe//MC/VBC/RecipeDetail/SC/VBC");
 				NAddButton = GetNode<Button>("MC/TC/SelectRecipe/MC/VBC/BottonBar/AddButton");
 				NAddButton.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.add_to_queue");
@@ -204,6 +208,8 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	/// <param name="recipeRegistryObject">要切换到的配方的注册表项。</param>
 	public void SetDetailIngredients(RecipeRegistryObject recipeRegistryObject)
 	{
+		NRequiredTimeText.Visible = false;
+		NDetailItemsScrollContainer.Visible = true;
 		// 创建物品对象达到原料总数
 		while (NDetailItems.Count < recipeRegistryObject.Ingredients.Count)
 		{
@@ -237,6 +243,22 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		}
 		// 遍历后续的多余物品对象，使它们不可见
 		for (; index < NDetailItems.Count; index++) NDetailItems[index].Visible = false;
+	}
+	
+	/// <summary>
+	/// 将配方详细信息显示为所需时间。
+	/// </summary>
+	/// <param name="recipeRegistryObject">要切换到的配方的注册表项。</param>
+	public void SetDetailRequiedTime(RecipeRegistryObject recipeRegistryObject)
+	{
+		NDetailItemsScrollContainer.Visible = false;
+		NRequiredTimeText.Visible = true;
+		NRequiredTimeText.Text = 
+			Localization.Tr("ui_scene_control.popup_tab_recipe_selector.required_time_unit_tip") + "\n" +
+			Localization.Tr("ui_scene_control.popup_tab_recipe_selector.required_time_avg_tip") + "\n" +
+			recipeRegistryObject.RequiredSeconds.NumberPreviewAvg + "\n" +
+			Localization.Tr("ui_scene_control.popup_tab_recipe_selector.required_time_fully_tip") + "\n" +
+			recipeRegistryObject.RequiredSeconds.NumberPreviewText;
 	}
 
 	// <summary>
@@ -289,10 +311,12 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				break;
 			case 1:
 				//SetDetailResults(recipeRegistryObjectCache);
+				SetDetailRequiedTime(recipeRegistryObjectCache);
 				break;
 		}
 	}
-	
+
+
 	public void OnRecipeButtonPressed(string recipeId)
 	{
 		selectedRecipeId = recipeId;
