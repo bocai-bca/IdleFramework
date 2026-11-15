@@ -20,6 +20,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 	public Button NExpandAllButton;
 	public Button NFoldAllButton;
 	public ContainerItemContainer NSpaceContainerItemContainer;
+	public FactoryItemContainer NSpaceFactoryItemContainer;
 	public readonly Dictionary<Guid, FactoryItemContainer> NFactoryItemContainers = [];
 	public readonly Dictionary<Guid, ContainerItemContainer> NContainerItemContainers = [];
 
@@ -115,15 +116,26 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 				}
 			}
 		}
+		string spaceNameTranslated = gameResource.GetSpaceNameTranslated(SpaceId);
 		if (NSpaceContainerItemContainer == null && saveDataHelper.GetSpaceContainerGuidForSpace(SpaceId, out Guid spaceContainerGuid))
 		{
 			ContainerItemContainer spaceContainerItemContainer = ContainerItemContainer.Create();
 			spaceContainerItemContainer.ContainerGuid = spaceContainerGuid;
 			spaceContainerItemContainer.Name = new StringName("SpaceContainer");
-			saveDataHelper.SetNameForInstance(spaceContainerGuid, string.Format(Localization.Tr("ui_scene_control.space_container_name"), gameResource.GetSpaceNameTranslated(SpaceId)));
+			saveDataHelper.SetNameForInstance(spaceContainerGuid, string.Format(Localization.Tr("ui_scene_control.space_container_name"), spaceNameTranslated));
 			NSpaceContainerItemContainer = spaceContainerItemContainer;
 			NContentContainer.AddChild(spaceContainerItemContainer);
 			spaceContainerItemContainer.FullyUpdate(saveDataHelper);
+		}
+		if (NSpaceFactoryItemContainer == null && saveDataHelper.GetSpaceFactoryGuidForSpace(SpaceId, out Guid spaceFactoryGuid))
+		{
+			FactoryItemContainer factoryItemContainer = FactoryItemContainer.Create();
+			factoryItemContainer.FactoryGuid = spaceFactoryGuid;
+			factoryItemContainer.Name = new StringName("SpaceFactory");
+			saveDataHelper.SetNameForInstance(spaceFactoryGuid, string.Format(Localization.Tr("ui_scene_control.space_factory_name"), spaceNameTranslated));
+			NSpaceFactoryItemContainer = factoryItemContainer;
+			NContentContainer.AddChild(factoryItemContainer);
+			factoryItemContainer.FullyUpdate(saveDataHelper);
 		}
 	}
 }

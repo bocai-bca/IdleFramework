@@ -40,4 +40,10 @@ public partial class SpaceRegistryObject : Resource
 	[Export]
 	public ItemMaxStacksProvider ItemMaxStacks { get; set; } = new();
 	
+	/// <summary>
+	/// 该空间的空间工厂，空间工厂不依赖于物品，不会被丢弃。如果留空则该空间不含空间工厂。
+	/// </summary>
+	[Export]
+	public FactoryRegistryObject SpaceFactory { get; set; }
+	
 }

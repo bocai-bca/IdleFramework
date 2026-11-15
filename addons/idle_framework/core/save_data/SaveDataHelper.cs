@@ -173,6 +173,51 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		dataOfSpaceWhichHoldGuidAsSpaceContainer = null;
 		return false;
 	}
+	
+	/// <summary>
+	/// 查询是否有空间的空间工厂为给定GUID，并返回符合的空间的ID。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="idOfSpaceWhichHoldGuidAsSpaceFactory">持有给定GUID的物品实例为空间工厂的空间的ID，未找到时返回<c>null</c>。</param>
+	/// <param name="dataOfSpaceWhichHoldGuidAsSpaceFactory">持有给定GUID的物品实例为空间工厂的空间的数据，未找到时返回<c>null</c>。</param>
+	/// <returns>是否成功找到以给定GUID的工厂数据为空间工厂GUID的空间。</returns>
+	public bool QueryGuidIsSpaceFactory(Guid guid, out string idOfSpaceWhichHoldGuidAsSpaceFactory, out SpaceData dataOfSpaceWhichHoldGuidAsSpaceFactory)
+	{
+		lock (_lock)
+		{
+			foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
+			{
+				if (spaceData.SpaceFactoryGuid != guid) continue;
+				idOfSpaceWhichHoldGuidAsSpaceFactory = spaceId;
+				dataOfSpaceWhichHoldGuidAsSpaceFactory = spaceData;
+				return true;
+			}
+		}
+		idOfSpaceWhichHoldGuidAsSpaceFactory = null;
+		dataOfSpaceWhichHoldGuidAsSpaceFactory = null;
+		return false;
+	}
+	
+	/// <summary>
+	/// <c>QueryGuidIsSpaceFactory()</c>的同步版本。查询是否有空间的空间工厂为给定GUID，并返回符合的空间的ID。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="idOfSpaceWhichHoldGuidAsSpaceFactory">持有给定GUID的物品实例为空间工厂的空间的ID，未找到时返回<c>null</c>。</param>
+	/// <param name="dataOfSpaceWhichHoldGuidAsSpaceFactory">持有给定GUID的物品实例为空间工厂的空间的数据，未找到时返回<c>null</c>。</param>
+	/// <returns>是否成功找到以给定GUID的工厂数据为空间工厂GUID的空间。</returns>
+	public bool QueryGuidIsSpaceFactorySync(Guid guid, out string idOfSpaceWhichHoldGuidAsSpaceFactory, out SpaceData dataOfSpaceWhichHoldGuidAsSpaceFactory)
+	{
+		foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
+		{
+			if (spaceData.SpaceFactoryGuid != guid) continue;
+			idOfSpaceWhichHoldGuidAsSpaceFactory = spaceId;
+			dataOfSpaceWhichHoldGuidAsSpaceFactory = spaceData;
+			return true;
+		}
+		idOfSpaceWhichHoldGuidAsSpaceFactory = null;
+		dataOfSpaceWhichHoldGuidAsSpaceFactory = null;
+		return false;
+	}
 
 	/// <summary>
 	/// 同步查询特定容器数据是否是空间容器，并返回对应的空间的ID。
@@ -188,7 +233,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		{
 			if (!UsingSaveData.ContainerDatas.TryGetValue(spaceData.SpaceContainerGuid, out ContainerData containerDataGot))
 			{
-				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.cannot_find_space_container_for_space_with_the_uuid"), spaceId, spaceData.SpaceContainerGuid));
+				LogTr.Error("log.error.save_data_helper.cannot_find_space_container_for_space_with_the_uuid", spaceId, spaceData.SpaceContainerGuid.ToString());
 				continue;
 			}
 			if (!ReferenceEquals(containerDataGot, containerData)) continue;
@@ -199,6 +244,35 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		idOfSpaceWhichHoldContainerDataSpecified = null;
 		dataOfSpaceWhichHoldContainerDataSpecified = null;
 		return false;
+	}
+
+	/// <summary>
+	/// 通过GUID获取其对应的工厂注册表项。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="factoryRegistryObject">其对应的工厂注册表项。</param>
+	/// <returns>是否成功找到。</returns>
+	public bool GetFactoryRegistryObjectFromGuid(Guid guid, out FactoryRegistryObject factoryRegistryObject)
+	{
+		foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
+		{
+			if (spaceData.SpaceFactoryGuid != guid) continue;
+			if (!UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject))
+			{
+				LogTr.Error("log.error.save_data_helper.failed_to_get_space_registry_object_in_game_resource_for_space_id", spaceId);
+				factoryRegistryObject = null;
+				return false;
+			}
+			if (spaceRegistryObject.SpaceFactory is not null)
+			{
+				factoryRegistryObject = spaceRegistryObject.SpaceFactory;
+				return true;
+			}
+			LogTr.Error("log.error.save_data_helper.the_space_factory_of_space_registry_object_with_id_is_null", spaceId);
+			factoryRegistryObject = null;
+			return false;
+		}
+		
 	}
 	
 	#endregion
@@ -302,6 +376,26 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			}
 		}
 		spaceContainerGuid = Guid.Empty;
+		return false;
+	}
+	
+	/// <summary>
+	/// 获取给定ID的空间的空间工厂的GUID。
+	/// </summary>
+	/// <param name="spaceId">想要获取其空间工厂的空间的ID。</param>
+	/// <param name="spaceFactoryGuid">获取到的空间工厂GUID，如果未找到则返回<c>Guid.Empty</c>。</param>
+	/// <returns>成功与否。</returns>
+	public bool GetSpaceFactoryGuidForSpace(string spaceId, out Guid spaceFactoryGuid)
+	{
+		lock (_lock)
+		{
+			if (UsingSaveData.SpaceDatas.TryGetValue(spaceId, out SpaceData spaceData))
+			{
+				spaceFactoryGuid = spaceData.SpaceFactoryGuid;
+				return true;
+			}
+		}
+		spaceFactoryGuid = Guid.Empty;
 		return false;
 	}
 
@@ -1315,6 +1409,12 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 				newSpaceData.InstanceItemGuids[itemId] = prefillInstanceGuids;
 			}
 			SetNameForInstance(newSpaceData.SpaceContainerGuid, Localization.Tr("space_container")); //给空间容器实例设置名字
+			if (spaceRegistryObject.SpaceFactory is { } spaceFactoryRegistryObject)
+			{
+				FactoryData newSpaceFactoryData = InstantiateRegistryObject(spaceFactoryRegistryObject);
+				newSpaceData.SpaceFactoryGuid = SetInstanceObject(newSpaceFactoryData);
+				SetNameForInstance(newSpaceData.SpaceFactoryGuid, Localization.Tr("space_factory"));
+			}
 			AddSpaceData(spaceId, newSpaceData);
 		}
 	}

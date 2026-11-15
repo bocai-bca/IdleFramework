@@ -105,13 +105,14 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	/// <param name="factoryGuid">本实例对应的工厂GUID。</param>
 	public void SetContentForFactory(Guid factoryGuid)
 	{
+		SaveDataHelper loadedDataHelper = SaveAccess.LoadedDataHelper;
 		factoryGuidCache = factoryGuid;
-		if (!SaveAccess.LoadedDataHelper.QueryItemIdForGuid(factoryGuid, out string factoryItemId))
+		if (!loadedDataHelper.QueryItemIdForGuid(factoryGuid, out string factoryItemId))
 		{
 			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.failed_to_query_item_id_for_factory_guid"), factoryGuid.ToString()));
 			return;
 		}
-		if (!SaveAccess.LoadedDataHelper.UsingGameResource.FactoryRegistry.TryGetValue(factoryItemId, out FactoryRegistryObject factoryRegistryObject))
+		if (!loadedDataHelper.UsingGameResource.FactoryRegistry.TryGetValue(factoryItemId, out FactoryRegistryObject factoryRegistryObject))
 		{
 			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.failed_to_get_factory_registry_object_for_factory_id"), factoryItemId));
 			return;
@@ -128,7 +129,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 			recipeButton.ExpandIcon = true;
 			string buttonRecipeId = recipeId;
 			recipeButton.Connect(BaseButton.SignalName.Pressed, Callable.From(() => OnRecipeButtonPressed(buttonRecipeId)));
-			if (SaveAccess.LoadedDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(recipeId, out RecipeRegistryObject recipeRegistryObject))
+			if (loadedDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(recipeId, out RecipeRegistryObject recipeRegistryObject))
 			{
 				recipeButton.Icon = recipeRegistryObject.IconTexture;
 				recipeButton.Text = Localization.Tr(recipeRegistryObject.NameKey);

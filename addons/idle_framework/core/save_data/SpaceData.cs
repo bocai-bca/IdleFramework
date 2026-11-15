@@ -13,6 +13,11 @@ public class SpaceData : ISaveDataComponent<SpaceData>
 	/// 空间容器GUID
 	/// </summary>
 	public Guid SpaceContainerGuid { get; set; }
+	
+	/// <summary>
+	/// 空间工厂GUID
+	/// </summary>
+	public Guid SpaceFactoryGuid { get; set; }
 
 	/// <summary>
 	/// 实例物品GUID表，键为物品ID，值为该物品的实例的GUID的散列集。
