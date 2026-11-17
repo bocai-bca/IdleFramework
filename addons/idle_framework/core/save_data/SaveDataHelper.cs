@@ -254,13 +254,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <returns>是否成功找到。</returns>
 	public bool GetFactoryRegistryObjectFromGuid(Guid guid, out FactoryRegistryObject factoryRegistryObject)
 	{
+		factoryRegistryObject = null;
+		// 从空间工厂中寻找
 		foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
 		{
 			if (spaceData.SpaceFactoryGuid != guid) continue;
 			if (!UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject))
 			{
 				LogTr.Error("log.error.save_data_helper.failed_to_get_space_registry_object_in_game_resource_for_space_id", spaceId);
-				factoryRegistryObject = null;
 				return false;
 			}
 			if (spaceRegistryObject.SpaceFactory is not null)
@@ -269,10 +270,13 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 				return true;
 			}
 			LogTr.Error("log.error.save_data_helper.the_space_factory_of_space_registry_object_with_id_is_null", spaceId);
-			factoryRegistryObject = null;
 			return false;
 		}
-		
+		// 从物品实例中寻找
+		if (!QueryItemIdForGuidSync(guid, out string itemId)) return false;
+		if (UsingGameResource.FactoryRegistry.TryGetValue(itemId, out factoryRegistryObject)) return true;
+		LogTr.Error("log.error.save_data_helper.failed_to_get_factory_registry_object_in_game_resource_for_item_id", itemId);
+		return false;
 	}
 	
 	#endregion
@@ -1126,19 +1130,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		// 需要检查上限的差分
 		if (blockIfOutOfCapacity)
 		{
-			if (!QueryItemIdForGuid(factoryGuid, out string itemId))
+			if (!GetFactoryRegistryObjectFromGuid(factoryGuid, out FactoryRegistryObject factoryRegistryObject))
 			{
-				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), factoryGuid));
-				return false;
-			}
-			if (!UsingGameResource.FactoryRegistry.TryGetValue(itemId, out FactoryRegistryObject factoryRegistryObject))
-			{
-				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_factory_registry_object_in_game_resource_for_item_id"), itemId));
+				LogTr.Error("log.warning.save_data_helper.failed_to_get_factory_registry_object_for_factory_guid", factoryGuid.ToString());
 				return false;
 			}
 			if (factoryRegistryObject.RecipeOrder is not RecipeOrderStorable recipeOrderStorable)
 			{
-				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.the_recipe_order_of_factory_registry_object_with_item_id_is_not_recipe_order_storable"), itemId));
+				LogTr.Error("log.error.save_data_helper.the_recipe_order_of_factory_registry_object_of_factory_with_guid_is_not_recipe_order_storable", factoryGuid.ToString());
 				return false;
 			}
 			lock (_lock)

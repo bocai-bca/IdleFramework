@@ -69,34 +69,11 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 	/// <param name="saveDataHelper">要使用的存档数据辅助器。</param>
 	public void FullyUpdate(SaveDataHelper saveDataHelper)
 	{
-		FactoryRegistryObject factoryRegistryObject;
-		if (saveDataHelper.QueryItemIdForGuid(FactoryGuid, out string itemId))
+		if (!saveDataHelper.GetFactoryRegistryObjectFromGuid(FactoryGuid, out FactoryRegistryObject factoryRegistryObject))
 		{
-			if (!saveDataHelper.UsingGameResource.FactoryRegistry.TryGetValue(itemId, out factoryRegistryObject))
-			{
-				Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_get_factory_registry_object_for_factory_id"), itemId));
-				QueueFree();
-				return;
-			}
-		}
-		else
-		{
-			if (saveDataHelper.QueryGuidIsSpaceFactory(FactoryGuid, out string spaceId, out _))
-			{
-				if (!saveDataHelper.UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject) || spaceRegistryObject.SpaceFactory is null)
-				{
-					Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_get_factory_registry_object_for_space_factory_with_space_id"), itemId));
-					QueueFree();
-					return;
-				}
-				factoryRegistryObject = spaceRegistryObject.SpaceFactory;
-			}
-			else
-			{
-				Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_factory_item_container.failed_to_query_item_id_for_this_factory_guid"), FactoryGuid.ToString()));
-				QueueFree();
-				return;
-			}
+			LogTr.Error("log.error.ui_scene_control_factory_item_container.failed_to_get_factory_registry_object_for_factory_guid", FactoryGuid.ToString());
+			QueueFree();
+			return;
 		}
 		if (!factoryRegistryObject.RecipeOrder.IsManuallable)
 		{

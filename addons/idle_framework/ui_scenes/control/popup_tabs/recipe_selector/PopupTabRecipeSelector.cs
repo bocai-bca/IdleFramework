@@ -107,20 +107,15 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	{
 		SaveDataHelper loadedDataHelper = SaveAccess.LoadedDataHelper;
 		factoryGuidCache = factoryGuid;
-		if (!loadedDataHelper.QueryItemIdForGuid(factoryGuid, out string factoryItemId))
+		if (!loadedDataHelper.GetFactoryRegistryObjectFromGuid(factoryGuid, out FactoryRegistryObject factoryRegistryObject))
 		{
-			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.failed_to_query_item_id_for_factory_guid"), factoryGuid.ToString()));
-			return;
-		}
-		if (!loadedDataHelper.UsingGameResource.FactoryRegistry.TryGetValue(factoryItemId, out FactoryRegistryObject factoryRegistryObject))
-		{
-			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.failed_to_get_factory_registry_object_for_factory_id"), factoryItemId));
+			LogTr.Error("log.error.ui_scene_control_factory_item_container.failed_to_get_factory_registry_object_for_factory_guid", factoryGuid.ToString());
 			return;
 		}
 		factoryRegistryObjectCache = factoryRegistryObject;
 		if (factoryRegistryObject.RecipeOrder is not RecipeOrderManualSelect recipeOrderManualSelect)
 		{
-			Logger.LogError(string.Format(Localization.Tr("log.error.ui_scene_control_popup_tab_recipe_selector.the_recipe_order_of_target_factory_registry_object_is_not_recipe_order_manual_select"), factoryItemId));
+			LogTr.Error("log.error.ui_scene_control_popup_tab_recipe_selector.the_recipe_order_of_target_factory_registry_object_is_not_recipe_order_manual_select", factoryGuid.ToString());
 			return;
 		}
 		foreach (string recipeId in recipeOrderManualSelect.RecipeIDs)
