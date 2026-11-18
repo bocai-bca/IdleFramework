@@ -203,6 +203,36 @@ public partial class MotherNode : Node
 				alertMessage += Localization.Tr("alert.context.game_resource_gameid_invalid_for_file_system");
 				result = false;
 			}
+			foreach ((string id, SpaceRegistryObject registryObject) in GameResource.SpaceRegistry)
+			{
+				if (registryObject != null) continue;
+				alertMessage += string.Format(Localization.Tr("alert.context.space_registry_object_is_null"), id);
+				result = false;
+			}
+			foreach ((string id, ItemRegistryObject registryObject) in GameResource.ItemRegistry)
+			{
+				if (registryObject != null) continue;
+				alertMessage += string.Format(Localization.Tr("alert.context.item_registry_object_is_null"), id);
+				result = false;
+			}
+			foreach ((string id, RecipeRegistryObject registryObject) in GameResource.RecipeRegistry)
+			{
+				if (registryObject != null) continue;
+				alertMessage += string.Format(Localization.Tr("alert.context.recipe_registry_object_is_null"), id);
+				result = false;
+			}
+			foreach ((string id, ContainerRegistryObject registryObject) in GameResource.ContainerRegistry)
+			{
+				if (registryObject != null) continue;
+				alertMessage += string.Format(Localization.Tr("alert.context.container_registry_object_is_null"), id);
+				result = false;
+			}
+			foreach ((string id, FactoryRegistryObject registryObject) in GameResource.FactoryRegistry)
+			{
+				if (registryObject != null) continue;
+				alertMessage += string.Format(Localization.Tr("alert.context.factory_registry_object_is_null"), id);
+				result = false;
+			}
 		}
 		if (PackedUIScene == null)
 		{

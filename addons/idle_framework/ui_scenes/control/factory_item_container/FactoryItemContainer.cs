@@ -124,7 +124,7 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 			containerGuidCache = containerGuidCurrent;
 			buttonNode.Text = saveDataHelper.GetNameForInstance(containerGuidCurrent);
 			string itemIdForGuid = saveDataHelper.QueryItemIdForGuid(containerGuidCurrent);
-			if (saveDataHelper.QueryGuidIsSpaceContainer(containerGuidCurrent, out string spaceId, out SpaceData spaceData))
+			if (saveDataHelper.QueryGuidIsSpaceContainer(containerGuidCurrent, out string spaceId, out _))
 			{
 				buttonNode.Icon = saveDataHelper.UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject) ? spaceRegistryObject.IconTexture : null;
 			}

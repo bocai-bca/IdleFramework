@@ -55,6 +55,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 		NSpaceContainerItemContainer?.Update(saveDataHelper);
 		foreach (ContainerItemContainer containerItemContainer in NContainerItemContainers.Values) containerItemContainer.Update(saveDataHelper);
 		foreach (FactoryItemContainer factoryItemContainer in NFactoryItemContainers.Values) factoryItemContainer.Update(saveDataHelper);
+		NSpaceFactoryItemContainer.Update(saveDataHelper);
 	}
 
 	/// <summary>
@@ -65,6 +66,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 		foreach (ContainerItemContainer containerItemContainer in NContainerItemContainers.Values) containerItemContainer.Fold();
 		foreach (FactoryItemContainer factoryItemContainer in NFactoryItemContainers.Values) factoryItemContainer.Fold();
 		NSpaceContainerItemContainer.Fold();
+		NSpaceFactoryItemContainer.Fold();
 	}
 
 	/// <summary>
@@ -75,6 +77,7 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 		foreach (ContainerItemContainer containerItemContainer in NContainerItemContainers.Values) containerItemContainer.Expand();
 		foreach (FactoryItemContainer factoryItemContainer in NFactoryItemContainers.Values) factoryItemContainer.Expand();
 		NSpaceContainerItemContainer.Expand();
+		NSpaceFactoryItemContainer.Expand();
 	}
 
 	/// <summary>
@@ -89,6 +92,27 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 			return;
 		}
 		GameResource gameResource = saveDataHelper.UsingGameResource;
+		string spaceNameTranslated = gameResource.GetSpaceNameTranslated(SpaceId);
+		if (NSpaceContainerItemContainer == null && saveDataHelper.GetSpaceContainerGuidForSpace(SpaceId, out Guid spaceContainerGuid))
+		{
+			ContainerItemContainer spaceContainerItemContainer = ContainerItemContainer.Create();
+			spaceContainerItemContainer.ContainerGuid = spaceContainerGuid;
+			spaceContainerItemContainer.Name = new StringName("SpaceContainer");
+			saveDataHelper.SetNameForInstance(spaceContainerGuid, string.Format(Localization.Tr("ui_scene_control.space_container_name"), spaceNameTranslated));
+			NSpaceContainerItemContainer = spaceContainerItemContainer;
+			NContentContainer.AddChild(spaceContainerItemContainer);
+			spaceContainerItemContainer.FullyUpdate(saveDataHelper);
+		}
+		if (NSpaceFactoryItemContainer == null && saveDataHelper.GetSpaceFactoryGuidForSpace(SpaceId, out Guid spaceFactoryGuid))
+		{
+			FactoryItemContainer factoryItemContainer = FactoryItemContainer.Create();
+			factoryItemContainer.FactoryGuid = spaceFactoryGuid;
+			factoryItemContainer.Name = new StringName("SpaceFactory");
+			saveDataHelper.SetNameForInstance(spaceFactoryGuid, string.Format(Localization.Tr("ui_scene_control.space_factory_name"), spaceNameTranslated));
+			NSpaceFactoryItemContainer = factoryItemContainer;
+			NContentContainer.AddChild(factoryItemContainer);
+			factoryItemContainer.FullyUpdate(saveDataHelper);
+		}
 		foreach ((string itemId, HashSet<Guid> itemGuids) in instanceItemGuids)
 		{
 			if (gameResource.IsFactory(itemId))
@@ -115,27 +139,6 @@ public partial class SpaceDetailArea : ScrollContainer, IClassPackedScene
 					containerItemContainer.FullyUpdate(saveDataHelper);
 				}
 			}
-		}
-		string spaceNameTranslated = gameResource.GetSpaceNameTranslated(SpaceId);
-		if (NSpaceContainerItemContainer == null && saveDataHelper.GetSpaceContainerGuidForSpace(SpaceId, out Guid spaceContainerGuid))
-		{
-			ContainerItemContainer spaceContainerItemContainer = ContainerItemContainer.Create();
-			spaceContainerItemContainer.ContainerGuid = spaceContainerGuid;
-			spaceContainerItemContainer.Name = new StringName("SpaceContainer");
-			saveDataHelper.SetNameForInstance(spaceContainerGuid, string.Format(Localization.Tr("ui_scene_control.space_container_name"), spaceNameTranslated));
-			NSpaceContainerItemContainer = spaceContainerItemContainer;
-			NContentContainer.AddChild(spaceContainerItemContainer);
-			spaceContainerItemContainer.FullyUpdate(saveDataHelper);
-		}
-		if (NSpaceFactoryItemContainer == null && saveDataHelper.GetSpaceFactoryGuidForSpace(SpaceId, out Guid spaceFactoryGuid))
-		{
-			FactoryItemContainer factoryItemContainer = FactoryItemContainer.Create();
-			factoryItemContainer.FactoryGuid = spaceFactoryGuid;
-			factoryItemContainer.Name = new StringName("SpaceFactory");
-			saveDataHelper.SetNameForInstance(spaceFactoryGuid, string.Format(Localization.Tr("ui_scene_control.space_factory_name"), spaceNameTranslated));
-			NSpaceFactoryItemContainer = factoryItemContainer;
-			NContentContainer.AddChild(factoryItemContainer);
-			factoryItemContainer.FullyUpdate(saveDataHelper);
 		}
 	}
 }

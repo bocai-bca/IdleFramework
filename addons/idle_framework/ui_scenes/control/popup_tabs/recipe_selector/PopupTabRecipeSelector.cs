@@ -70,17 +70,17 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				NRecipeName = GetNode<Label>("MC/TC/SelectRecipe/MC/VBC/HBC/RecipeName");
 				NRecipeDescription = GetNode<Label>("MC/TC/SelectRecipe/MC/VBC/Description/RecipeDescription");
 				NRecipeButtonsContainer = GetNode<VBoxContainer>("MC/TC/SelectRecipe//SC/RecipeButtonsContainer");
-				NDetailTabBar = GetNode<TabBar>("MC/TC/SelectRecipe//MC/VBC/RecipeDetail/TabBar");
+				NDetailTabBar = GetNode<TabBar>("MC/TC/SelectRecipe/MC/VBC/RecipeDetail/TabBar");
 				NDetailTabBar.SetTabTitle(0, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.ingredients"));
 				NDetailTabBar.SetTabTitle(1, Localization.Tr("ui_scene_control.popup_tab_recipe_selector.required_time"));
 				NDetailTabBar.Connect(TabBar.SignalName.TabChanged, Callable.From<int>(OnDetailTabBarTabChanged));
-				NRequiredTimeText = GetNode<Label>("MC/TC/SelectRecipe/MC/VBC/RecipeDetail/RequiredTimeText");
+				NRequiredTimeText = GetNode<Label>("MC/TC/SelectRecipe/MC/VBC/RecipeDetail/SC/RequiredTimeText");
 				NDetailItemsScrollContainer = GetNode<ScrollContainer>("MC/TC/SelectRecipe/MC/VBC/RecipeDetail/SC");
-				NDetailItemsContainer = GetNode<VBoxContainer>("MC/TC/SelectRecipe//MC/VBC/RecipeDetail/SC/VBC");
+				NDetailItemsContainer = GetNode<VBoxContainer>("MC/TC/SelectRecipe/MC/VBC/RecipeDetail/SC/VBC");
 				NAddButton = GetNode<Button>("MC/TC/SelectRecipe/MC/VBC/BottonBar/AddButton");
 				NAddButton.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.add_to_queue");
 				NAddButton.Connect(BaseButton.SignalName.Pressed, Callable.From(OnAddToQueueButtonPressed));
-				NCloseButtonInSelectionPage = GetNode<Button>("MC/TC/SelectRecipe//MC/VBC/BottonBar/CloseButton");
+				NCloseButtonInSelectionPage = GetNode<Button>("MC/TC/SelectRecipe/MC/VBC/BottonBar/CloseButton");
 				NCloseButtonInSelectionPage.Text = Localization.Tr("ui_scene_control.close");
 				NCloseButtonInSelectionPage.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCloseButtonPressed));
 				NCloseButtonInQueuePage = GetNode<Button>("MC/TC/Queue/BottonBar/CloseButton");
@@ -196,6 +196,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 			}
 			i++;
 		}
+		for (; i < NRecipeQueueObjects.Count; i++) NRecipeQueueObjects[i].SetRecipe(null, null);
 	}
 
 	/// <summary>

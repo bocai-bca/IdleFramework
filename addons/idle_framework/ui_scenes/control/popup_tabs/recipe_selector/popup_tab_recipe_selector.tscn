@@ -98,12 +98,6 @@ tab_count = 2
 tab_0/title = "Ingredients"
 tab_1/title = "Required time"
 
-[node name="RequiredTimeText" type="Label" parent="MC/TC/SelectRecipe/MC/VBC/RecipeDetail" unique_id=1155551684]
-visible = false
-layout_mode = 2
-text = "(Seconds)
-1"
-
 [node name="SC" type="ScrollContainer" parent="MC/TC/SelectRecipe/MC/VBC/RecipeDetail" unique_id=1112565705]
 layout_mode = 2
 size_flags_vertical = 3
@@ -112,6 +106,12 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="RequiredTimeText" type="Label" parent="MC/TC/SelectRecipe/MC/VBC/RecipeDetail/SC" unique_id=1155551684]
+visible = false
+layout_mode = 2
+text = "(Seconds)
+1"
 
 [node name="BottonBar" type="HBoxContainer" parent="MC/TC/SelectRecipe/MC/VBC" unique_id=965230306]
 layout_mode = 2

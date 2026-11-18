@@ -255,6 +255,43 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	public bool GetFactoryRegistryObjectFromGuid(Guid guid, out FactoryRegistryObject factoryRegistryObject)
 	{
 		factoryRegistryObject = null;
+		lock (_lock)
+		{
+			// 从空间工厂中寻找
+			foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
+			{
+				if (spaceData.SpaceFactoryGuid != guid) continue;
+				if (!UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject))
+				{
+					LogTr.Error("log.error.save_data_helper.failed_to_get_space_registry_object_in_game_resource_for_space_id", spaceId);
+					return false;
+				}
+				if (spaceRegistryObject.SpaceFactory is not null)
+				{
+					factoryRegistryObject = spaceRegistryObject.SpaceFactory;
+					return true;
+				}
+				LogTr.Error("log.error.save_data_helper.the_space_factory_of_space_registry_object_with_id_is_null", spaceId);
+				return false;
+			}
+			// 从物品实例中寻找
+			if (!QueryItemIdForGuidSync(guid, out string itemId)) return false;
+			if (UsingGameResource.FactoryRegistry.TryGetValue(itemId, out factoryRegistryObject)) return true;
+			LogTr.Error("log.error.save_data_helper.failed_to_get_factory_registry_object_in_game_resource_for_item_id", itemId);
+		}
+		return false;
+	}
+	
+	/// <summary>
+	/// <c>GetFactoryRegistryObjectFromGuid()</c>的同步版本。
+	/// 通过GUID获取其对应的工厂注册表项。
+	/// </summary>
+	/// <param name="guid">要查找的GUID。</param>
+	/// <param name="factoryRegistryObject">其对应的工厂注册表项。</param>
+	/// <returns>是否成功找到。</returns>
+	public bool GetFactoryRegistryObjectFromGuidSync(Guid guid, out FactoryRegistryObject factoryRegistryObject)
+	{
+		factoryRegistryObject = null;
 		// 从空间工厂中寻找
 		foreach ((string spaceId, SpaceData spaceData) in UsingSaveData.SpaceDatas)
 		{
@@ -512,6 +549,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <returns>是否成功消耗要求的物品数量。</returns>
 	public bool TryConsumeItemsForContainerMixin(Guid containerMixinGuid, Dictionary<string, long> itemCountsForConsume)
 	{
+		if (itemCountsForConsume.Count == 0) return true;
 		lock (_lock)
 		{
 			bool gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out ContainerData containerData);
@@ -538,6 +576,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <returns>是否成功添加给定的物品。存在找不到东西的情形时会返回<c>false</c>。</returns>
 	public bool TryAddItemsForContainerMixin(Guid containerMixinGuid, Dictionary<string, long> itemCountsForAdd)
 	{
+		if (itemCountsForAdd.Count == 0) return true;
 		lock (_lock)
 		{
 			bool gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out _);
@@ -564,6 +603,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <returns>是否成功添加给定的物品。存在找不到东西的情形时会返回<c>false</c>。</returns>
 	public bool TryAddItemsForContainerMixinSync(Guid containerMixinGuid, Dictionary<string, long> itemCountsForAdd)
 	{
+		if (itemCountsForAdd.Count == 0) return true;
 		bool gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out _);
 		bool gotContainerGroup = UsingSaveData.ContainerGroups.TryGetValue(containerMixinGuid, out ContainerGroup containerGroup);
 		if (gotContainerGroup) containerGroup = containerGroup.Duplicate();
@@ -769,10 +809,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			if (haveItemCount < requiredItemCount) return false;
 		}
 		//消耗物品
-		foreach ((string requiredItemId, long requiredItemCount) in containerData.ItemCounts)
+		foreach ((string requiredItemId, long requiredItemCount) in itemCountsForConsume)
 		{
-			long removeItemCount = Math.Clamp(requiredItemCount, 0L, long.MaxValue);
-			containerData.ItemCounts[requiredItemId] -= removeItemCount;
+			long removeItemCount = Math.Clamp(requiredItemCount, 0L, long.MaxValue); // 钳制在0及以上，防止减负数
+			if (removeItemCount == 0L) continue;
+			long containerCount = containerData.ItemCounts[requiredItemId];
+			containerCount -= removeItemCount;
+			if (containerCount <= 0L) containerData.ItemCounts.Remove(requiredItemId);
+			else containerData.ItemCounts[requiredItemId] = containerCount;
 			//清除物品实例
 			if (!QueryContainerDataIsSpaceContainerSync(containerData, out _, out SpaceData spaceData)) continue;
 			if (!spaceData.InstanceItemGuids.TryGetValue(requiredItemId, out HashSet<Guid> guids)) continue;
@@ -800,7 +844,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		{
 			if (!UsingGameResource.SpaceRegistry.TryGetValue(spaceId, out SpaceRegistryObject spaceRegistryObject))
 			{
-				Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_space_registry_object_in_game_resource_for_space_id"), spaceId));
+				LogTr.Error("log.error.save_data_helper.failed_to_get_space_registry_object_in_game_resource_for_space_id", spaceId);
 				return false;
 			}
 			lock (_lock)
@@ -1216,24 +1260,15 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <returns>成功与否，如果没有找到对应工厂或者存在对象未能被查找到的情况则返回<c>false</c>。</returns>
 	public bool TryRunRecipeOrderForFactory(Guid factoryGuid, bool cancelIfStarted)
 	{
-		FactoryData factoryData;
 		lock (_lock)
 		{
-			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out factoryData)) return false;
+			if (!UsingSaveData.FactoryDatas.TryGetValue(factoryGuid, out FactoryData factoryData)) return false;
 			if (cancelIfStarted && factoryData.WasWorking) return true;
-		}
-		if (!QueryItemIdForGuid(factoryGuid, out string itemId))
-		{
-			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_query_item_id_for_guid"), factoryGuid));
-			return false;
-		}
-		if (!UsingGameResource.FactoryRegistry.TryGetValue(itemId, out FactoryRegistryObject factoryRegistryObject))
-		{
-			Logger.LogError(string.Format(Localization.Tr("log.error.save_data_helper.failed_to_get_factory_registry_object_in_game_resource_for_item_id"), itemId));
-			return false;
-		}
-		lock (_lock)
-		{
+			if (!GetFactoryRegistryObjectFromGuidSync(factoryGuid, out FactoryRegistryObject factoryRegistryObject))
+			{
+				LogTr.Error("log.warning.save_data_helper.failed_to_get_factory_registry_object_for_factory_guid", factoryGuid.ToString());
+				return false;
+			}
 			if (factoryRegistryObject.RecipeOrder is not { } recipeOrder) return false;
 			string recipeId = recipeOrder.PullRecipe(factoryData.RecipeOrderData.DataListLong, factoryData.RecipeOrderData.DataQueueString);
 			return string.IsNullOrEmpty(recipeId) || setRecipeForFactoryData(factoryData, recipeId);
@@ -1373,6 +1408,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <summary>
 	/// 初始化空间，通过游戏资源的空间注册表为存档数据的空间表创建空间数据实例，同时创建空间容器，并添加到容器表。
 	/// </summary>
+	/// <remarks>本方法是间接含锁的。</remarks>
 	public void InitSpaces()
 	{
 		foreach ((string spaceId, SpaceRegistryObject spaceRegistryObject) in UsingGameResource.SpaceRegistry)
@@ -1411,6 +1447,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 			if (spaceRegistryObject.SpaceFactory is { } spaceFactoryRegistryObject)
 			{
 				FactoryData newSpaceFactoryData = InstantiateRegistryObject(spaceFactoryRegistryObject);
+				newSpaceFactoryData.InputContainerGuid = newSpaceFactoryData.OutputContainerGuid = newSpaceData.SpaceContainerGuid;
 				newSpaceData.SpaceFactoryGuid = SetInstanceObject(newSpaceFactoryData);
 				SetNameForInstance(newSpaceData.SpaceFactoryGuid, Localization.Tr("space_factory"));
 			}

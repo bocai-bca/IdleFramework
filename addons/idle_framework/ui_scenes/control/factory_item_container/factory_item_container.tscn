@@ -37,7 +37,7 @@ layout_mode = 2
 alignment = 1
 
 [node name="InputContainerButton" type="Button" parent="VBC/HBC" unique_id=1219947546]
-custom_minimum_size = Vector2(96, 72)
+custom_minimum_size = Vector2(128, 72)
 layout_mode = 2
 text = "Input"
 icon = SubResource("PlaceholderTexture2D_eurn7")
@@ -74,7 +74,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="OutputContainerButton" type="Button" parent="VBC/HBC" unique_id=1624049310]
-custom_minimum_size = Vector2(96, 72)
+custom_minimum_size = Vector2(128, 72)
 layout_mode = 2
 text = "Output"
 icon = SubResource("PlaceholderTexture2D_4w2nq")
