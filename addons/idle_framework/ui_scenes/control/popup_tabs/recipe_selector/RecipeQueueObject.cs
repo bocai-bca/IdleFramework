@@ -14,11 +14,15 @@ public partial class RecipeQueueObject : HBoxContainer, IClassPackedScene
 {
 	public static PackedScene CPS => field ??= GD.Load<PackedScene>("res://addons/idle_framework/ui_scenes/control/popup_tabs/recipe_selector/recipe_queue_object.tscn");
 
+	[Signal]
+	public delegate void CancelButtonPressedEventHandler();
+	
 	public TextureRect NIcon;
 	public Button NCancelButton;
 	public Label NName;
 
 	public string recipeId;
+	public int index = 0;
 
 	public override void _Notification(int what)
 	{
@@ -77,8 +81,7 @@ public partial class RecipeQueueObject : HBoxContainer, IClassPackedScene
 
 	public void OnCancelButtonPressed()
 	{
-		if (string.IsNullOrEmpty(recipeId)) return;
-		// TODO
+		EmitSignal(SignalName.CancelButtonPressed, index);
 	}
 }
 #endif

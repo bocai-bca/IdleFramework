@@ -92,6 +92,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				NCancelAllButtonInQueuePage.Connect(BaseButton.SignalName.Pressed, Callable.From(OnCancelAllButtonPressed));
 				NCancelAllButtonInQueuePage.Text = Localization.Tr("ui_scene_control.popup_tab_recipe_selector.cancel_all");
 				NCurrentProcessingRecipeQueueObject = GetNode<RecipeQueueObject>("MC/TC/Queue/RecipeQueueObject");
+				NCurrentProcessingRecipeQueueObject.Connect(RecipeQueueObject.SignalName.CancelButtonPressed, Callable.From<int>(OnCancelButtonPressed));
 				NQueueSizeText = GetNode<Label>("MC/TC/Queue/HBC/QueueSizeText");
 				NQueueSizeText.Text = string.Format(Localization.Tr("ui_scene_control.popup_tab_recipe_selector.queue_size_text"), "-", "-");
 				NRecipeQueueObjectsContainer = GetNode<VBoxContainer>("MC/TC/Queue/RecipeQueue/VBC");
@@ -167,11 +168,14 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		{
 			NCurrentProcessingRecipeQueueObject.SetRecipe("", null);
 		}
+		// 更新配方队列项
 		int i = factoryData.RecipeOrderData.DataQueueString.Count;
 		while (NRecipeQueueObjects.Count < i)
 		{
 			RecipeQueueObject recipeQueueObject = RecipeQueueObject.Create();
 			NRecipeQueueObjects.Add(recipeQueueObject);
+			recipeQueueObject.index = i - 1;
+			recipeQueueObject.Connect(RecipeQueueObject.SignalName.CancelButtonPressed, Callable.From<int>(OnCancelButtonPressed));
 			NRecipeQueueObjectsContainer.AddChild(recipeQueueObject);
 		}
 		if (factoryRegistryObjectCache.RecipeOrder is RecipeOrderStorable recipeOrderStorable)
@@ -258,47 +262,6 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 			recipeRegistryObject.RequiredSeconds.NumberPreviewText;
 	}
 
-	// <summary>
-	// 将配方详细信息显示为产物。
-	// </summary>
-	// <param name="recipeRegistryObject">要切换到的配方的注册表项。</param>
-	/*public void SetDetailResults(RecipeRegistryObject recipeRegistryObject)
-	{
-		// 创建物品对象达到产物总数
-		while (NDetailItems.Count < recipeRegistryObject.Result.Count)
-		{
-			ItemIconNameCount newDetailItem = ItemIconNameCount.Create();
-			NDetailItems.Add(newDetailItem);
-			NDetailItemsContainer.AddChild(newDetailItem);
-		}
-		// 遍历产物
-		int index = 0;
-		foreach ((string itemId, NumberProvider countNumberProvider) in recipeRegistryObject.Result.
-			.OrderByDescending(result => result.Value.NumberPreviewAdv)
-			.ThenBy(result => result.Key))
-		{
-			ItemIconNameCount detailItem = NDetailItems[index];
-			detailItem.Visible = true;
-			detailItem.itemId = itemId;
-			if (SaveAccess.LoadedDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject))
-			{
-				// 能找到物品
-				detailItem.NItemButton.Text = Localization.Tr(itemRegistryObject.NameKey);
-				detailItem.NItemButton.Icon = itemRegistryObject.IconTexture;
-			}
-			else
-			{
-				// 不能找到物品
-				detailItem.NItemButton.Text = itemId;
-				detailItem.NItemButton.Icon = new PlaceholderTexture2D();
-			}
-			detailItem.NCount.Text = countNumberProvider.NumberPreviewText;
-			index++;
-		}
-		// 遍历后续的多余物品对象，使它们不可见
-		for (; index < NDetailItems.Count; index++) NDetailItems[index].Visible = false;
-	}*/
-
 	public void OnDetailTabBarTabChanged(int index)
 	{
 		switch (index)
@@ -328,6 +291,11 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public void OnAddToQueueButtonPressed()
 	{
 		SaveAccess.LoadedDataHelper.TryEnqueueRecipeForManualFactory(factoryGuidCache, selectedRecipeId, true);
+	}
+
+	public void OnCancelButtonPressed(int index)
+	{
+		Updater.SaveDataHelperInHandle.TryCancelOrderForFactory(factoryGuidCache, index);
 	}
 
 	public void OnCancelAllButtonPressed()
