@@ -553,16 +553,14 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 		lock (_lock)
 		{
 			bool gotContainerData = UsingSaveData.ContainerDatas.TryGetValue(containerMixinGuid, out ContainerData containerData);
-			if (gotContainerData) containerData = containerData.Duplicate();
 			bool gotContainerGroup = UsingSaveData.ContainerGroups.TryGetValue(containerMixinGuid, out ContainerGroup containerGroup);
-			if (gotContainerGroup) containerGroup = containerGroup.Duplicate();
 			if (gotContainerData) // 分支一：如果找到了容器实例
 			{
-				return tryConsumeItemsForContainer(containerData, itemCountsForConsume);
+				return tryConsumeItemsForContainerSync(containerData, itemCountsForConsume);
 			}
 			if (!gotContainerGroup) return false; // 如果没有找到容器实例或容器编组，在这里返回为失败状态
 			// 分支二：如果找到了容器编组
-			return tryConsumeItemsForContainerGroup(containerGroup, itemCountsForConsume);
+			return tryConsumeItemsForContainerGroupSync(containerGroup, itemCountsForConsume);
 		}
 	}
 
@@ -800,7 +798,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例中存在(库存数量大于0)。</param>
 	/// <returns>是否成功消耗要求的物品数量。</returns>
 	/// <remarks>本方法非线程安全设计，如果给定容器数据直接来自存档数据，请在外层做好互斥锁锁定。</remarks>
-	private bool tryConsumeItemsForContainer([DisallowNull] ContainerData containerData, Dictionary<string, long> itemCountsForConsume)
+	private bool tryConsumeItemsForContainerSync([DisallowNull] ContainerData containerData, Dictionary<string, long> itemCountsForConsume)
 	{
 		//检查物品是否满足
 		foreach ((string requiredItemId, long requiredItemCount) in itemCountsForConsume)
@@ -1078,7 +1076,7 @@ public class SaveDataHelper(GameResource targetGameResource, SaveData targetSave
 	/// <param name="itemCountsForConsume">要消耗的物品的数量，键为物品ID，值为物品数量，0或负数的物品数量不会消耗对应物品，但会要求该物品可在遍历的容器实例中存在(库存数量大于0)。</param>
 	/// <returns>是否成功消耗要求的物品数量。</returns>
 	/// <remarks>本方法非线程安全设计，如果给定容器数据直接来自存档数据，请在外层做好互斥锁锁定。</remarks>
-	public bool tryConsumeItemsForContainerGroup([DisallowNull] ContainerGroup containerGroup, Dictionary<string, long> itemCountsForConsume)
+	public bool tryConsumeItemsForContainerGroupSync([DisallowNull] ContainerGroup containerGroup, Dictionary<string, long> itemCountsForConsume)
 	{
 		// 检查物品是否满足
 		Dictionary<string, long> itemCountsGot = [];

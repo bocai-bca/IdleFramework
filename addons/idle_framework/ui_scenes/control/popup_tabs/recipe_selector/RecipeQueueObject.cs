@@ -45,13 +45,19 @@ public partial class RecipeQueueObject : HBoxContainer, IClassPackedScene
 	/// <param name="recipeRegistryObject">该配方的注册表项，执行清除时可以为<c>null</c>，否则若为<c>null</c>将保持图标、名称空白。</param>
 	public void SetRecipe([AllowNull]string id, [AllowNull]RecipeRegistryObject recipeRegistryObject)
 	{
-		if (id == recipeId) return;
+		if (id == recipeId)
+		{
+			NCancelButton.Text = Localization.Tr("ui_scene_control.recipe_queue_object.cancel");
+			NCancelButton.Disabled = string.IsNullOrEmpty(id);
+			return;
+		}
 		if (string.IsNullOrEmpty(id))
 		{ 
 			recipeId = string.Empty;
 			NIcon.Texture = null;
 			NName.Text = "--";
 			NCancelButton.Disabled = true;
+			NCancelButton.Text = Localization.Tr("ui_scene_control.recipe_queue_object.cancel");
 			return;
 		}
 		recipeId = id;
@@ -81,6 +87,8 @@ public partial class RecipeQueueObject : HBoxContainer, IClassPackedScene
 
 	public void OnCancelButtonPressed()
 	{
+		NCancelButton.Text = Localization.Tr("ui_scene_control.recipe_queue_object.cancelled");
+		NCancelButton.Disabled = true;
 		EmitSignal(SignalName.CancelButtonPressed, index);
 	}
 }
