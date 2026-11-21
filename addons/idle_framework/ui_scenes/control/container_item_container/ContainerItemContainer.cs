@@ -26,9 +26,9 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 
 	public override void _Notification(int what)
 	{
-		switch ((long)what)
+		switch (what)
 		{
-			case NotificationSceneInstantiated:
+			case (int)NotificationSceneInstantiated:
 				NItems = GetNode<HFlowContainer>("Items");
 				NEditButton = ItemContainerEditButton.Create();
 				NEditButton.Text = Localization.Tr("ui_scene_control.edit_button");
@@ -65,37 +65,34 @@ public partial class ContainerItemContainer : FoldableContainer, IClassPackedSce
 			QueueFree();
 			return;
 		}
-		foreach ((string itemId, long itemCount) in itemCounts)
+		foreach ((string itemId, _) in itemCounts)
 		{
-			if (!NContainerItems.TryGetValue(itemId, out ContainerItem containerItem))
+			if (NContainerItems.ContainsKey(itemId)) continue;
+			ContainerItem containerItem = ContainerItem.Create();
+			if (saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject))
 			{
-				containerItem = ContainerItem.Create();
-				if (saveDataHelper.UsingGameResource.ItemRegistry.TryGetValue(itemId, out ItemRegistryObject itemRegistryObject))
-				{
-					containerItem.ItemNameCache = Localization.Tr(itemRegistryObject.NameKey);
-					containerItem.SetItemIcon(itemRegistryObject.IconTexture);
-				}
-				NContainerItems[itemId] = containerItem;
-				NItems.AddChild(containerItem);
-				string itemIdCopy = itemId;
-				containerItem.Connect(BaseButton.SignalName.Pressed, Callable.From(() => OnButtonPressed(itemIdCopy)));
+				containerItem.itemNameCache = Localization.Tr(itemRegistryObject.NameKey);
+				containerItem.itemIdCache = itemId;
+				containerItem.SetItemIcon(itemRegistryObject.IconTexture);
+			}
+			NContainerItems[itemId] = containerItem;
+			NItems.AddChild(containerItem);
+		}
+		List<string> freeItemIds = [];
+		foreach ((string containerItemId, ContainerItem containerItem) in NContainerItems)
+		{
+			if (!itemCounts.TryGetValue(containerItemId, out long itemCount))
+			{
+				freeItemIds.Add(containerItemId);
+				continue;
 			}
 			containerItem.SetItemCount(itemCount);
 		}
-	}
-
-	/// <summary>
-	/// 信号方法-当本按钮被点击时调用，打开物品详细信息弹窗。
-	/// </summary>
-	/// <param name="buttonItemId">按钮物品ID。</param>
-	public static void OnButtonPressed(string buttonItemId)
-	{
-		Control.TabPopupInstance.TryOpenTabOrPullToAddIfUnexist("ItemDetail." + buttonItemId, () =>
+		foreach (string freeItemId in freeItemIds)
 		{
-			PopupTabItemDetail popupTabItemDetail = PopupTabItemDetail.Create();
-			popupTabItemDetail.SetContentForItemId(buttonItemId);
-			return popupTabItemDetail;
-		});
+			NContainerItems[freeItemId].QueueFree();
+			NContainerItems.Remove(freeItemId);
+		}
 	}
 }
 #endif

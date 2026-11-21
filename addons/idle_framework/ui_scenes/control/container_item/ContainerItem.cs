@@ -15,8 +15,23 @@ public partial class ContainerItem : Button, IClassPackedScene
 	/// <summary>
 	/// 物品名称缓存
 	/// </summary>
-	public string ItemNameCache;
-	
+	public string itemNameCache;
+
+	/// <summary>
+	/// 物品ID缓存
+	/// </summary>
+	public string itemIdCache;
+
+	public override void _Notification(int what)
+	{
+		switch (what)
+		{
+			case (int)NotificationSceneInstantiated:
+				Connect(BaseButton.SignalName.Pressed, Callable.From(OnButtonPressed));
+				break;
+		}
+	}
+
 	/// <summary>
 	/// 设置物品图标。
 	/// </summary>
@@ -30,7 +45,20 @@ public partial class ContainerItem : Button, IClassPackedScene
 	public void SetItemCount(long itemCount)
 	{
 		Text = itemCount.NumberToShortText();
-		TooltipText = ItemNameCache + "\n" + itemCount;
+		TooltipText = itemNameCache + "\n" + itemCount;
+	}
+
+	/// <summary>
+	/// 信号方法-当本按钮被点击时调用，打开物品详细信息弹窗。
+	/// </summary>
+	public void OnButtonPressed()
+	{
+		Control.TabPopupInstance.TryOpenTabOrPullToAddIfUnexist("ItemDetail." + itemIdCache, () =>
+		{
+			PopupTabItemDetail popupTabItemDetail = PopupTabItemDetail.Create();
+			popupTabItemDetail.SetContentForItemId(itemIdCache);
+			return popupTabItemDetail;
+		});
 	}
 }
 #endif
