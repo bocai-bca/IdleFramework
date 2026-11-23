@@ -1,13 +1,12 @@
 ﻿using Godot;
-using IdleFramework.Core;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 工厂注册表对象，用于在游戏资源中注册工厂
 /// </summary>
 [GlobalClass]
-public partial class FactoryRegistryObject : Resource
+public partial class FactoryRegistryObject : IdleFrameworkResource
 {
 	/// <summary>
 	/// 配方下单器

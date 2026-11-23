@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using Godot;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 掉落表的抽象基类
 /// </summary>
 [GlobalClass]
-public abstract partial class LootTable: Resource
+public abstract partial class LootTable: IdleFrameworkResource
 {
 	/// <summary>
 	/// 获取掉落物的抽象方法，需要在子类中实现

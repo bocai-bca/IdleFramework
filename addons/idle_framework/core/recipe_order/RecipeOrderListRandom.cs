@@ -2,7 +2,7 @@
 using Godot;
 using Godot.Collections;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 配方下单器-列表随机

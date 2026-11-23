@@ -1,12 +1,12 @@
 ﻿using Godot;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 数值提供器的抽象基类
 /// </summary>
 [GlobalClass]
-public abstract partial class NumberProvider : Resource
+public abstract partial class NumberProvider : IdleFrameworkResource
 {
 	/// <summary>
 	/// 获取值的抽象方法，需要在子类中实现

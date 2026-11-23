@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using Godot;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 配方下单器的抽象基类
 /// </summary>
 [GlobalClass]
-public abstract partial class RecipeOrder : Resource
+public abstract partial class RecipeOrder : IdleFrameworkResource
 {
 	/// <summary>
 	/// 该配方下单器是否是可手动的，需要由配方下单器子类实现该属性的取值器，请确保其返回结果不可变。

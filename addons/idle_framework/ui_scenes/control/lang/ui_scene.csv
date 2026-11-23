@@ -14,6 +14,7 @@ ui_scene_control.factory_item_container.click_to_set_recipe,,"Click to set Recip
 ui_scene_control.factory_item_container.click_to_set_container,,"Click to set Container","点击以设置容器"
 ui_scene_control.popup_tab_title.item_detail,,"Item: {0}","物品: {0}"
 ui_scene_control.popup_tab_title.recipe_selector,,"Select recipe: {0}","选择配方: {0}"
+ui_scene_control.popup_tab_title.container_selector,,"Select container: {0}","选择容器: {0}"
 ui_scene_control.popup_tab_item_detail.info,,"Info","信息"
 ui_scene_control.popup_tab_item_detail.transfer,,"Transfer","转移"
 ui_scene_control.popup_tab_item_detail.discard,,"Discard","丢弃"

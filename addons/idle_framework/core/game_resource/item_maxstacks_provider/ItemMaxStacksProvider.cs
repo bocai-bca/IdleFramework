@@ -1,15 +1,14 @@
 ﻿using System;
 using Godot;
 using Godot.Collections;
-using IdleFramework.Core;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 物品最大堆叠数提供器
 /// </summary>
 [GlobalClass]
-public partial class ItemMaxStacksProvider : Resource
+public partial class ItemMaxStacksProvider : IdleFrameworkResource
 {
 	/// <summary>
 	/// 提供器模式枚举

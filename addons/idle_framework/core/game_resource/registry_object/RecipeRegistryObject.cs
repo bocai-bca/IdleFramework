@@ -1,13 +1,13 @@
 ﻿using Godot;
 using Godot.Collections;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 配方注册表对象，用于在游戏资源中注册配方
 /// </summary>
 [GlobalClass]
-public partial class RecipeRegistryObject : Resource
+public partial class RecipeRegistryObject : IdleFrameworkResource
 {
 	/// <summary>
 	/// 配方名称翻译键。

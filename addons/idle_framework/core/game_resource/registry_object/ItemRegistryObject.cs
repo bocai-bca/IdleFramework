@@ -1,12 +1,12 @@
 ﻿using Godot;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 物品注册表对象，用于在游戏资源中注册物品
 /// </summary>
 [GlobalClass]
-public partial class ItemRegistryObject: Resource
+public partial class ItemRegistryObject: IdleFrameworkResource
 {
 	/// <summary>
 	/// 物品名称翻译键

@@ -1,7 +1,7 @@
 ﻿using System;
 using Godot;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 数值提供器-范围随机

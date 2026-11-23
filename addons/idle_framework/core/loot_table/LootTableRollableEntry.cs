@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 掉落表可抽取的项目。

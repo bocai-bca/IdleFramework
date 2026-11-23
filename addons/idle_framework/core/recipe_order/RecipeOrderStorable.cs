@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 配方下单器-可存储型基类。<br/>

@@ -9,7 +9,7 @@ namespace IdleFramework.Core;
 /// 出于线程安全考虑，不要在运行时修改游戏资源以及其中嵌套的任何内容，游戏资源在设计上应当是只读的。
 /// </summary>
 [GlobalClass]
-public partial class GameResource : Resource
+public partial class GameResource : IdleFrameworkResource
 {
 	/// <summary>
 	/// 本放置引擎游戏的GUID(全局唯一标识符)，主要用于在存档数据中记录其对应的游戏。

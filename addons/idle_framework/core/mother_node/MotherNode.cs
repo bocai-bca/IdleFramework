@@ -223,13 +223,29 @@ public partial class MotherNode : Node
 			}
 			foreach ((string id, ContainerRegistryObject registryObject) in GameResource.ContainerRegistry)
 			{
-				if (registryObject != null) continue;
+				if (registryObject != null)
+				{
+					if (!GameResource.ItemRegistry.ContainsKey(id))
+					{
+						alertMessage +=  string.Format(Localization.Tr("alert.context.container_registry_object_has_no_item_registered"), id);
+						result = false;
+					}
+					continue;
+				}
 				alertMessage += string.Format(Localization.Tr("alert.context.container_registry_object_is_null"), id);
 				result = false;
 			}
 			foreach ((string id, FactoryRegistryObject registryObject) in GameResource.FactoryRegistry)
 			{
-				if (registryObject != null) continue;
+				if (registryObject != null)
+				{
+					if (!GameResource.ItemRegistry.ContainsKey(id))
+					{
+						alertMessage +=  string.Format(Localization.Tr("alert.context.factory_registry_object_has_no_item_registered"), id);
+						result = false;
+					}
+					continue;
+				}
 				alertMessage += string.Format(Localization.Tr("alert.context.factory_registry_object_is_null"), id);
 				result = false;
 			}

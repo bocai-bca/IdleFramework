@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://chbab5i4bciic"]
+
+[node name="PopupTab_ContainerSelector" type="PanelContainer" unique_id=355283283]
+custom_minimum_size = Vector2(256, 256)
+offset_right = 40.0
+offset_bottom = 40.0

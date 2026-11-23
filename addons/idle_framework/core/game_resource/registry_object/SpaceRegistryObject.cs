@@ -1,13 +1,13 @@
 ﻿using Godot;
 using Godot.Collections;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 空间注册表对象，用于在游戏资源中注册空间
 /// </summary>
 [GlobalClass]
-public partial class SpaceRegistryObject : Resource
+public partial class SpaceRegistryObject : IdleFrameworkResource
 {
 	/// <summary>
 	/// 空间名称翻译键

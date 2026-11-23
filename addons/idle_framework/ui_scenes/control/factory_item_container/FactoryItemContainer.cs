@@ -75,9 +75,13 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 			QueueFree();
 			return;
 		}
-		if (!factoryRegistryObject.RecipeOrder.IsManuallable)
+		if (factoryRegistryObject.RecipeOrder is null || !factoryRegistryObject.RecipeOrder.IsManuallable)
 		{
 			NRecipeButton.Disabled = true;
+		}
+		else
+		{
+			NRecipeButton.TooltipText = Localization.Tr("ui_scene_control.factory_item_container.click_to_set_recipe");
 		}
 		SetTitleName(saveDataHelper.GetNameForInstance(FactoryGuid));
 		Update(saveDataHelper);
@@ -116,7 +120,6 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		if (!saveDataHelper.IsContainerMixinExistsForGuid(containerGuidCurrent))
 		{
 			buttonNode.Icon = null;
-			buttonNode.Text = "--";
 		}
 		else
 		{
@@ -189,7 +192,7 @@ public partial class FactoryItemContainer : FoldableContainer, IClassPackedScene
 		if (recipeCache == string.Empty)
 		{
 			NRecipeButton.Icon = null;
-			NRecipeButton.Text = Localization.Tr("ui_scene_control.factory_item_container.click_to_set_recipe");
+			NRecipeButton.Text = "--";
 			return;
 		}
 		if (!saveDataHelper.UsingGameResource.RecipeRegistry.TryGetValue(recipeCache, out RecipeRegistryObject recipeRegistryObject))

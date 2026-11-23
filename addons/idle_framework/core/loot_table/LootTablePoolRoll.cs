@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Godot;
 using IdleFramework.Global;
 
-namespace IdleFramework;
+namespace IdleFramework.Core;
 
 /// <summary>
 /// 掉落表-池抽取

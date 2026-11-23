@@ -12,7 +12,9 @@ alert.context.space_registry_object_is_null,,"A SpaceRegistryObject is null, ID 
 alert.context.item_registry_object_is_null,,"An ItemRegistryObject is null, ID = {0}.","一个物品注册表项为null，ID = {0}。\n"
 alert.context.recipe_registry_object_is_null,,"A RecipeRegistryObject is null, ID = {0}.","一个配方注册表项为null，ID = {0}。\n"
 alert.context.container_registry_object_is_null,,"A ContainerRegistryObject is null, ID = {0}.","一个容器注册表项为null，ID = {0}。\n"
+alert.context.container_registry_object_has_no_item_registered,,"A ContainerRegistryObject has no matched item registration, ID = {0}.","一个容器注册表项未没有相应物品注册，ID = {0}。\n"
 alert.context.factory_registry_object_is_null,,"A FactoryRegistryObject is null, ID = {0}.","一个工厂注册表项为null，ID = {0}。\n"
+alert.context.factory_registry_object_has_no_item_registered,,"A FactoryRegistryObject has no matched item registration, ID = {0}.","一个工厂注册表项未没有相应物品注册，ID = {0}。\n"
 log.info.mother_node.ready_start,,"MotherNode: _Ready() starting.","MotherNode: 正在执行_Ready()。"
 log.info.mother_node.init_check_start,,"MotherNode: InitCheck() starting.","MotherNode: 正在执行InitCheck()。"
 log.info.mother_node.runtime_builtin_translations_loaded,,"MotherNode: Runtime builtin translations were added to domain.","MotherNode: 内置运行时翻译已加载到翻译域"。
