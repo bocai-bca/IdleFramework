@@ -10,8 +10,8 @@ font_size = 24
 
 [node name="PopupTab_ItemDetail" type="PanelContainer" unique_id=1708558112]
 custom_minimum_size = Vector2(256, 256)
-offset_right = 40.0
-offset_bottom = 23.0
+offset_right = 640.0
+offset_bottom = 480.0
 script = ExtResource("1_0cx7t")
 
 [node name="MC" type="MarginContainer" parent="." unique_id=1963891744]

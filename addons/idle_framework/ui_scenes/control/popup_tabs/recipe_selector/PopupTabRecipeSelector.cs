@@ -133,6 +133,9 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 			NRecipeButtonsContainer.AddChild(recipeButton);
 			NRecipeButtons[recipeId] = recipeButton;
 		}
+		NRecipeIcon.Texture = null;
+		NRecipeName.Text = null;
+		NRecipeDescription.Text = null;
 		foreach (string recipeId in NRecipeButtons.Keys)
 		{
 			OnRecipeButtonPressed(recipeId);
@@ -210,7 +213,12 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	public void SetDetailIngredients(RecipeRegistryObject recipeRegistryObject)
 	{
 		NRequiredTimeText.Visible = false;
-		NDetailItemsScrollContainer.Visible = true;
+		if (recipeRegistryObject == null)
+		{
+			NDetailItemsContainer.Visible = false;
+			return;
+		}
+		NDetailItemsContainer.Visible = true;
 		// 创建物品对象达到原料总数
 		while (NDetailItems.Count < recipeRegistryObject.Ingredients.Count)
 		{
@@ -221,7 +229,7 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 		// 遍历原料
 		int index = 0;
 		foreach ((string itemId, NumberProvider countNumberProvider) in recipeRegistryObject.Ingredients
-			.OrderByDescending(ingredient => ingredient.Value)
+			.OrderByDescending(ingredient => ingredient.Value.NumberPreviewAvg)
 			.ThenBy(ingredient => ingredient.Key))
 		{
 			ItemIconNameCount detailItem = NDetailItems[index];
@@ -252,7 +260,12 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 	/// <param name="recipeRegistryObject">要切换到的配方的注册表项。</param>
 	public void SetDetailRequiedTime(RecipeRegistryObject recipeRegistryObject)
 	{
-		NDetailItemsScrollContainer.Visible = false;
+		NDetailItemsContainer.Visible = false;
+		if (recipeRegistryObject == null)
+		{
+			NRequiredTimeText.Visible = false;
+			return;
+		}
 		NRequiredTimeText.Visible = true;
 		NRequiredTimeText.Text = 
 			Localization.Tr("ui_scene_control.popup_tab_recipe_selector.required_time_unit_tip") + "\n" +
@@ -270,7 +283,6 @@ public partial class PopupTabRecipeSelector : PopupTabBase, IClassPackedScene
 				SetDetailIngredients(recipeRegistryObjectCache);
 				break;
 			case 1:
-				//SetDetailResults(recipeRegistryObjectCache);
 				SetDetailRequiedTime(recipeRegistryObjectCache);
 				break;
 		}

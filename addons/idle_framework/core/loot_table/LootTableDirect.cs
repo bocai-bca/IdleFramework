@@ -5,7 +5,7 @@ namespace IdleFramework.Core;
 
 /// <summary>
 /// 掉落表-直接提供
-/// 指定一个固定的掉落表，每次都返回固定数量的物品
+/// 指定一个固定的掉落表，每次都返回固定的物品，数量可变
 /// </summary>
 [GlobalClass]
 public partial class LootTableDirect: LootTable

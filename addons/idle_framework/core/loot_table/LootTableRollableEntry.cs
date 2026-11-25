@@ -12,8 +12,8 @@ public partial class LootTableRollableEntry: Resource
 	/// 权重，数值越高越容易被抽取到。最小要达到1，权重为0或负数的项不会被抽到。
 	/// 每次抽取抽取时都会获取一次权重，因此权重可以在多轮抽取中变化。
 	/// </summary>
-	[Export] 
-	public NumberProvider Weight { get; set; }
+	[Export]
+	public NumberProvider Weight { get; set; } = new NumberProviderOne();
 		
 	/// <summary>
 	/// 该池项目的掉落表。

@@ -18,7 +18,6 @@ public partial class RecipeOrderManualSelect: RecipeOrderStorable
 	/// 赋值器是一个后备访问接口，请勿轻易使用。
 	/// </summary>
 	[Export]
-	[ExportGroup("Data")]
 	public Array<string> RecipeIDs { get; set; } = [];
 
 	/// <summary>

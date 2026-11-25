@@ -1,6 +1,16 @@
 [gd_scene format=3 uid="uid://chbab5i4bciic"]
 
+[ext_resource type="Script" uid="uid://c3sgvj7snk72r" path="res://addons/idle_framework/ui_scenes/control/popup_tabs/container_selector/PopupTabContainerSelector.cs" id="1_ykrly"]
+
 [node name="PopupTab_ContainerSelector" type="PanelContainer" unique_id=355283283]
 custom_minimum_size = Vector2(256, 256)
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 640.0
+offset_bottom = 480.0
+script = ExtResource("1_ykrly")
+
+[node name="MC" type="MarginContainer" parent="." unique_id=1828344224]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16

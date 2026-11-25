@@ -18,7 +18,6 @@ public partial class RecipeOrderListRandom : RecipeOrder
 	/// 赋值器是一个后备访问接口，请勿轻易使用。
 	/// </summary>
 	[Export]
-	[ExportGroup("Data")]
 	public Array<string> RecipeIDs { get; set; } = [];
 
 	/// <summary>
@@ -27,6 +26,7 @@ public partial class RecipeOrderListRandom : RecipeOrder
 	/// <returns>本下单器实例提供的配方</returns>
 	public override string PullRecipe(List<long> argumentsLong, Queue<string> queueString)
 	{
+		if (RecipeIDs == null || RecipeIDs.Count == 0) return "";
 		return RecipeIDs[GD.RandRange(0, RecipeIDs.Count - 1)];
 	}
 }

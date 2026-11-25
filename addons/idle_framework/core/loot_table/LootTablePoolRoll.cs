@@ -7,7 +7,7 @@ namespace IdleFramework.Core;
 
 /// <summary>
 /// 掉落表-池抽取
-/// 指定数个的掉落表，从中抽取一或多个进行执行，提供了一些控制参数。
+/// 高级的抽取掉落表。指定数个的掉落表，从中抽取一或多个进行执行，提供了一些控制参数。
 /// </summary>
 [GlobalClass]
 public partial class LootTablePoolRoll: LootTable

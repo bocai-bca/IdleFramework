@@ -15,12 +15,29 @@ public class ContainerData : ISaveDataComponent<ContainerData>
 	
 	public JObject ToJson()
 	{
-		throw new System.NotImplementedException();
+		JObject itemCounts = new();
+		JObject result = new()
+		{
+			[nameof(ItemCounts)] = itemCounts,
+		};
+		foreach ((string itemId, long itemCount) in ItemCounts) itemCounts.Add(itemId, new JValue(itemCount));
+		return result;
 	}
 
 	public static ContainerData FromJson(JObject jObject)
 	{
-		throw new System.NotImplementedException();
+		if (jObject == null) return null;
+		ContainerData result = new();
+		if (jObject.TryGetValue(nameof(ItemCounts), out JToken valueGuids) && valueGuids.Type == JTokenType.Object)
+		{
+			JObject itemCounts = valueGuids.Value<JObject>();
+			foreach ((string itemId, JToken itemCount) in itemCounts)
+			{
+				if (itemCount.Type != JTokenType.Integer) continue;
+				result.ItemCounts[itemId] = itemCount.Value<long>();
+			}
+		}
+		return result;
 	}
 
 	public ContainerData Duplicate()
